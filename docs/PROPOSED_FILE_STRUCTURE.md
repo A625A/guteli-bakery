@@ -98,6 +98,7 @@ Guteli Bakery/
 │   │   │   └── WhatsAppHandoff.tsx
 │   │   └── shared/
 │   │       ├── Button.tsx
+│   │       ├── FoundationPage.tsx
 │   │       └── FormField.tsx
 │   ├── content/
 │   │   ├── business.ts
@@ -117,6 +118,7 @@ Guteli Bakery/
 │       └── setup.ts
 ├── tests/
 │   ├── browser/
+│   │   ├── foundation.spec.ts
 │   │   ├── keyboard-navigation.spec.ts
 │   │   ├── order-journey.spec.ts
 │   │   └── responsive-layout.spec.ts
