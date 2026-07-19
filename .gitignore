@@ -1,18 +1,20 @@
-node_modules
-.next
-dist
-build
-coverage
+node_modules/
+.next/
+out/
+dist/
+build/
+coverage/
 
 .env
-.env.local
+.env.*
+!.env.example
 
 .DS_Store
+.idea/
+.vscode/
+.venv/
+.worktrees/
 
-.vscode/settings.json
-
-.vercel
+.vercel/
 
 *.log
-AI
-Guteli.jpeg

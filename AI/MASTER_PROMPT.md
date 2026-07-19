@@ -6,13 +6,13 @@
 
 Build a production-quality demonstration project that showcases a small business website integrated with a future WhatsApp ordering workflow.
 
-The business knowledge lives in:
+The Phase 1 business knowledge lives in the external `Empresita` Obsidian vault. It is a documentation source only and is never an application dependency.
 
-`/Users/andrewarana/Desktop/Empresita`
+The application code lives at the repository root.
 
-The application code lives in:
+The governing engineering handbook lives at the project-relative path:
 
-`/Users/andrewarana/Desktop/Guteli Bakery`
+`AI/AI-EOS`
 
 The application must be portable and never depend on absolute paths.
 
@@ -30,9 +30,9 @@ The application must be portable and never depend on absolute paths.
 
 # Brand Reference
 
-Reference image:
+Project-relative reference image:
 
-`/Users/andrewarana/Desktop/Guteli Bakery/Guteli.jpeg`
+`assets/reference/guteli-brand-reference.jpeg`
 
 Use it only as inspiration for:
 - Brand
@@ -194,4 +194,3 @@ Never claim success without showing results.
 7. Review UI.
 8. Update documentation.
 9. Stop after Phase 1.
-

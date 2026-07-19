@@ -1,0 +1,30 @@
+# Verified Capability Table
+
+Audit date: 2026-07-19
+
+Availability is session-specific and must be rechecked before use.
+
+| Capability | Verified tool or skill | Available | Intended use | Fallback |
+|---|---|---:|---|---|
+| Browser automation and local web testing | `browser:control-in-app-browser` with callable `mcp__node_repl__js` | Yes | Navigate the running app, inspect DOM and visible states, interact with forms, and capture real screenshots | Command-line browser tests and manual browser review |
+| macOS application control and screenshots | `computer-use:computer-use` | Yes | Inspect non-browser app state when browser tooling cannot reach it | Browser tooling for website work |
+| Local image inspection | `view_image` | Yes | Inspect supplied assets and captured screenshots | Browser or computer-use screenshots |
+| Basic accessibility review | `accessibility-basic-check` | Yes, guidance | Check contrast, text alternatives, labels, keyboard flow, focus order, and semantic structure | Manual checklist plus browser accessibility tree; no callable axe or Lighthouse tool verified |
+| Visual design review | `visualize:visualize`, browser screenshots, and `view_image` | Yes | Review hierarchy, spacing, responsiveness, clipping, typography, and interaction states | Apply `05_UI_UX_STANDARDS.md` manually |
+| Raster image generation or editing | `imagegen` and `image_gen__imagegen` | Yes | Create or edit approved visual assets when requested | Use supplied client assets; never use generated mockups as implementation screenshots |
+| MCP resource discovery | `list_mcp_resources`, `list_mcp_resource_templates`, `read_mcp_resource` | Yes | Verify configured MCP resources and plugin-provided capabilities | Direct callable tools and local skills |
+| Verified MCP/plugin resources | `codex_apps`, `dataAnalyticsWidgets`, Notion HTTP MCP metadata, and direct `mcp__node_repl__js` | Yes | Use only when relevant and authorized | Local deterministic workflow |
+| Deployment tooling | Sites skills and callable Sites MCP tools | Yes, prohibited for now | Potential future deployment only after explicit public-deployment approval | Local static build and local preview |
+| Obsidian-aware authoring | `obsidian-markdown` | Yes | Create valid frontmatter and wikilinked Phase 2 notes | Direct Markdown file operations |
+| Obsidian CLI | `obsidian-cli` skill exists; `obsidian` binary not found | No | None in this environment | Direct filesystem Markdown operations with verification |
+| Taste | Exact installed-skill scan | No | Not used | AI-EOS UI/UX standards and verified browser review |
+| UI Pro Max | Exact installed-skill scan | No | Not used | AI-EOS UI/UX standards and verified browser review |
+| Magic MCP | Exact installed-skill/MCP scan | No | Not used | Verified MCP discovery and available browser tooling |
+| Impeccable | Exact installed-skill scan | No | Not used | Accessibility checklist and visual review workflow |
+| Emil Kowalski-related design guidance | Exact installed-skill scan | No | Not used | Approved architecture, restrained motion, and AI-EOS standards |
+
+## Restrictions
+
+- No fake screenshots or generated mockups may be used as implementation evidence.
+- No public deployment is authorized.
+- Specialized capabilities must be re-verified in the milestone that uses them.
