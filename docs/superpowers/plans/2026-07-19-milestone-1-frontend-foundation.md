@@ -6,7 +6,7 @@
 
 **Architecture:** Next.js App Router renders static Spanish-first route shells. Shared site constants live in typed content, design tokens live in a dedicated stylesheet, Vitest verifies the foundation contract, and Playwright verifies the real route shell in Chromium. Static output is served locally by the pinned `serve` package.
 
-**Tech Stack:** Next.js 16.2.10, React 19.2.7, TypeScript 5.9.3, TypeScript ESLint 8.55.0, Vite 6.4.1, ESLint 9.39.5, Prettier 3.9.5, Vitest 3.2.7, Playwright 1.61.1, serve 14.2.6, npm lockfile.
+**Tech Stack:** Node.js ^20.9.0 || >=22.0.0, Next.js 16.2.10, React 19.2.7, TypeScript 5.9.3, TypeScript ESLint 8.55.0, Vite 6.4.3, ESLint 9.39.5, Prettier 3.9.5, Vitest 3.2.7, Playwright 1.61.1, serve 14.2.6, npm lockfile.
 
 ## Global Constraints
 
@@ -16,8 +16,8 @@
 - The application has no runtime dependency on the Empresita vault or machine-specific path.
 - Milestone 1 contains only the foundation shell and route placeholders; the finished homepage, menu, cart, order flow, and WhatsApp experience remain unimplemented.
 - Runtime dependency versions are Next.js 16.2.10, React 19.2.7, and React DOM 19.2.7.
-- Development dependency versions are TypeScript 5.9.3, TypeScript ESLint 8.55.0, Vite 6.4.1, ESLint 9.39.5, Prettier 3.9.5, Vitest 3.2.7, Playwright 1.61.1, and serve 14.2.6.
-- Supported Node.js runtime is `>=20.9.0`; npm is the package manager and `package-lock.json` is authoritative.
+- Development dependency versions are TypeScript 5.9.3, TypeScript ESLint 8.55.0, Vite 6.4.3, ESLint 9.39.5, Prettier 3.9.5, Vitest 3.2.7, Playwright 1.61.1, and serve 14.2.6.
+- Supported Node.js runtime is `^20.9.0 || >=22.0.0`; npm is the package manager and `package-lock.json` is authoritative.
 - Public deployment is prohibited.
 
 ---
@@ -37,7 +37,7 @@
 - Create: `playwright.config.ts`
 
 **Interfaces:**
-- Consumes: Node.js `>=20.9.0`, npm, the approved static-export architecture.
+- Consumes: Node.js `^20.9.0 || >=22.0.0`, npm, the approved static-export architecture.
 - Produces: verified scripts `dev`, `format`, `format:check`, `lint`, `typecheck`, `test`, `test:watch`, `test:e2e`, `test:e2e:install`, `build`, and `start`; alias `@/*` mapped to `src/*`.
 
 - [ ] **Step 1: Create the package manifest**
@@ -48,7 +48,7 @@
   "version": "0.1.0",
   "private": true,
   "engines": {
-    "node": ">=20.9.0",
+    "node": "^20.9.0 || >=22.0.0",
     "npm": ">=10.0.0"
   },
   "scripts": {
@@ -80,7 +80,7 @@
     "serve": "14.2.6",
     "typescript": "5.9.3",
     "typescript-eslint": "8.55.0",
-    "vite": "6.4.1",
+    "vite": "6.4.3",
     "vitest": "3.2.7"
   }
 }
@@ -820,7 +820,7 @@ git commit -m "feat: establish static frontend shell"
 
 - [ ] **Step 1: Document portable commands**
 
-`README.md` documents Node `>=20.9.0`, npm `>=10`, `npm install`, `npm run dev`, `npm run format`, `npm run format:check`, `npm run lint`, `npm run typecheck`, `npm test`, `npm run test:e2e:install`, `npm run test:e2e`, `npm run build`, and `npm run start`. It explains that `npm run start` serves the previously built static `out/` directory.
+`README.md` documents Node `^20.9.0 || >=22.0.0`, npm `>=10`, `npm install`, `npm run dev`, `npm run format`, `npm run format:check`, `npm run lint`, `npm run typecheck`, `npm test`, `npm run test:e2e:install`, `npm run test:e2e`, `npm run build`, and `npm run start`. It explains that `npm run start` serves the previously built static `out/` directory.
 
 - [ ] **Step 2: Run the local development server**
 
