@@ -4,9 +4,9 @@ Spanish-first, mobile-first bakery catalog and order-request experience for Güt
 
 ## Current status
 
-Milestone 1 frontend foundation is complete in this repository. The static Spanish-first shell is available for `/`, `/menu/`, `/cart/`, `/order/`, and `/contact/`; later milestones will implement the customer experience behind those routes.
+Milestone 1 frontend foundation is complete and independently reviewed in this repository. The static Spanish-first shell is available for `/`, `/menu/`, `/cart/`, `/order/`, and `/contact/`; later milestones will implement the customer experience behind those routes. Milestone 2 awaits explicit user approval.
 
-The repository evidence was verified on 2026-07-19. Public deployment remains out of scope.
+The repository evidence was verified on 2026-07-19. No deployment occurred, and public deployment remains out of scope.
 
 ## Local requirements and commands
 
@@ -50,4 +50,4 @@ The MVP excludes databases, backend persistence, authentication, inventory, paym
 - Milestones: [`docs/MILESTONES.md`](docs/MILESTONES.md)
 - Evidence: [`artifacts/README.md`](artifacts/README.md)
 
-Long-term project memory is maintained in the external Obsidian folder `Phase 2 - Guteli Demo`. The application never depends on that vault at build time or runtime. The Milestone 1 notes are synchronized and validated; Task 5 remains the only pending Milestone 1 gate.
+Long-term project memory is maintained in the external Obsidian folder `Phase 2 - Guteli Demo`. The application never depends on that vault at build time or runtime. The Milestone 1 notes are synchronized and validated; Task 5 and the independent review are complete, while Milestone 2 awaits explicit user approval.

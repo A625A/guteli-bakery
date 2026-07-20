@@ -2,7 +2,7 @@
 
 ## Milestone 0 — Governance and readiness
 
-Status: complete, awaiting approval.
+Status: complete and formally approved.
 
 - Normalize `AI/AI-EOS`
 - Populate the current task and decision log
