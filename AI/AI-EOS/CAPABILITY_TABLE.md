@@ -1,6 +1,6 @@
 # Verified Capability Table
 
-Audit date: 2026-07-19
+Audit date: 2026-07-20
 
 Availability is session-specific and must be rechecked before use.
 
@@ -51,3 +51,4 @@ Availability is session-specific and must be rechecked before use.
 | `accessibility-basic-check` | Yes | Yes | Perform the basic semantic and keyboard checklist | Route semantics and skip-link behavior recorded in the accessibility report. |
 | `obsidian-markdown` | Yes | Yes | Maintain the approved Phase 2 knowledge base using valid Obsidian Markdown | Current State, Decisions, Session Log, and Testing were synchronized with the formal Milestone 1 approval and merge evidence. |
 | `superpowers:systematic-debugging` | Yes | Yes | Investigate unexpected verification behavior before fixes | Sandbox permissions, ESLint worktree traversal, Next's generated declaration toggle, and the stale empty root `app/` precedence were traced to root causes before correction. |
+| `github:yeet` | Yes | Yes | Publish the approved repository history to GitHub | Created private repository `A625A/guteli-bakery`, configured `origin`, pushed `main` and both milestone tags, and verified local/remote SHA parity. |
