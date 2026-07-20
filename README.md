@@ -4,9 +4,31 @@ Spanish-first, mobile-first bakery catalog and order-request experience for Güt
 
 ## Current status
 
-Milestone 0 is complete: project governance, requirements, documentation, artifacts, and the proposed structure are established. Frontend initialization is intentionally blocked until Milestone 0 receives user approval.
+Milestone 1 frontend foundation is complete in this repository. The static Spanish-first shell is available for `/`, `/menu/`, `/cart/`, `/order/`, and `/contact/`; later milestones will implement the customer experience behind those routes.
 
-No application runtime or verified `npm` commands exist yet. Milestone 1 will initialize the selected frontend framework and document only the commands that are actually configured and tested.
+The repository evidence was verified on 2026-07-19. Public deployment remains out of scope.
+
+## Local requirements and commands
+
+- Node.js `^20.9.0 || >=22.0.0`
+- npm `>=10.0.0`
+
+Install dependencies with `npm install`, then use these verified commands:
+
+```bash
+npm run dev
+npm run format
+npm run format:check
+npm run lint
+npm run typecheck
+npm test
+npm run test:e2e:install
+npm run test:e2e
+npm run build
+npm run start
+```
+
+`npm run start` serves the previously built static `out/` directory at `http://127.0.0.1:3000`; run `npm run build` first. Browser verification requires a local process that can bind that loopback port.
 
 ## Approved MVP
 
@@ -28,4 +50,4 @@ The MVP excludes databases, backend persistence, authentication, inventory, paym
 - Milestones: [`docs/MILESTONES.md`](docs/MILESTONES.md)
 - Evidence: [`artifacts/README.md`](artifacts/README.md)
 
-Long-term project memory is maintained in the external Obsidian folder `Phase 2 - Guteli Demo`. The application must never depend on that vault at build time or runtime.
+Long-term project memory is maintained in the external Obsidian folder `Phase 2 - Guteli Demo`. The application must never depend on that vault at build time or runtime. Its Milestone 1 update is a separately bounded follow-up.

@@ -136,6 +136,7 @@ Guteli Bakery/
 │       ├── storage.test.ts
 │       └── whatsapp.test.ts
 ├── .gitignore
+├── .prettierignore
 ├── eslint.config.mjs
 ├── next-env.d.ts
 ├── next.config.ts

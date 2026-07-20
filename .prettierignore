@@ -1,0 +1,17 @@
+# Dependencies and generated output
+node_modules/
+.next/
+out/
+coverage/
+playwright-report/
+test-results/
+next-env.d.ts
+
+# Internal execution evidence and immutable governance source
+.superpowers/
+AI/
+
+# Binary reference and runtime evidence assets
+*.jpeg
+*.jpg
+*.png

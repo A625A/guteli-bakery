@@ -4,7 +4,7 @@ Updated: 2026-07-19
 
 ## Objective
 
-Prepare the approved Güteli Bakery frontend MVP for implementation by completing Milestone 0 governance, documentation, capability inspection, artifact structure, portability rules, and repository cleanup.
+Complete Milestone 1's static frontend foundation and portable repository evidence. The five Spanish route shells, formatting, linting, type checks, unit tests, browser tests, static export, screenshots, and reports are complete as of 2026-07-19.
 
 ## Approved product scope
 
@@ -52,21 +52,18 @@ Approved safe copy includes:
 
 Pretzels use “bolsa de 5” and nuditos use “bolsa de 15.” Other quantity fields remain optional in typed menu data.
 
-## Milestone 0 deliverables
+## Milestone 1 repository deliverables
 
-- Canonical `AI/AI-EOS` and decision log
-- Phase 2 Obsidian documentation
-- Capability table
-- Artifact evidence structure
-- Correct `.gitignore` and safe repository cleanup
-- Project-relative brand reference
-- Exact proposed frontend structure and milestone sequence
+- Static Spanish-first shells for home, menu, cart, order, and contact
+- Portable npm commands and static `out/` preview
+- Verified formatting, linting, type, unit, Playwright, build, and direct runtime evidence
+- Real 1440×1000 desktop and 390×844 mobile screenshots
+- Repository capability and artifact reports
 
 ## Acceptance criteria
 
-- No competing AI-EOS directory remains.
-- The canonical handbook contains all original information plus project-specific context.
-- All requested Obsidian notes exist and use wikilinks.
-- No application runtime dependency references the Empresita vault or an absolute local path.
-- No production frontend is initialized.
-- Milestone 1 remains blocked until explicit approval.
+- No runtime dependency references the external vault or an absolute local path.
+- The static application builds into `out/` and its five foundation routes serve locally.
+- The Task 4 repository evidence is complete and committed.
+- External Obsidian-vault updates remain for the next bounded subtask.
+- Task 5 remains the gate for final full verification and independent code review.

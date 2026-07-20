@@ -4,6 +4,7 @@ out/
 dist/
 build/
 coverage/
+test-results/
 *.tsbuildinfo
 
 .env

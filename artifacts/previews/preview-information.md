@@ -1,5 +1,7 @@
 # Preview Information
 
-Status: **No preview is running.**
+Status: **Verified locally on 2026-07-19; not left running.**
 
-Milestone 1 will record the verified local start command and local URL. Public preview or deployment requires separate approval.
+Run `npm run build`, then `npm run start`. The latter served the built `out/` directory at `http://127.0.0.1:3000` during the evidence pass. Direct Playwright exercised all five static routes from that server.
+
+This is a local preview only. Public preview or deployment requires separate approval.

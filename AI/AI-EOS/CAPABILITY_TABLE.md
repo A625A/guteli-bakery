@@ -28,3 +28,18 @@ Availability is session-specific and must be rechecked before use.
 - No fake screenshots or generated mockups may be used as implementation evidence.
 - No public deployment is authorized.
 - Specialized capabilities must be re-verified in the milestone that uses them.
+
+## Milestone 1 Superpowers record
+
+| Skill | Verified | Used in milestone | Purpose | Result |
+|---|---:|---:|---|---|
+| `superpowers:using-superpowers` | Yes | Yes | Select and enforce applicable workflows | Invoked before the repository evidence pass. |
+| `superpowers:writing-plans` | Yes | Yes | Create the executable Milestone 1 plan | Plan saved and self-reviewed. |
+| `superpowers:using-git-worktrees` | Yes | Yes | Isolate Milestone 1 from approved `main` | Worktree created on `milestone-1-foundation`. |
+| `superpowers:executing-plans` | Yes | Yes | Select the supported execution workflow | Delegated task execution with review gates. |
+| `superpowers:subagent-driven-development` | Yes | Yes | Execute task work with independent review gates | Milestone tasks used the supported subagent workflow. |
+| `superpowers:test-driven-development` | Yes | Yes | Drive foundation contracts and browser shell | RED and GREEN evidence recorded for the foundation. |
+| `superpowers:verification-before-completion` | Yes | No | Require fresh full-suite evidence | Scheduled for Task 5. |
+| `superpowers:requesting-code-review` | Yes | No | Independent specification and quality review | Scheduled for Task 5. |
+| `accessibility-basic-check` | Yes | Yes | Perform the basic semantic and keyboard checklist | Route semantics and skip-link behavior recorded in the accessibility report. |
+| `superpowers:systematic-debugging` | Yes | Yes | Investigate unexpected local runtime failures before retrying | Sandbox loopback and Chromium permissions were traced before escalated local verification. |

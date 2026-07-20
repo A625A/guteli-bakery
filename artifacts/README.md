@@ -11,8 +11,10 @@ This directory stores evidence captured from the actual running application.
 
 ## Milestone status
 
-- Milestone 0: formally approved on 2026-07-19; artifact structure established.
-- Milestone 1: authorized; executable and visual foundation evidence will be recorded here.
+- Milestone 0: formally approved on 2026-07-19; governance and artifact structure established.
+- Milestone 1: repository evidence complete on 2026-07-19.
+- Screenshots: `screenshots/desktop/milestone-1-foundation.png` (1440×1000) and `screenshots/mobile/milestone-1-foundation.png` (390×844), both captured from the running root route and visually inspected.
+- Reports: build, tests, accessibility, performance, visual review, preview, and release-summary are dated evidence of the real local run.
 - Public deployment: not authorized.
 
-Milestone 0 created the structure only. Visual and executable evidence begins after the frontend exists.
+The external Obsidian-vault evidence update is intentionally excluded from this repository pass and remains the next bounded subtask.

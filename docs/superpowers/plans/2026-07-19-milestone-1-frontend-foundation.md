@@ -25,6 +25,7 @@
 ### Task 1: Portable framework and toolchain configuration
 
 **Files:**
+
 - Modify: `.gitignore`
 - Create: `package.json`
 - Create: `package-lock.json` through `npm install`
@@ -37,6 +38,7 @@
 - Create: `playwright.config.ts`
 
 **Interfaces:**
+
 - Consumes: Node.js `^20.9.0 || >=22.0.0`, npm, the approved static-export architecture.
 - Produces: verified scripts `dev`, `format`, `format:check`, `lint`, `typecheck`, `test`, `test:watch`, `test:e2e`, `test:e2e:install`, `build`, and `start`; alias `@/*` mapped to `src/*`.
 
@@ -234,12 +236,14 @@ git commit -m "chore: initialize frontend toolchain"
 ### Task 2: Typed site foundation contract
 
 **Files:**
+
 - Create: `tests/unit/business.test.ts`
 - Create: `src/content/business.ts`
 - Create: `src/test/setup.ts`
 - Modify: `docs/PROPOSED_FILE_STRUCTURE.md`
 
 **Interfaces:**
+
 - Consumes: Vitest configuration and `@/*` alias from Task 1.
 - Produces: `siteConfig` with `name`, `locale`, and `currency`; `primaryNavigation` with the five approved foundation routes.
 
@@ -332,6 +336,7 @@ git commit -m "test: define frontend foundation contract"
 ### Task 3: Static global shell and route placeholders
 
 **Files:**
+
 - Create: `tests/browser/foundation.spec.ts`
 - Create: `src/components/shared/FoundationPage.tsx`
 - Create: `src/styles/tokens.css`
@@ -346,6 +351,7 @@ git commit -m "test: define frontend foundation contract"
 - Modify: `docs/PROPOSED_FILE_STRUCTURE.md`
 
 **Interfaces:**
+
 - Consumes: `siteConfig`, `primaryNavigation`, design-system direction, Next.js App Router.
 - Produces: accessible Spanish shell, skip link, five static route placeholders, static export, desktop and mobile test target.
 
@@ -363,14 +369,20 @@ const routes = [
 ] as const;
 
 for (const route of routes) {
-  test(`${route.path} renders the Spanish foundation shell`, async ({ page }) => {
+  test(`${route.path} renders the Spanish foundation shell`, async ({
+    page,
+  }) => {
     await page.goto(route.path);
     await expect(page.locator('html')).toHaveAttribute('lang', 'es-GT');
     await expect(
       page.getByRole('heading', { level: 1, name: route.heading }),
     ).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Saltar al contenido' })).toBeAttached();
-    await expect(page.getByRole('navigation', { name: 'Principal' })).toBeVisible();
+    await expect(
+      page.getByRole('link', { name: 'Saltar al contenido' }),
+    ).toBeAttached();
+    await expect(
+      page.getByRole('navigation', { name: 'Principal' }),
+    ).toBeVisible();
   });
 }
 ```
@@ -468,7 +480,9 @@ export const metadata: Metadata = {
   description: 'Fundación técnica del sitio de Güteli Bakery.',
 };
 
-export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
+export default function RootLayout({
+  children,
+}: Readonly<{ children: ReactNode }>) {
   return (
     <html lang={siteConfig.locale}>
       <body>
@@ -477,7 +491,11 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
         </a>
         <header className="site-header">
           <div className="site-header__inner">
-            <Link className="wordmark" href="/" aria-label="Güteli Bakery, inicio">
+            <Link
+              className="wordmark"
+              href="/"
+              aria-label="Güteli Bakery, inicio"
+            >
               {siteConfig.name}
             </Link>
             <nav aria-label="Principal">
@@ -591,7 +609,9 @@ export default function NotFound() {
     <main id="main-content" className="foundation-page">
       <p className="eyebrow">Error 404</p>
       <h1>Página no encontrada</h1>
-      <p className="foundation-copy">La ruta solicitada no forma parte del sitio.</p>
+      <p className="foundation-copy">
+        La ruta solicitada no forma parte del sitio.
+      </p>
       <Link className="text-link" href="/">
         Volver al inicio
       </Link>
@@ -620,7 +640,11 @@ body {
   min-height: 100vh;
   margin: 0;
   background:
-    radial-gradient(circle at top right, rgb(217 173 120 / 28%), transparent 30rem),
+    radial-gradient(
+      circle at top right,
+      rgb(217 173 120 / 28%),
+      transparent 30rem
+    ),
     var(--color-background);
   color: var(--color-text);
   font-family: var(--font-body);
@@ -801,6 +825,7 @@ git commit -m "feat: establish static frontend shell"
 ### Task 4: Portable documentation and real runtime evidence
 
 **Files:**
+
 - Modify: `README.md`
 - Modify: `AI/AI-EOS/CAPABILITY_TABLE.md`
 - Modify: `AI/AI-EOS/CURRENT_TASK.md`
@@ -819,6 +844,7 @@ git commit -m "feat: establish static frontend shell"
 - Modify externally: `Phase 2 - Guteli Demo/Testing.md`
 
 **Interfaces:**
+
 - Consumes: verified scripts, running development server, static production output, browser tooling, Superpowers usage evidence.
 - Produces: portable runbook, real screenshots, exact report results, milestone skill record, current project memory.
 
@@ -858,16 +884,16 @@ Write exact dated PASS results and command names to the build, test, accessibili
 Add this table to `AI/AI-EOS/CAPABILITY_TABLE.md`, with rows changed from verified to used only after each workflow actually runs:
 
 ```markdown
-| Skill | Verified | Used in milestone | Purpose | Result |
-|---|---:|---:|---|---|
-| `superpowers:using-superpowers` | Yes | Yes | Select and enforce applicable workflows | Workflow gate applied before Milestone 1 actions |
-| `superpowers:writing-plans` | Yes | Yes | Create the executable Milestone 1 plan | Plan saved and self-reviewed |
-| `superpowers:using-git-worktrees` | Yes | Yes | Isolate Milestone 1 from approved `main` | Worktree created on `milestone-1-foundation` |
-| `superpowers:executing-plans` | Yes | Yes | Select the supported execution workflow | Yielded to subagent-driven development because Codex subagents are available |
-| `superpowers:subagent-driven-development` | Yes | Yes | Execute each task with an implementer and independent task review | Tasks completed with per-task review gates |
-| `superpowers:test-driven-development` | Yes | Yes | Drive foundation contracts and browser shell | RED and GREEN evidence recorded |
-| `superpowers:verification-before-completion` | Yes | Yes | Require fresh full-suite evidence | Completion gate passed |
-| `superpowers:requesting-code-review` | Yes | Yes | Independent specification and quality review | Reviewer verdict recorded |
+| Skill                                        | Verified | Used in milestone | Purpose                                                           | Result                                                                       |
+| -------------------------------------------- | -------: | ----------------: | ----------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `superpowers:using-superpowers`              |      Yes |               Yes | Select and enforce applicable workflows                           | Workflow gate applied before Milestone 1 actions                             |
+| `superpowers:writing-plans`                  |      Yes |               Yes | Create the executable Milestone 1 plan                            | Plan saved and self-reviewed                                                 |
+| `superpowers:using-git-worktrees`            |      Yes |               Yes | Isolate Milestone 1 from approved `main`                          | Worktree created on `milestone-1-foundation`                                 |
+| `superpowers:executing-plans`                |      Yes |               Yes | Select the supported execution workflow                           | Yielded to subagent-driven development because Codex subagents are available |
+| `superpowers:subagent-driven-development`    |      Yes |               Yes | Execute each task with an implementer and independent task review | Tasks completed with per-task review gates                                   |
+| `superpowers:test-driven-development`        |      Yes |               Yes | Drive foundation contracts and browser shell                      | RED and GREEN evidence recorded                                              |
+| `superpowers:verification-before-completion` |      Yes |               Yes | Require fresh full-suite evidence                                 | Completion gate passed                                                       |
+| `superpowers:requesting-code-review`         |      Yes |               Yes | Independent specification and quality review                      | Reviewer verdict recorded                                                    |
 ```
 
 - [ ] **Step 6: Update Phase 2 knowledge state**
@@ -886,9 +912,11 @@ git commit -m "docs: record frontend foundation evidence"
 ### Task 5: Full verification and independent review
 
 **Files:**
+
 - Modify only files required by verified review findings.
 
 **Interfaces:**
+
 - Consumes: all Milestone 1 code, tests, documentation, and artifacts.
 - Produces: fresh command evidence, clean Git state, reviewer verdict, integration decision.
 
