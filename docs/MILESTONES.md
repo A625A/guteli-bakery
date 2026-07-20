@@ -14,7 +14,7 @@ Status: complete, awaiting approval.
 
 ## Milestone 1 — Frontend foundation
 
-Status: blocked pending Milestone 0 approval.
+Status: complete; Milestone 2 is blocked until explicit user approval.
 
 - Initialize the frontend application
 - Configure TypeScript, formatting, linting, tests, and portable scripts
@@ -22,6 +22,8 @@ Status: blocked pending Milestone 0 approval.
 - Verify the application starts locally
 
 ## Milestone 2 — Brand, homepage, and menu
+
+Status: blocked until explicit user approval.
 
 - Build the shared layout, homepage, typed menu, and product cards
 - Verify desktop and mobile rendering

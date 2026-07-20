@@ -1,6 +1,6 @@
 # Accessibility Report
 
-Status: **Basic checklist PASS after review fixes — 2026-07-19**
+Status: **Basic checklist PASS; final independent review Ready to merge — 2026-07-19**
 
 | Check                           | Result                                                                                                                                                                      |
 | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -13,4 +13,4 @@ Status: **Basic checklist PASS after review fixes — 2026-07-19**
 
 The independent review found that the prior check only proved fragment navigation, not focus transfer. Playwright regression tests reproduced that failure at desktop and mobile before `tabIndex={-1}` was added to both main landmarks; all four new focus/layout cases then passed.
 
-Direct production Playwright also found no console errors and no horizontal overflow. No high-risk violation remains within this basic checklist scope.
+Direct production Playwright also found no console errors and no horizontal overflow. No high-risk violation remains within this basic checklist scope. The final independent review had no Critical or Important findings; its only Minor follow-up is guaranteed-missing-route regression coverage for the separately implemented exported 404 main at the next test update.
