@@ -65,5 +65,5 @@ Pretzels use “bolsa de 5” and nuditos use “bolsa de 15.” Other quantity 
 - No runtime dependency references the external vault or an absolute local path.
 - The static application builds into `out/` and its five foundation routes serve locally.
 - The Task 4 repository evidence is complete and committed.
-- External Obsidian-vault updates remain for the next bounded subtask.
+- The three external Obsidian-vault evidence notes are synchronized and their Phase 2 links are validated.
 - Task 5 remains the gate for final full verification and independent code review.

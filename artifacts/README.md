@@ -17,4 +17,4 @@ This directory stores evidence captured from the actual running application.
 - Reports: build, tests, accessibility, performance, visual review, preview, and release-summary are dated evidence of the real local run.
 - Public deployment: not authorized.
 
-The external Obsidian-vault evidence update is intentionally excluded from this repository pass and remains the next bounded subtask.
+The three external Phase 2 Obsidian evidence notes are synchronized. Frontmatter was preserved and all 19 Phase 2 notes and their wikilinks were validated. Task 5 final verification and independent review are the only remaining Milestone 1 gate.

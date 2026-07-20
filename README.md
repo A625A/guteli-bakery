@@ -50,4 +50,4 @@ The MVP excludes databases, backend persistence, authentication, inventory, paym
 - Milestones: [`docs/MILESTONES.md`](docs/MILESTONES.md)
 - Evidence: [`artifacts/README.md`](artifacts/README.md)
 
-Long-term project memory is maintained in the external Obsidian folder `Phase 2 - Guteli Demo`. The application must never depend on that vault at build time or runtime. Its Milestone 1 update is a separately bounded follow-up.
+Long-term project memory is maintained in the external Obsidian folder `Phase 2 - Guteli Demo`. The application never depends on that vault at build time or runtime. The Milestone 1 notes are synchronized and validated; Task 5 remains the only pending Milestone 1 gate.

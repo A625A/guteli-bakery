@@ -58,7 +58,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint . --max-warnings=0",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
@@ -892,8 +892,8 @@ Add this table to `AI/AI-EOS/CAPABILITY_TABLE.md`, with rows changed from verifi
 | `superpowers:executing-plans`                |      Yes |               Yes | Select the supported execution workflow                           | Yielded to subagent-driven development because Codex subagents are available |
 | `superpowers:subagent-driven-development`    |      Yes |               Yes | Execute each task with an implementer and independent task review | Tasks completed with per-task review gates                                   |
 | `superpowers:test-driven-development`        |      Yes |               Yes | Drive foundation contracts and browser shell                      | RED and GREEN evidence recorded                                              |
-| `superpowers:verification-before-completion` |      Yes |               Yes | Require fresh full-suite evidence                                 | Completion gate passed                                                       |
-| `superpowers:requesting-code-review`         |      Yes |               Yes | Independent specification and quality review                      | Reviewer verdict recorded                                                    |
+| `superpowers:verification-before-completion` |      Yes |                No | Require fresh full-suite evidence                                 | Scheduled for Task 5                                                         |
+| `superpowers:requesting-code-review`         |      Yes |                No | Independent specification and quality review                      | Scheduled for Task 5                                                         |
 ```
 
 - [ ] **Step 6: Update Phase 2 knowledge state**
