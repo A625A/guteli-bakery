@@ -4,7 +4,7 @@ Updated: 2026-07-19
 
 ## Objective
 
-Milestone 1 implementation, verification, and final independent whole-branch review are complete as of 2026-07-19. The verdict is Ready to merge with no Critical or Important findings. Milestone 2 remains blocked until explicit user approval. No deployment is authorized.
+Milestone 1 is formally approved and merged into `main` as of 2026-07-19. The complete feature-branch history was preserved through a fast-forward merge, and the required install, lint, typecheck, unit, browser, build, and local-preview checks passed from `main`. Milestone 2 remains blocked until explicit user approval. No deployment is authorized.
 
 ## Approved product scope
 
@@ -59,6 +59,7 @@ Pretzels use “bolsa de 5” and nuditos use “bolsa de 15.” Other quantity 
 - Verified formatting, linting, type, unit, Playwright, build, and direct runtime evidence
 - Real 1440×1000 desktop and 390×844 mobile screenshots
 - Repository capability and artifact reports
+- Formally approved Milestone 1 checkpoint on `main`
 
 ## Acceptance criteria
 
@@ -66,4 +67,4 @@ Pretzels use “bolsa de 5” and nuditos use “bolsa de 15.” Other quantity 
 - The static application builds into `out/` and its five foundation routes serve locally.
 - The Task 4 repository evidence is complete and committed.
 - The three external Obsidian-vault evidence notes are synchronized and all 19 Phase 2 notes and 69 wikilinks are validated.
-- Task 5 full verification and final independent review are complete; Milestone 2 requires explicit user approval before work begins.
+- Milestone 1 is merged, documented, and verified from `main`; Milestone 2 requires explicit user approval before work begins.

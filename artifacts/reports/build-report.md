@@ -1,12 +1,14 @@
 # Build Report
 
-Status: **Post-review fix build PASS; final independent review Ready to merge — 2026-07-19**
+Status: **Merged-main static build and preview PASS — 2026-07-19**
 
 Command: `npm run build`
 
-Result: a fresh Next.js 16.2.10 optimized static export exited 0 after the review fixes. It generated `/`, `/_not-found`, `/cart`, `/contact`, `/menu`, and `/order` into `out/`.
+Result: a fresh Next.js 16.2.10 optimized static export from `main` exited 0. It generated `/`, `/_not-found`, `/cart`, `/contact`, `/menu`, and `/order` into `out/`.
 
-Static-start check: `npm run start` served `out/` locally at `http://127.0.0.1:3000`; direct Playwright received successful responses for all five in-scope routes.
+Static-start check: `npm run start` served `out/` locally at `http://127.0.0.1:3000`; `HEAD /` returned HTTP 200 and the server stopped cleanly.
+
+Main-checkout portability check: the first merged-main build exposed an empty, untracked legacy root `app/` directory that took precedence over `src/app/` and exported only `/404`. The directory was verified empty and removed with `rmdir`; the immediate GREEN build exported all approved routes. ESLint's flat config was also hardened to ignore repository-owned `.worktrees/**` output.
 
 Post-review runtime recapture: direct installed Playwright received HTTP 200 for the root route at 1440×1000 and 390×844, found zero console errors and no horizontal overflow, transferred skip-link focus to `main-content`, and measured the footer at the document bottom in both viewports.
 

@@ -1,6 +1,6 @@
 # Accessibility Report
 
-Status: **Basic checklist PASS; final independent review Ready to merge — 2026-07-19**
+Status: **Basic checklist PASS; Milestone 1 formally approved — 2026-07-19**
 
 | Check                           | Result                                                                                                                                                                      |
 | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

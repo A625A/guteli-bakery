@@ -14,7 +14,7 @@ Status: complete and formally approved.
 
 ## Milestone 1 — Frontend foundation
 
-Status: complete; Milestone 2 is blocked until explicit user approval.
+Status: complete, formally approved, and merged into `main`; Milestone 2 is blocked until explicit user approval.
 
 - Initialize the frontend application
 - Configure TypeScript, formatting, linting, tests, and portable scripts

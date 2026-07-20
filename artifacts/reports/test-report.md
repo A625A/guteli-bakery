@@ -1,6 +1,6 @@
 # Test Report
 
-Status: **Post-review fix gate PASS; final independent review Ready to merge — 2026-07-19**
+Status: **Merged-main verification PASS — 2026-07-19**
 
 | Command                  | Result                                                                                                                                                  |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -9,13 +9,15 @@ Status: **Post-review fix gate PASS; final independent review Ready to merge —
 | `npm run format:check`   | PASS; all matched files use Prettier style.                                                                                                             |
 | `npm run lint`           | PASS; ESLint completed with `--max-warnings=0`.                                                                                                         |
 | `npm run typecheck`      | PASS; `next typegen` generated route types, then `tsc --noEmit` completed.                                                                              |
-| `npm test`               | PASS; 1 Vitest file and 2 tests passed.                                                                                                                 |
+| ESLint portability RED   | Expected FAIL; `ESLint.isPathIgnored()` returned `false` for generated output under `.worktrees/`.                                                      |
+| ESLint portability GREEN | PASS after adding the minimal global `.worktrees/**` ignore; the exact `npm run lint` command passed from `main`.                                       |
+| `npm test`               | PASS; 2 Vitest files and 3 tests passed.                                                                                                                |
 | `npm run test:e2e`       | PASS; 9 Chromium Playwright tests passed.                                                                                                               |
 | `npm run build`          | PASS; static export generated the five in-scope routes and `/_not-found`.                                                                               |
-| `git diff --check`       | PASS; no whitespace errors in the review-fix worktree diff.                                                                                             |
+| Local preview            | PASS; `npm run start` served `out/` and `HEAD /` returned HTTP 200.                                                                                     |
 
 The browser suite first encountered `listen EPERM` inside the restricted sandbox; the root cause was loopback-port permission, and the unchanged command passed under approved local-server escalation. The `NO_COLOR`/`FORCE_COLOR` messages were environment warnings, not test failures.
 
-Task 5 verification and the final independent whole-branch review are complete. The review identified skip-link focus transfer, stale current-state evidence, and short-route footer placement; the confirmed findings are fixed and locally verified. The final verdict is Ready to merge with no Critical or Important findings. One Minor follow-up recommends guaranteed-missing-route regression coverage for the separately implemented exported 404 main at the next test update. The PostCSS advisory remains open.
+Milestone 1 is formally approved and merged into `main`. The required commands passed from the main checkout after the worktree-lint portability fix and removal of the empty legacy root `app/` directory. One Minor follow-up recommends guaranteed-missing-route regression coverage for the exported 404 main at the next test update. The PostCSS advisory remains open.
 
 Fresh-checkout review: with both ignored `.next` and `tsconfig.tsbuildinfo` absent, the pre-fix `tsc --noEmit` command unexpectedly exited 0 rather than reproducing the predicted missing-route-types failure. Next.js 16.2.10 was verified to support `next typegen`; the portable script now runs `next typegen && tsc --noEmit`, and clean-start verification generated the route types successfully before TypeScript ran.

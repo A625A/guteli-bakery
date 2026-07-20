@@ -29,3 +29,11 @@ Append-only record of project-level engineering decisions.
 **Decision:** Milestone 0 is formally approved. Preserve it as the Git commit `feat(ai-eos): establish engineering operating system and project governance` and tag that commit `milestone-0-approved` before beginning Milestone 1.
 
 **Result:** Milestone 1 is authorized for the frontend foundation only. Finished homepage, menu, cart, ordering, WhatsApp functionality, and public deployment remain outside this milestone.
+
+## 2026-07-19 — Milestone 1 formally approved and merged
+
+**Context:** The frontend foundation completed its implementation plan, TDD checks, real runtime evidence, independent review, and pre-merge verification with no Critical or Important findings.
+
+**Decision:** Formally approve Milestone 1 and merge `milestone-1-foundation` into `main` using a fast-forward-only merge. Preserve every feature-branch commit; do not squash, push, deploy, or start Milestone 2.
+
+**Result:** `main` contains the complete Milestone 1 history. Verification from `main` passed dependency installation, formatting, lint, type generation and TypeScript, three unit tests, nine Chromium tests, static export, and an HTTP 200 production preview. A worktree-portability regression was fixed with RED/GREEN coverage, and an empty untracked legacy `app/` directory was removed so Next.js resolves the approved `src/app/` tree. Milestone 2 remains gated on explicit user approval.
