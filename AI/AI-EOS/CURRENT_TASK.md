@@ -4,7 +4,7 @@ Updated: 2026-07-19
 
 ## Objective
 
-Complete Milestone 1's static frontend foundation and portable repository evidence. The five Spanish route shells, formatting, linting, type checks, unit tests, browser tests, static export, screenshots, and reports are complete as of 2026-07-19.
+Complete Milestone 1's final review cycle. Task 5 verification and the independent whole-branch review occurred; the confirmed skip-link focus, evidence synchronization, and footer-placement findings are fixed and verified. Final independent re-review remains pending as of 2026-07-19.
 
 ## Approved product scope
 
@@ -65,5 +65,5 @@ Pretzels use “bolsa de 5” and nuditos use “bolsa de 15.” Other quantity 
 - No runtime dependency references the external vault or an absolute local path.
 - The static application builds into `out/` and its five foundation routes serve locally.
 - The Task 4 repository evidence is complete and committed.
-- The three external Obsidian-vault evidence notes are synchronized and their Phase 2 links are validated.
-- Task 5 remains the gate for final full verification and independent code review.
+- The three external Obsidian-vault evidence notes are synchronized and all 19 Phase 2 notes and 69 wikilinks are validated.
+- Task 5 full verification and independent review occurred; final independent re-review of the fixes remains the gate.

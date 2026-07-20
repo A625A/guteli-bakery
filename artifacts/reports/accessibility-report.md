@@ -1,14 +1,16 @@
 # Accessibility Report
 
-Status: **Basic checklist PASS — 2026-07-19**
+Status: **Basic checklist PASS after review fixes — 2026-07-19**
 
-| Check                           | Result                                                                                                                                                                                |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Language and landmark semantics | PASS: all verified routes expose `lang="es-GT"`, a named `Principal` navigation landmark, one page heading, and `main#main-content`.                                                  |
-| Keyboard and skip link          | PASS: the first Tab on the mobile root route visibly focused `Saltar al contenido` at 12px from the viewport top; Enter set the URL fragment to `#main-content`, whose target exists. |
-| Focus indicator                 | PASS: links use a visible `:focus-visible` outline; the skip link becomes visible on focus.                                                                                           |
-| Text alternatives               | Not applicable: this foundation shell contains no informative raster images.                                                                                                          |
-| Form-control labels             | Not applicable: this foundation shell contains no form controls.                                                                                                                      |
-| Contrast                        | Not measured: no callable axe or Lighthouse checker was verified; this report is not a WCAG conformance claim.                                                                        |
+| Check                           | Result                                                                                                                                                                      |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Language and landmark semantics | PASS: all verified routes expose `lang="es-GT"`, a named `Principal` navigation landmark, one page heading, and `main#main-content`.                                        |
+| Keyboard and skip link          | PASS: at 1440×1000 and 390×844, the first Tab focused `Saltar al contenido`; Enter moved DOM focus to `main#main-content` (`document.activeElement.id === "main-content"`). |
+| Focus indicator                 | PASS: links use a visible `:focus-visible` outline; the skip link becomes visible on focus.                                                                                 |
+| Text alternatives               | Not applicable: this foundation shell contains no informative raster images.                                                                                                |
+| Form-control labels             | Not applicable: this foundation shell contains no form controls.                                                                                                            |
+| Contrast                        | Not measured: no callable axe or Lighthouse checker was verified; this report is not a WCAG conformance claim.                                                              |
 
-Direct production Playwright also found no console errors and no horizontal overflow on the five routes at 1440×1000 and 390×844. No high-risk issue was found in this basic scope.
+The independent review found that the prior check only proved fragment navigation, not focus transfer. Playwright regression tests reproduced that failure at desktop and mobile before `tabIndex={-1}` was added to both main landmarks; all four new focus/layout cases then passed.
+
+Direct production Playwright also found no console errors and no horizontal overflow. No high-risk violation remains within this basic checklist scope.

@@ -10,7 +10,7 @@ export function FoundationPage({
   description,
 }: FoundationPageProps) {
   return (
-    <main id="main-content" className="foundation-page">
+    <main id="main-content" className="foundation-page" tabIndex={-1}>
       <p className="eyebrow">{eyebrow}</p>
       <h1>{title}</h1>
       <p className="foundation-copy">{description}</p>

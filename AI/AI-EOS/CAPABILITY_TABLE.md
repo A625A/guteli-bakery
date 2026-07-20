@@ -39,8 +39,9 @@ Availability is session-specific and must be rechecked before use.
 | `superpowers:executing-plans` | Yes | Yes | Select the supported execution workflow | Delegated task execution with review gates. |
 | `superpowers:subagent-driven-development` | Yes | Yes | Execute task work with independent review gates | Milestone tasks used the supported subagent workflow. |
 | `superpowers:test-driven-development` | Yes | Yes | Drive foundation contracts and browser shell | RED and GREEN evidence recorded for the foundation. |
-| `superpowers:verification-before-completion` | Yes | Yes | Require fresh full-suite evidence | Final pre-review gate passed: format, lint, typecheck, unit tests, E2E, build, and Git diff/status checks all passed on 2026-07-19. |
-| `superpowers:requesting-code-review` | Yes | No | Independent specification and quality review | Scheduled for Task 5. |
+| `superpowers:verification-before-completion` | Yes | Yes | Require fresh full-suite evidence | Task 5 pre-review and post-fix gates ran; format, lint, typecheck, unit tests, 9 E2E tests, build, screenshots, and Git checks passed on 2026-07-19. |
+| `superpowers:requesting-code-review` | Yes | Yes | Independent specification and quality review | Whole-branch review completed; confirmed findings were fixed, with final re-review pending. |
+| `superpowers:receiving-code-review` | Yes | Yes | Evaluate and resolve confirmed review findings | Skip-link focus, evidence synchronization, and short-route footer findings were verified and fixed. |
 | `dependency-risk-audit` | Yes | Yes | Inventory direct dependencies, licenses, and registry advisories | One moderate PostCSS advisory remains through `next@16.2.10`; see the build report for scope and mitigation. |
 | `accessibility-basic-check` | Yes | Yes | Perform the basic semantic and keyboard checklist | Route semantics and skip-link behavior recorded in the accessibility report. |
 | `superpowers:systematic-debugging` | Yes | Yes | Investigate unexpected local runtime failures before retrying | Sandbox loopback and Chromium permissions were traced before escalated local verification. |

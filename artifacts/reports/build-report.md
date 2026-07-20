@@ -1,12 +1,14 @@
 # Build Report
 
-Status: **Final pre-review build PASS — 2026-07-19**
+Status: **Post-review fix build PASS; final re-review pending — 2026-07-19**
 
 Command: `npm run build`
 
-Result: a fresh Next.js 16.2.10 optimized static export exited 0. It generated `/`, `/_not-found`, `/cart`, `/contact`, `/menu`, and `/order` into `out/`.
+Result: a fresh Next.js 16.2.10 optimized static export exited 0 after the review fixes. It generated `/`, `/_not-found`, `/cart`, `/contact`, `/menu`, and `/order` into `out/`.
 
 Static-start check: `npm run start` served `out/` locally at `http://127.0.0.1:3000`; direct Playwright received successful responses for all five in-scope routes.
+
+Post-review runtime recapture: direct installed Playwright received HTTP 200 for the root route at 1440×1000 and 390×844, found zero console errors and no horizontal overflow, transferred skip-link focus to `main-content`, and measured the footer at the document bottom in both viewports.
 
 Development-start check: `npm run dev -- --hostname 127.0.0.1` reported `http://127.0.0.1:3000`, reached `Ready in 448ms`, returned HTTP 200 for `HEAD /`, and stopped cleanly.
 

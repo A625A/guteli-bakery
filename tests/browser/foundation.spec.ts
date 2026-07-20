@@ -25,3 +25,43 @@ for (const route of routes) {
     ).toBeVisible();
   });
 }
+
+const viewports = [
+  { name: 'desktop', width: 1440, height: 1000 },
+  { name: 'mobile', width: 390, height: 844 },
+] as const;
+
+for (const viewport of viewports) {
+  test(`the skip link moves focus to main on ${viewport.name}`, async ({
+    page,
+  }) => {
+    await page.setViewportSize(viewport);
+    await page.goto('/');
+
+    await page.keyboard.press('Tab');
+    await expect(
+      page.getByRole('link', { name: 'Saltar al contenido' }),
+    ).toBeFocused();
+    await page.keyboard.press('Enter');
+
+    await expect(page.locator('main#main-content')).toBeFocused();
+  });
+
+  test(`the footer reaches the document bottom on ${viewport.name}`, async ({
+    page,
+  }) => {
+    await page.setViewportSize(viewport);
+    await page.goto('/');
+
+    const footerBottom = await page
+      .locator('footer')
+      .evaluate((footer) =>
+        Math.round(footer.getBoundingClientRect().bottom + window.scrollY),
+      );
+    const documentBottom = await page.evaluate(() =>
+      Math.round(document.documentElement.scrollHeight),
+    );
+
+    expect(footerBottom).toBe(documentBottom);
+  });
+}
