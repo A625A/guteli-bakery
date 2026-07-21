@@ -1,14 +1,15 @@
 import { operationalCopy, siteConfig } from '@/content/business';
+import { publicSiteConfig } from '@/config/public-site';
 import { buildWhatsAppUrl } from '@/lib/whatsapp';
 
 const contactQuestion =
   'Hola, quisiera hacer una consulta sobre Güteli Bakery.';
 
 export default function ContactPage() {
-  const whatsappUrl = buildWhatsAppUrl(
-    siteConfig.whatsappDigits,
-    contactQuestion,
-  );
+  const whatsappUrl =
+    publicSiteConfig.handoff.kind === 'live'
+      ? buildWhatsAppUrl(publicSiteConfig.handoff.destination, contactQuestion)
+      : null;
 
   return (
     <main id="main-content" className="contact-page" tabIndex={-1}>
@@ -26,14 +27,22 @@ export default function ContactPage() {
           <p className="eyebrow">WhatsApp</p>
           <h2 id="contact-number">{siteConfig.whatsappNumber}</h2>
           <p>Pedidos con {siteConfig.advanceDays} días de anticipación.</p>
-          <a
-            className="button-link button-link--primary"
-            href={whatsappUrl}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Hacer una consulta por WhatsApp
-          </a>
+          {whatsappUrl ? (
+            <a
+              className="button-link button-link--primary"
+              href={whatsappUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Hacer una consulta por WhatsApp
+            </a>
+          ) : (
+            <p className="contact-card__handoff-note">
+              {publicSiteConfig.handoff.kind === 'demo'
+                ? 'Las solicitudes no se envían desde esta demostración.'
+                : 'El envío por WhatsApp no está configurado en este momento.'}
+            </p>
+          )}
         </section>
 
         <section

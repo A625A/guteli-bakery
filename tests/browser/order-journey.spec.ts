@@ -73,17 +73,16 @@ test('completes a delivery request without sending it', async ({
   await page.getByRole('button', { name: 'Copiar resumen' }).click();
   await expect(page.getByRole('status')).toHaveText('Resumen copiado.');
 
-  const whatsappLink = page.getByRole('link', {
-    name: 'Abrir WhatsApp con mi solicitud',
-  });
-  await expect(whatsappLink).toHaveAttribute(
-    'href',
-    /wa\.me\/50242569861\?text=/,
-  );
-  const href = await whatsappLink.getAttribute('href');
-  expect(decodeURIComponent(href ?? '')).toContain(
-    'El pedido queda sujeto a confirmación por WhatsApp',
-  );
+  await expect(
+    page.getByText(
+      'Modo demostración: copia el resumen para probar el flujo.',
+      { exact: true },
+    ),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('link', { name: 'Abrir WhatsApp con mi solicitud' }),
+  ).toHaveCount(0);
+  await expect(page.locator('a[href*="wa.me"]')).toHaveCount(0);
 
   const storage = await page.evaluate(() => ({ ...window.localStorage }));
   expect(storage).toEqual({
@@ -183,16 +182,17 @@ test('shows pickup guidance and omits a delivery location from the summary', asy
   await expect(summary).not.toContainText('Ubicación de entrega:');
 });
 
-test('invalidates the WhatsApp handoff when reviewed details change', async ({
+test('invalidates the reviewed demo handoff when details change', async ({
   page,
 }) => {
   await openOrderWithSavedCart(page);
   await completeRequiredOrderFields(page, 'Recogida');
   await page.getByRole('button', { name: 'Revisar solicitud' }).click();
 
-  const handoff = page.getByRole('link', {
-    name: 'Abrir WhatsApp con mi solicitud',
-  });
+  const handoff = page.getByText(
+    'Modo demostración: copia el resumen para probar el flujo.',
+    { exact: true },
+  );
   await expect(handoff).toBeVisible();
 
   await page.getByLabel('Nombre completo').fill('Ana Pérez');
@@ -430,6 +430,12 @@ test('keeps the readable summary available when clipboard copy is rejected', asy
   await expect(summary).toHaveValue(summaryText);
   await expect(
     page.getByRole('link', { name: 'Abrir WhatsApp con mi solicitud' }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByText(
+      'Modo demostración: copia el resumen para probar el flujo.',
+      { exact: true },
+    ),
   ).toBeVisible();
 });
 

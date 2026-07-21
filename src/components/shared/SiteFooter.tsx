@@ -5,16 +5,17 @@ import {
   primaryNavigation,
   siteConfig,
 } from '@/content/business';
+import { publicSiteConfig } from '@/config/public-site';
 import { buildWhatsAppUrl } from '@/lib/whatsapp';
 
 const footerInquiry =
   'Hola, quisiera información sobre los productos de Güteli Bakery.';
 
 export function SiteFooter() {
-  const whatsappUrl = buildWhatsAppUrl(
-    siteConfig.whatsappDigits,
-    footerInquiry,
-  );
+  const whatsappUrl =
+    publicSiteConfig.handoff.kind === 'live'
+      ? buildWhatsAppUrl(publicSiteConfig.handoff.destination, footerInquiry)
+      : null;
 
   return (
     <footer className="site-footer">
@@ -39,14 +40,26 @@ export function SiteFooter() {
           </ul>
         </nav>
 
-        <a
-          className="site-footer__whatsapp"
-          href={whatsappUrl}
-          aria-label={`Consultar por WhatsApp al ${siteConfig.whatsappNumber}`}
-        >
-          <span>Consultar por WhatsApp</span>
-          <strong>{siteConfig.whatsappNumber}</strong>
-        </a>
+        {whatsappUrl ? (
+          <a
+            className="site-footer__whatsapp"
+            href={whatsappUrl}
+            aria-label={`Consultar por WhatsApp al ${siteConfig.whatsappNumber}`}
+          >
+            <span>Consultar por WhatsApp</span>
+            <strong>{siteConfig.whatsappNumber}</strong>
+          </a>
+        ) : (
+          <div className="site-footer__whatsapp">
+            <span>WhatsApp de referencia</span>
+            <strong>{siteConfig.whatsappNumber}</strong>
+            <small>
+              {publicSiteConfig.handoff.kind === 'demo'
+                ? 'Las solicitudes no se envían desde esta demostración.'
+                : 'El envío por WhatsApp no está configurado en este momento.'}
+            </small>
+          </div>
+        )}
       </div>
     </footer>
   );

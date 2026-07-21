@@ -24,12 +24,6 @@ const footerNavigationDestinations = [
   { name: 'Contacto', path: '/contact/' },
 ] as const;
 
-const footerWhatsAppUrl =
-  'https://wa.me/50242569861?text=Hola%2C%20quisiera%20informaci%C3%B3n%20sobre%20los%20productos%20de%20G%C3%BCteli%20Bakery.';
-
-const contactWhatsAppUrl =
-  'https://wa.me/50242569861?text=Hola%2C%20quisiera%20hacer%20una%20consulta%20sobre%20G%C3%BCteli%20Bakery.';
-
 for (const route of routes) {
   test(`${route.path} renders the final Spanish site shell`, async ({
     page,
@@ -71,6 +65,27 @@ for (const route of routes) {
     expect(consoleErrors).toEqual([]);
   });
 }
+
+test('default portfolio mode is identified and exposes no WhatsApp destination', async ({
+  page,
+}) => {
+  await page.goto('/');
+
+  await expect(
+    page.getByRole('note', { name: 'Modo demostración' }),
+  ).toContainText('Sitio de demostración');
+  await expect(page.locator('a[href*="wa.me"]')).toHaveCount(0);
+
+  await page.goto('/contact/');
+  await expect(page.locator('a[href*="wa.me"]')).toHaveCount(0);
+  await expect(
+    page
+      .getByRole('main')
+      .getByText('Las solicitudes no se envían desde esta demostración.', {
+        exact: true,
+      }),
+  ).toBeVisible();
+});
 
 const viewports = [
   { name: 'desktop', width: 1440, height: 1000 },
@@ -156,7 +171,7 @@ test('mobile menu closes after selecting a destination', async ({ page }) => {
   await expect(mobileNavigation).not.toHaveAttribute('open', '');
 });
 
-test('contact exposes only factual guidance and an explicit neutral WhatsApp link', async ({
+test('contact exposes factual guidance without an active demo destination', async ({
   page,
 }) => {
   await page.goto('/contact/');
@@ -181,9 +196,12 @@ test('contact exposes only factual guidance and an explicit neutral WhatsApp lin
       exact: true,
     }),
   ).toBeVisible();
+  await expect(main.locator('a[href*="wa.me"]')).toHaveCount(0);
   await expect(
-    main.getByRole('link', { name: 'Hacer una consulta por WhatsApp' }),
-  ).toHaveAttribute('href', contactWhatsAppUrl);
+    main.getByText('Las solicitudes no se envían desde esta demostración.', {
+      exact: true,
+    }),
+  ).toBeVisible();
 });
 
 for (const route of routes) {
@@ -321,11 +339,12 @@ test('footer exposes navigation and factual request guidance', async ({
       exact: true,
     }),
   ).toBeVisible();
+  await expect(footer.locator('a[href*="wa.me"]')).toHaveCount(0);
   await expect(
-    footer.getByRole('link', {
-      name: 'Consultar por WhatsApp al 4256-9861',
+    footer.getByText('Las solicitudes no se envían desde esta demostración.', {
+      exact: true,
     }),
-  ).toHaveAttribute('href', footerWhatsAppUrl);
+  ).toBeVisible();
 });
 
 test('footer links provide 44 pixel touch targets', async ({ page }) => {

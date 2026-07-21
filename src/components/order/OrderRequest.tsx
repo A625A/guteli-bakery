@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 
 import { useCart } from '@/components/cart/CartProvider';
+import type { WhatsAppHandoff } from '@/config/public-site';
 import { operationalCopy, siteConfig } from '@/content/business';
 import {
   validateOrder,
@@ -32,7 +33,7 @@ const fieldLabels: Record<keyof OrderFormValues, string> = {
   notes: 'Notas opcionales',
 };
 
-export function OrderRequest() {
+export function OrderRequest({ handoff }: { handoff: WhatsAppHandoff }) {
   const { hydrated, lines } = useCart();
   const [values, setValues] = useState<OrderFormValues>(initialValues);
   const [errors, setErrors] = useState<OrderErrors>({});
@@ -331,14 +332,22 @@ export function OrderRequest() {
                 <button type="button" onClick={copySummary}>
                   Copiar resumen
                 </button>
-                <a
-                  className="button-link button-link--primary"
-                  href={buildWhatsAppUrl(siteConfig.whatsappDigits, summary)}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Abrir WhatsApp con mi solicitud
-                </a>
+                {handoff.kind === 'live' ? (
+                  <a
+                    className="button-link button-link--primary"
+                    href={buildWhatsAppUrl(handoff.destination, summary)}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Abrir WhatsApp con mi solicitud
+                  </a>
+                ) : (
+                  <p className="order-summary__handoff-note">
+                    {handoff.kind === 'demo'
+                      ? 'Modo demostración: copia el resumen para probar el flujo.'
+                      : 'El envío por WhatsApp no está configurado. Copia el resumen para conservarlo.'}
+                  </p>
+                )}
               </div>
               {copyStatus ? (
                 <p className="order-summary__status" role="status">

@@ -137,9 +137,10 @@ export type WhatsAppHandoff =
 
 const whatsappDestinationPattern = /^\d{8,15}$/;
 
-export function resolvePublicSiteConfig(
-  environment: PublicSiteEnvironment,
-): { isDemoMode: boolean; handoff: WhatsAppHandoff } {
+export function resolvePublicSiteConfig(environment: PublicSiteEnvironment): {
+  isDemoMode: boolean;
+  handoff: WhatsAppHandoff;
+} {
   const isDemoMode = environment.demoMode !== 'false';
 
   if (isDemoMode) {
@@ -219,14 +220,16 @@ test('default portfolio mode is identified and exposes no WhatsApp destination',
   page,
 }) => {
   await page.goto('/');
-  await expect(page.getByRole('status', { name: 'Modo demostración' })).toContainText(
-    'Sitio de demostración',
-  );
+  await expect(
+    page.getByRole('status', { name: 'Modo demostración' }),
+  ).toContainText('Sitio de demostración');
   await expect(page.locator('a[href*="wa.me"]')).toHaveCount(0);
 
   await page.goto('/contact/');
   await expect(page.locator('a[href*="wa.me"]')).toHaveCount(0);
-  await expect(page.getByText('Las solicitudes no se envían desde esta demostración.')).toBeVisible();
+  await expect(
+    page.getByText('Las solicitudes no se envían desde esta demostración.'),
+  ).toBeVisible();
 });
 ```
 
@@ -275,22 +278,24 @@ export function OrderRequest({ handoff }: { handoff: WhatsAppHandoff }) {
 ```
 
 ```tsx
-{handoff.kind === 'live' ? (
-  <a
-    className="button-link button-link--primary"
-    href={buildWhatsAppUrl(handoff.destination, summary)}
-    target="_blank"
-    rel="noreferrer"
-  >
-    Abrir WhatsApp con mi solicitud
-  </a>
-) : (
-  <p className="order-summary__handoff-note">
-    {handoff.kind === 'demo'
-      ? 'Modo demostración: copia el resumen para probar el flujo.'
-      : 'El envío por WhatsApp no está configurado. Copia el resumen para conservarlo.'}
-  </p>
-)}
+{
+  handoff.kind === 'live' ? (
+    <a
+      className="button-link button-link--primary"
+      href={buildWhatsAppUrl(handoff.destination, summary)}
+      target="_blank"
+      rel="noreferrer"
+    >
+      Abrir WhatsApp con mi solicitud
+    </a>
+  ) : (
+    <p className="order-summary__handoff-note">
+      {handoff.kind === 'demo'
+        ? 'Modo demostración: copia el resumen para probar el flujo.'
+        : 'El envío por WhatsApp no está configurado. Copia el resumen para conservarlo.'}
+    </p>
+  );
+}
 ```
 
 In contact and footer, branch on `publicSiteConfig.handoff.kind`; render a link only for `live`, and otherwise render factual number plus “Las solicitudes no se envían desde esta demostración.” or the unavailable-state copy.
@@ -338,18 +343,31 @@ for (const viewport of [
   { name: 'intermediate', width: 1024, height: 900 },
   { name: 'desktop', width: 1440, height: 1000 },
 ]) {
-  test(`${viewport.name} shell has no horizontal overflow`, async ({ page }) => {
+  test(`${viewport.name} shell has no horizontal overflow`, async ({
+    page,
+  }) => {
     await page.setViewportSize(viewport);
     await page.goto('/');
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+    expect(
+      await page.evaluate(
+        () =>
+          document.documentElement.scrollWidth <=
+          document.documentElement.clientWidth,
+      ),
+    ).toBe(true);
   });
 }
 
-test('reduced motion disables smooth scrolling and decorative animation', async ({ page }) => {
+test('reduced motion disables smooth scrolling and decorative animation', async ({
+  page,
+}) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
   await expect(page.locator('html')).toHaveCSS('scroll-behavior', 'auto');
-  await expect(page.locator('.bakery-illustration')).toHaveCSS('animation-name', 'none');
+  await expect(page.locator('.bakery-illustration')).toHaveCSS(
+    'animation-name',
+    'none',
+  );
 });
 ```
 
@@ -361,7 +379,10 @@ type BakeryIllustrationProps = {
   className?: string;
 };
 
-export function BakeryIllustration({ variant, className = '' }: BakeryIllustrationProps) {
+export function BakeryIllustration({
+  variant,
+  className = '',
+}: BakeryIllustrationProps) {
   return (
     <svg
       aria-hidden="true"
@@ -369,9 +390,15 @@ export function BakeryIllustration({ variant, className = '' }: BakeryIllustrati
       viewBox="0 0 640 520"
       focusable="false"
     >
-      <path className="bakery-illustration__loop" d="M172 278C88 152 158 78 252 175L320 246L388 175C482 78 552 152 468 278L320 430Z" />
+      <path
+        className="bakery-illustration__loop"
+        d="M172 278C88 152 158 78 252 175L320 246L388 175C482 78 552 152 468 278L320 430Z"
+      />
       <circle className="bakery-illustration__dot" cx="514" cy="104" r="34" />
-      <path className="bakery-illustration__grain" d="M94 404c76-80 120-161 132-244M110 360l70-16M142 300l66-20M170 240l58-24" />
+      <path
+        className="bakery-illustration__grain"
+        d="M94 404c76-80 120-161 132-244M110 360l70-16M142 300l66-20M170 240l58-24"
+      />
     </svg>
   );
 }
@@ -395,16 +422,24 @@ Use flat tokens and responsive primitives:
   --transition-fast: 160ms ease;
 }
 
-body { background: var(--color-background); }
+body {
+  background: var(--color-background);
+}
 
 @media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-  *, *::before, *::after {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  .bakery-illustration { animation-name: none; }
+  .bakery-illustration {
+    animation-name: none;
+  }
 }
 ```
 
@@ -417,12 +452,17 @@ Implement the shell with flat surfaces, visible active/hover/focus states, minim
 .mobile-navigation summary,
 .button-link,
 button {
-  transition: background-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-fast);
 }
 
 @media (hover: hover) {
   .button-link:hover,
-  button:hover { transform: translateY(-2px); }
+  button:hover {
+    transform: translateY(-2px);
+  }
 }
 ```
 
@@ -456,12 +496,19 @@ git commit -m "feat: establish editorial bakery visual system"
 - [ ] **Step 1: Add source-policy and primary-action browser assertions**
 
 ```ts
-test('homepage uses the approved graphic-only editorial treatment', async ({ page }) => {
+test('homepage uses the approved graphic-only editorial treatment', async ({
+  page,
+}) => {
   await page.goto('/');
-  await expect(page.getByText('Referencia original de la marca')).toHaveCount(0);
+  await expect(page.getByText('Referencia original de la marca')).toHaveCount(
+    0,
+  );
   await expect(page.locator('.home-hero img')).toHaveCount(0);
   await expect(page.locator('.home-hero .bakery-illustration')).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Ver el menú' })).toHaveAttribute('href', '/menu/');
+  await expect(page.getByRole('link', { name: 'Ver el menú' })).toHaveAttribute(
+    'href',
+    '/menu/',
+  );
 });
 ```
 
@@ -476,13 +523,22 @@ Use this composition contract:
 
 ```tsx
 <section className="home-hero">
-  <div className="home-hero__copy">{/* existing factual promise and actions */}</div>
-  <div className="home-hero__art" aria-label="Composición gráfica inspirada en panadería">
-    <p className="home-hero__wordmark" aria-label="Güteli Bakery">GÜTELI <span>Bakery</span></p>
+  <div className="home-hero__copy">
+    {/* existing factual promise and actions */}
+  </div>
+  <div
+    className="home-hero__art"
+    aria-label="Composición gráfica inspirada en panadería"
+  >
+    <p className="home-hero__wordmark" aria-label="Güteli Bakery">
+      GÜTELI <span>Bakery</span>
+    </p>
     <BakeryIllustration variant="hero" />
     <p className="home-hero__stamp">Hecho por encargo · Guatemala</p>
     <ul aria-label="Categorías del menú">
-      {menuCategories.map((category) => <li key={category.id}>{category.label}</li>)}
+      {menuCategories.map((category) => (
+        <li key={category.id}>{category.label}</li>
+      ))}
     </ul>
   </div>
 </section>
@@ -493,16 +549,31 @@ Keep the confirmed four-category price preview and three-step request explanatio
 - [ ] **Step 4: Implement mobile, tablet, and desktop layout rules**
 
 ```css
-.home-hero { display: grid; gap: clamp(2.5rem, 6vw, 6rem); }
-.home-hero__art { position: relative; overflow: hidden; min-height: 24rem; background: var(--color-brand); color: var(--color-brand-contrast); }
+.home-hero {
+  display: grid;
+  gap: clamp(2.5rem, 6vw, 6rem);
+}
+.home-hero__art {
+  position: relative;
+  overflow: hidden;
+  min-height: 24rem;
+  background: var(--color-brand);
+  color: var(--color-brand-contrast);
+}
 
 @media (min-width: 48rem) {
-  .home-menu-preview__list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .home-menu-preview__list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (min-width: 64rem) {
-  .home-hero { grid-template-columns: minmax(0, 1.08fr) minmax(22rem, 0.92fr); }
-  .home-menu-preview__list { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .home-hero {
+    grid-template-columns: minmax(0, 1.08fr) minmax(22rem, 0.92fr);
+  }
+  .home-menu-preview__list {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 ```
 
@@ -541,12 +612,16 @@ git commit -m "feat: create graphic-only editorial homepage"
 - [ ] **Step 1: Add a browser contract for honest artwork and comparable cards**
 
 ```ts
-test('menu exposes graphic media slots without product photography', async ({ page }) => {
+test('menu exposes graphic media slots without product photography', async ({
+  page,
+}) => {
   await page.goto('/menu/');
   await expect(page.getByTestId('product-card')).toHaveCount(8);
   await expect(page.locator('.product-card__media')).toHaveCount(8);
   await expect(page.locator('.product-card img')).toHaveCount(0);
-  await expect(page.locator('.product-card__art-note').first()).toHaveText('Ilustración de categoría');
+  await expect(page.locator('.product-card__art-note').first()).toHaveText(
+    'Ilustración de categoría',
+  );
 });
 ```
 
@@ -566,7 +641,9 @@ type ProductArtworkProps = {
 export function ProductArtwork({ category, label }: ProductArtworkProps) {
   return (
     <div className={`product-card__media product-card__media--${category}`}>
-      <span className="product-card__art-symbol" aria-hidden="true">{label.slice(0, 1)}</span>
+      <span className="product-card__art-symbol" aria-hidden="true">
+        {label.slice(0, 1)}
+      </span>
       <span className="product-card__art-note">Ilustración de categoría</span>
     </div>
   );
@@ -580,12 +657,25 @@ Render it before product facts. Keep the slot's aspect ratio, content boundary, 
 Use one category heading per group, consistent product field order, two cards per row at wide widths, and strong quantity/action grouping. On cart, group identity, quantity, line total, and remove action into a compact row above 768px and preserve a clear stacked order on mobile.
 
 ```css
-.product-card { display: grid; grid-template-rows: auto 1fr; overflow: hidden; }
-.product-card__media { aspect-ratio: 16 / 10; position: relative; background: var(--color-surface-strong); }
+.product-card {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  overflow: hidden;
+}
+.product-card__media {
+  aspect-ratio: 16 / 10;
+  position: relative;
+  background: var(--color-surface-strong);
+}
 
 @media (min-width: 48rem) {
-  .menu-category__products { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .cart-line { grid-template-columns: minmax(0, 1fr) 8rem 8rem auto; align-items: end; }
+  .menu-category__products {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .cart-line {
+    grid-template-columns: minmax(0, 1fr) 8rem 8rem auto;
+    align-items: end;
+  }
 }
 ```
 
@@ -621,7 +711,9 @@ git commit -m "feat: polish graphic menu and cart presentation"
 - [ ] **Step 1: Add observable state assertions before visual changes**
 
 ```ts
-test('selected fulfillment and copy feedback expose clear state', async ({ page }) => {
+test('selected fulfillment and copy feedback expose clear state', async ({
+  page,
+}) => {
   await openOrderWithSavedCart(page);
   const pickup = page.getByLabel('Recogida');
   await expect(pickup).toBeChecked();
@@ -642,7 +734,14 @@ Expected: FAIL because the selected label lacks the explicit data state.
 
 ```tsx
 <label data-selected={values.fulfillment === 'pickup'}>
-  <input type="radio" name="fulfillment" value="pickup" checked={values.fulfillment === 'pickup'} onChange={() => changeFulfillment('pickup')} required />
+  <input
+    type="radio"
+    name="fulfillment"
+    value="pickup"
+    checked={values.fulfillment === 'pickup'}
+    onChange={() => changeFulfillment('pickup')}
+    required
+  />
   <span>Recogida</span>
 </label>
 ```
@@ -652,10 +751,22 @@ Apply the corresponding delivery state, retain the current keyboard order, and k
 - [ ] **Step 4: Refine order, summary, contact, and state CSS**
 
 ```css
-.fulfillment-options label[data-selected='true'] { border-color: var(--color-accent); background: var(--color-surface-strong); }
-.form-field :is(input, textarea)[aria-invalid='true'] { border-color: var(--color-error); }
-.order-summary { position: relative; border-top: 0.4rem solid var(--color-accent); }
-.order-summary__status { min-height: 2.75rem; display: flex; align-items: center; }
+.fulfillment-options label[data-selected='true'] {
+  border-color: var(--color-accent);
+  background: var(--color-surface-strong);
+}
+.form-field :is(input, textarea)[aria-invalid='true'] {
+  border-color: var(--color-error);
+}
+.order-summary {
+  position: relative;
+  border-top: 0.4rem solid var(--color-accent);
+}
+.order-summary__status {
+  min-height: 2.75rem;
+  display: flex;
+  align-items: center;
+}
 ```
 
 Use a single-column order layout below 64rem, allow the summary to sit alongside the form only where both have comfortable width, and keep action buttons full-width on narrow screens. Refine contact into factual coordination guidance with the confirmed number as display text in demo mode.
@@ -732,8 +843,14 @@ const screenshots = {
     summary: artifactPath('mobile', 'milestone-3-summary.png'),
   },
   states: {
-    validation: artifactPath('interaction-states', 'milestone-3-validation.png'),
-    demoHandoff: artifactPath('interaction-states', 'milestone-3-demo-handoff.png'),
+    validation: artifactPath(
+      'interaction-states',
+      'milestone-3-validation.png',
+    ),
+    demoHandoff: artifactPath(
+      'interaction-states',
+      'milestone-3-demo-handoff.png',
+    ),
   },
 } as const;
 ```
@@ -751,14 +868,23 @@ Use these exact sections and only verified claims:
 # Güteli Bakery — Frontend Order-Request Experience
 
 ## Problem
+
 ## Solution
+
 ## Customer journey
+
 ## Implemented functionality
+
 ## Mobile-first and accessibility decisions
+
 ## Technical approach
+
 ## Demo-safe WhatsApp handoff
+
 ## Selected screenshots
+
 ## Future integration path
+
 ## Current limitations
 ```
 
@@ -791,7 +917,7 @@ Append a table under `## Milestone 3 capability record` using this schema:
 
 ```markdown
 | Skill | Verified | Used in milestone | Purpose | Result |
-|---|---:|---:|---|---|
+| ----- | -------: | ----------------: | ------- | ------ |
 ```
 
 Add one row only after that skill has actually been invoked and followed. State the concrete output or verification in `Result`; do not infer usage from availability. Update report timestamps, counts, routes, screenshot indexes, release summary, current state, decisions, session log, and testing evidence consistently.
