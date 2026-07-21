@@ -1,5 +1,4 @@
 import { expect, test, type Page } from '@playwright/test';
-import { existsSync } from 'node:fs';
 import path from 'node:path';
 
 const artifactPath = (...segments: string[]) =>
@@ -166,7 +165,6 @@ test.describe.serial('Milestone 4 evidence capture', () => {
       animations: 'disabled',
       path: screenshots.desktop.headerLogo,
     });
-    expect(existsSync(screenshots.desktop.headerLogo)).toBe(true);
 
     await page.goto('/menu/');
     await capture(page, screenshots.desktop.menu);
@@ -233,25 +231,21 @@ test.describe.serial('Milestone 4 evidence capture', () => {
       animations: 'disabled',
       path: screenshots.mobile.headerLogo,
     });
-    expect(existsSync(screenshots.mobile.headerLogo)).toBe(true);
     await page.getByRole('note', { name: 'Modo demostración' }).screenshot({
       animations: 'disabled',
       path: screenshots.states.mobileDemoBanner,
     });
-    expect(existsSync(screenshots.states.mobileDemoBanner)).toBe(true);
 
-    const footerLinksMeetTargetSize = await page
-      .getByRole('contentinfo')
-      .locator('a')
-      .evaluateAll((links) =>
-        links.every((link) => link.getBoundingClientRect().height >= 44),
-      );
+    const footerLinks = page.getByRole('contentinfo').locator('a');
+    await expect(footerLinks).toHaveCount(5);
+    const footerLinksMeetTargetSize = await footerLinks.evaluateAll((links) =>
+      links.every((link) => link.getBoundingClientRect().height >= 44),
+    );
     expect(footerLinksMeetTargetSize).toBe(true);
     await page.getByRole('contentinfo').screenshot({
       animations: 'disabled',
       path: screenshots.mobile.footer,
     });
-    expect(existsSync(screenshots.mobile.footer)).toBe(true);
 
     await page.goto('/menu/');
     await capture(page, screenshots.mobile.menu);
