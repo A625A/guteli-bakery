@@ -38,14 +38,15 @@ export function OrderRequest() {
   const [errors, setErrors] = useState<OrderErrors>({});
   const [summary, setSummary] = useState<string | null>(null);
   const [copyStatus, setCopyStatus] = useState('');
+  const [errorFocusRequest, setErrorFocusRequest] = useState(0);
   const [minimumDate] = useState(() => getMinimumOrderDate(new Date(), 2));
   const errorSummaryRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (Object.keys(errors).length > 0) {
+    if (errorFocusRequest > 0) {
       errorSummaryRef.current?.focus();
     }
-  }, [errors]);
+  }, [errorFocusRequest]);
 
   function setField<Key extends keyof OrderFormValues>(
     field: Key,
@@ -60,12 +61,24 @@ export function OrderRequest() {
 
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
+      setErrorFocusRequest((currentRequest) => currentRequest + 1);
       return;
     }
 
     setErrors({});
     setCopyStatus('');
     setSummary(buildOrderSummary(lines, values));
+  }
+
+  function changeFulfillment(fulfillment: OrderFormValues['fulfillment']) {
+    const nextValues = { ...values, fulfillment };
+
+    setValues(nextValues);
+    setErrors((currentErrors) =>
+      Object.keys(currentErrors).length > 0
+        ? validateOrder(nextValues, minimumDate)
+        : currentErrors,
+    );
   }
 
   async function copySummary() {
@@ -146,6 +159,7 @@ export function OrderRequest() {
                   id="order-name"
                   name="name"
                   autoComplete="name"
+                  required
                   value={values.name}
                   aria-invalid={Boolean(errors.name)}
                   aria-describedby={
@@ -167,6 +181,7 @@ export function OrderRequest() {
                   type="tel"
                   autoComplete="tel"
                   inputMode="tel"
+                  required
                   value={values.phone}
                   aria-invalid={Boolean(errors.phone)}
                   aria-describedby={
@@ -190,8 +205,9 @@ export function OrderRequest() {
                     type="radio"
                     name="fulfillment"
                     value="pickup"
+                    required
                     checked={values.fulfillment === 'pickup'}
-                    onChange={() => setField('fulfillment', 'pickup')}
+                    onChange={() => changeFulfillment('pickup')}
                   />
                   Recogida
                 </label>
@@ -200,8 +216,9 @@ export function OrderRequest() {
                     type="radio"
                     name="fulfillment"
                     value="delivery"
+                    required
                     checked={values.fulfillment === 'delivery'}
-                    onChange={() => setField('fulfillment', 'delivery')}
+                    onChange={() => changeFulfillment('delivery')}
                   />
                   Envío
                 </label>
@@ -219,6 +236,7 @@ export function OrderRequest() {
                     name="location"
                     rows={3}
                     autoComplete="street-address"
+                    required
                     value={values.location}
                     aria-invalid={Boolean(errors.location)}
                     aria-describedby={
@@ -242,6 +260,7 @@ export function OrderRequest() {
                   name="requestedDate"
                   type="date"
                   min={minimumDate}
+                  required
                   value={values.requestedDate}
                   aria-invalid={Boolean(errors.requestedDate)}
                   aria-describedby={

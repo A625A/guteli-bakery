@@ -208,6 +208,94 @@ test('requires delivery location and preserves active form progress on error', a
   await expect(date).not.toHaveValue('');
 });
 
+test('clears a delivery-only error when switching back to pickup without stealing focus', async ({
+  page,
+}) => {
+  await openOrderWithSavedCart(page);
+  await completeRequiredOrderFields(page, 'Envío');
+  await page.getByLabel('Ubicación o dirección').fill('');
+  await page.getByRole('button', { name: 'Revisar solicitud' }).click();
+
+  const errorSummary = page.getByRole('main').getByRole('alert');
+  await expect(errorSummary).toBeFocused();
+  await expect(
+    errorSummary.getByRole('link', {
+      name: 'Ubicación o dirección: Ingresa la ubicación de entrega.',
+    }),
+  ).toHaveAttribute('href', '#order-location');
+
+  const pickup = page.getByLabel('Recogida');
+  await pickup.check();
+
+  await expect(pickup).toBeFocused();
+  await expect(errorSummary).toHaveCount(0);
+  await expect(page.locator('a[href="#order-location"]')).toHaveCount(0);
+  await expect(page.locator('#order-location')).toHaveCount(0);
+  await expect(
+    page.getByText('Solicita información de recogida por WhatsApp', {
+      exact: true,
+    }),
+  ).toBeVisible();
+});
+
+test('gives the focused error summary and recovery links visible target geometry', async ({
+  page,
+}) => {
+  await openOrderWithSavedCart(page);
+  await page.getByRole('button', { name: 'Revisar solicitud' }).click();
+
+  const errorSummary = page.getByRole('main').getByRole('alert');
+  await expect(errorSummary).toBeFocused();
+  const focusStyle = await errorSummary.evaluate((element) => {
+    const style = window.getComputedStyle(element);
+
+    return {
+      outlineStyle: style.outlineStyle,
+      outlineWidth: Number.parseFloat(style.outlineWidth),
+    };
+  });
+  expect(focusStyle.outlineStyle).not.toBe('none');
+  expect(focusStyle.outlineWidth).toBeGreaterThan(0);
+
+  const recoveryLinks = await errorSummary.getByRole('link').all();
+  expect(recoveryLinks).toHaveLength(3);
+
+  for (const link of recoveryLinks) {
+    const box = await link.boundingBox();
+
+    expect(box).not.toBeNull();
+    expect(Math.min(box?.width ?? 0, box?.height ?? 0)).toBeGreaterThanOrEqual(
+      44,
+    );
+  }
+});
+
+test('marks every custom-validated required order field in the markup', async ({
+  page,
+}) => {
+  await openOrderWithSavedCart(page);
+
+  await expect(page.getByLabel('Nombre completo')).toHaveAttribute(
+    'required',
+    '',
+  );
+  await expect(page.getByLabel('Teléfono')).toHaveAttribute('required', '');
+  await expect(page.getByLabel('Fecha solicitada')).toHaveAttribute(
+    'required',
+    '',
+  );
+  await expect(page.getByLabel('Recogida')).toHaveAttribute('required', '');
+  await expect(page.getByLabel('Envío')).toHaveAttribute('required', '');
+  await expect(page.getByLabel('Ubicación o dirección')).toHaveCount(0);
+
+  await page.getByLabel('Envío').check();
+
+  await expect(page.getByLabel('Ubicación o dirección')).toHaveAttribute(
+    'required',
+    '',
+  );
+});
+
 test('rejects a requested date earlier than the Guatemala minimum', async ({
   page,
 }) => {

@@ -829,8 +829,17 @@ h1 {
 }
 
 .order-errors a {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  max-width: 100%;
   color: var(--color-error);
   font-weight: 800;
+}
+
+.order-errors:focus {
+  outline: 0.2rem solid var(--color-focus);
+  outline-offset: 0.2rem;
 }
 
 .order-form__section {
