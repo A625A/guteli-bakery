@@ -1,18 +1,21 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import type { ReactNode } from 'react';
 
-import { primaryNavigation, siteConfig } from '@/content/business';
+import { CartProvider } from '@/components/cart/CartProvider';
+import { SiteFooter } from '@/components/shared/SiteFooter';
+import { SiteHeader } from '@/components/shared/SiteHeader';
+import { siteConfig } from '@/content/business';
 
 import '@/styles/tokens.css';
 import './globals.css';
 
 export const metadata: Metadata = {
   title: {
-    default: `${siteConfig.name} | Fundación`,
+    default: siteConfig.name,
     template: `%s | ${siteConfig.name}`,
   },
-  description: 'Fundación técnica del sitio de Güteli Bakery.',
+  description:
+    'Pretzels, bagels y panes artesanales por encargo de Güteli Bakery.',
 };
 
 export default function RootLayout({
@@ -24,30 +27,11 @@ export default function RootLayout({
         <a className="skip-link" href="#main-content">
           Saltar al contenido
         </a>
-        <header className="site-header">
-          <div className="site-header__inner">
-            <Link
-              className="wordmark"
-              href="/"
-              aria-label="Güteli Bakery, inicio"
-            >
-              {siteConfig.name}
-            </Link>
-            <nav aria-label="Principal">
-              <ul className="site-nav">
-                {primaryNavigation.map(({ href, label }) => (
-                  <li key={href}>
-                    <Link href={href}>{label}</Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          </div>
-        </header>
-        {children}
-        <footer className="site-footer">
-          <p>Fundación del sitio · Milestone 1</p>
-        </footer>
+        <CartProvider>
+          <SiteHeader />
+          {children}
+          <SiteFooter />
+        </CartProvider>
       </body>
     </html>
   );

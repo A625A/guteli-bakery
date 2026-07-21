@@ -1,15 +1,16 @@
 :root {
-  --color-background: #fff7e8;
-  --color-surface: #f3dfc2;
-  --color-surface-strong: #d9ad78;
-  --color-text: #2b160f;
-  --color-text-muted: #6d4f40;
-  --color-brand: #3a1f17;
-  --color-brand-contrast: #fff7e8;
-  --color-accent: #c84f0a;
-  --color-accent-hover: #9f3d06;
-  --color-border: #b98d67;
-  --color-focus: #075985;
+  --color-background: #fff6e5;
+  --color-surface: #fffaf1;
+  --color-surface-strong: #efd7b7;
+  --color-text: #2f1b15;
+  --color-text-muted: #69483d;
+  --color-brand: #2f1b15;
+  --color-brand-contrast: #fff6e5;
+  --color-caramel: #a24d1c;
+  --color-accent: #ff6b0b;
+  --color-accent-hover: #a24d1c;
+  --color-border: #c9a27e;
+  --color-focus: #005fcc;
   --color-success: #24613b;
   --color-warning: #8a4b08;
   --color-error: #a1261c;
@@ -24,9 +25,12 @@
   --radius-small: 0.5rem;
   --radius-medium: 1rem;
   --radius-pill: 999px;
-  --shadow-soft: 0 1rem 2.5rem rgb(58 31 23 / 12%);
-  --font-body: Arial, Helvetica, sans-serif;
-  --font-display: Arial Black, Arial, Helvetica, sans-serif;
-  --content-wide: 72rem;
-  --content-reading: 44rem;
+  --shadow-soft: 0 1rem 2.5rem rgb(47 27 21 / 12%);
+  --font-body:
+    system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display:
+    ui-rounded, 'Arial Rounded MT Bold', 'Segoe UI', system-ui, sans-serif;
+  --content-wide: 76rem;
+  --content-reading: 46rem;
+  --content-gutter: clamp(1rem, 4vw, 2rem);
 }
