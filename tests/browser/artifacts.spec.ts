@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 
 const artifactPath = (...segments: string[]) =>
@@ -6,28 +7,51 @@ const artifactPath = (...segments: string[]) =>
 
 const screenshots = {
   desktop: {
-    homepage: artifactPath('desktop', 'milestone-3-homepage.png'),
-    menu: artifactPath('desktop', 'milestone-3-menu.png'),
-    cart: artifactPath('desktop', 'milestone-3-cart.png'),
-    summary: artifactPath('desktop', 'milestone-3-summary.png'),
+    homepage: artifactPath('desktop', 'milestone-4-homepage.png'),
+    headerLogo: artifactPath('desktop', 'milestone-4-header-logo.png'),
+    menu: artifactPath('desktop', 'milestone-4-menu.png'),
+    cart: artifactPath('desktop', 'milestone-4-cart.png'),
+    summary: artifactPath('desktop', 'milestone-4-summary.png'),
   },
   mobile: {
-    homepage: artifactPath('mobile', 'milestone-3-homepage.png'),
-    menu: artifactPath('mobile', 'milestone-3-menu.png'),
-    cart: artifactPath('mobile', 'milestone-3-cart.png'),
-    summary: artifactPath('mobile', 'milestone-3-summary.png'),
+    homepage: artifactPath('mobile', 'milestone-4-homepage.png'),
+    headerLogo: artifactPath('mobile', 'milestone-4-header-logo.png'),
+    menu: artifactPath('mobile', 'milestone-4-menu.png'),
+    cart: artifactPath('mobile', 'milestone-4-cart.png'),
+    summary: artifactPath('mobile', 'milestone-4-summary.png'),
+    footer: artifactPath('mobile', 'milestone-4-footer.png'),
   },
   states: {
     validation: artifactPath(
       'interaction-states',
-      'milestone-3-validation.png',
+      'milestone-4-validation.png',
     ),
     demoHandoff: artifactPath(
       'interaction-states',
-      'milestone-3-demo-handoff.png',
+      'milestone-4-demo-handoff.png',
+    ),
+    mobileDemoBanner: artifactPath(
+      'interaction-states',
+      'milestone-4-mobile-demo-banner.png',
     ),
   },
 } as const;
+
+async function expectProportionalLogo(page: Page) {
+  const logo = page.locator('.site-header .official-logo');
+  await expect(logo).toBeVisible();
+
+  const ratioDifference = await logo.evaluate((element) => {
+    const image = element as HTMLImageElement;
+    const renderedRatio =
+      image.getBoundingClientRect().width /
+      image.getBoundingClientRect().height;
+    const intrinsicRatio = image.naturalWidth / image.naturalHeight;
+    return Math.abs(renderedRatio - intrinsicRatio);
+  });
+
+  expect(ratioDifference).toBeLessThan(0.02);
+}
 
 async function capture(page: Page, screenshotPath: string) {
   await page.locator('nextjs-portal').evaluateAll((portals) => {
@@ -120,7 +144,7 @@ async function fillPickupRequest(page: Page, includeName = true) {
   await date.fill(minimumDate ?? '');
 }
 
-test.describe.serial('Milestone 3 evidence capture', () => {
+test.describe.serial('Milestone 4 evidence capture', () => {
   test('captures the desktop customer journey and one field-error state', async ({
     context,
     page,
@@ -136,7 +160,13 @@ test.describe.serial('Milestone 3 evidence capture', () => {
     await page.setViewportSize({ width: 1440, height: 1000 });
     await page.goto('/');
     await expect(page).toHaveTitle(/Güteli Bakery/);
+    await expectProportionalLogo(page);
     await capture(page, screenshots.desktop.homepage);
+    await page.locator('.site-header .official-logo').screenshot({
+      animations: 'disabled',
+      path: screenshots.desktop.headerLogo,
+    });
+    expect(existsSync(screenshots.desktop.headerLogo)).toBe(true);
 
     await page.goto('/menu/');
     await capture(page, screenshots.desktop.menu);
@@ -197,7 +227,31 @@ test.describe.serial('Milestone 3 evidence capture', () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/');
     await expect(page).toHaveTitle(/Güteli Bakery/);
+    await expectProportionalLogo(page);
     await capture(page, screenshots.mobile.homepage);
+    await page.locator('.site-header .official-logo').screenshot({
+      animations: 'disabled',
+      path: screenshots.mobile.headerLogo,
+    });
+    expect(existsSync(screenshots.mobile.headerLogo)).toBe(true);
+    await page.getByRole('note', { name: 'Modo demostración' }).screenshot({
+      animations: 'disabled',
+      path: screenshots.states.mobileDemoBanner,
+    });
+    expect(existsSync(screenshots.states.mobileDemoBanner)).toBe(true);
+
+    const footerLinksMeetTargetSize = await page
+      .getByRole('contentinfo')
+      .locator('a')
+      .evaluateAll((links) =>
+        links.every((link) => link.getBoundingClientRect().height >= 44),
+      );
+    expect(footerLinksMeetTargetSize).toBe(true);
+    await page.getByRole('contentinfo').screenshot({
+      animations: 'disabled',
+      path: screenshots.mobile.footer,
+    });
+    expect(existsSync(screenshots.mobile.footer)).toBe(true);
 
     await page.goto('/menu/');
     await capture(page, screenshots.mobile.menu);
