@@ -50,7 +50,7 @@ for (const route of routes) {
       page.getByRole('link', { name: 'Güteli Bakery, inicio' }),
     ).toBeVisible();
     const officialLogos = page.getByRole('img', { name: 'Güteli Bakery' });
-    await expect(officialLogos).toHaveCount(2);
+    await expect(officialLogos).toHaveCount(route.path === '/' ? 3 : 2);
     await expect(officialLogos.first()).toHaveAttribute(
       'src',
       /\/brand\/guteli-logo-original\.jpeg$/,
@@ -127,24 +127,26 @@ test('homepage presents the approved slogan separately from the official logo', 
   ).not.toHaveAttribute('alt', /Buenos momentos/);
 });
 
-test('homepage uses the approved graphic-only editorial treatment', async ({
-  page,
-}) => {
+test('homepage hero is anchored by the official logo', async ({ page }) => {
   await page.goto('/');
 
-  await expect(page.locator('.home-hero__wordmark')).toHaveCount(0);
-  await expect(
-    page.getByText('Selección ilustrada', { exact: true }),
-  ).toBeVisible();
-  await expect(page.getByText('Referencia original de la marca')).toHaveCount(
-    0,
-  );
-  await expect(page.locator('.home-hero img')).toHaveCount(0);
-  await expect(page.locator('.home-hero .bakery-illustration')).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Ver el menú' })).toHaveAttribute(
-    'href',
-    '/menu/',
-  );
+  const hero = page.locator('.home-hero');
+  const heroLogo = hero.getByRole('img', { name: 'Güteli Bakery' });
+
+  await expect(heroLogo).toHaveCount(1);
+  await expect(hero.locator('.bakery-illustration')).toHaveCount(0);
+  await expect(hero.locator('.home-hero__brand-panel')).toBeVisible();
+
+  const ratioDifference = await heroLogo.evaluate((element) => {
+    const image = element as HTMLImageElement;
+    return Math.abs(
+      image.getBoundingClientRect().width /
+        image.getBoundingClientRect().height -
+        image.naturalWidth / image.naturalHeight,
+    );
+  });
+
+  expect(ratioDifference).toBeLessThan(0.02);
 });
 
 test('menu exposes graphic media slots without product photography', async ({
@@ -190,17 +192,11 @@ for (const viewport of responsiveViewports) {
   });
 }
 
-test('reduced motion disables smooth scrolling and decorative animation', async ({
-  page,
-}) => {
+test('reduced motion disables smooth scrolling', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
 
   await expect(page.locator('html')).toHaveCSS('scroll-behavior', 'auto');
-  await expect(page.locator('.bakery-illustration')).toHaveCSS(
-    'animation-name',
-    'none',
-  );
 });
 
 for (const viewport of viewports) {

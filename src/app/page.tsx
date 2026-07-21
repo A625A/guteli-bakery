@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import { BakeryIllustration } from '@/components/shared/BakeryIllustration';
+import { OfficialLogo } from '@/components/shared/OfficialLogo';
 import { operationalCopy, siteConfig } from '@/content/business';
 import { menuCategories, menuProducts } from '@/content/menu';
 import { formatGTQ } from '@/lib/money';
@@ -27,12 +27,21 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="home-hero__art">
-          <p className="home-hero__editorial-label">Selección ilustrada</p>
-          <BakeryIllustration variant="hero" />
-          <p className="home-hero__stamp">Hecho por encargo · Guatemala</p>
-          <div className="home-hero__label">
-            <span>Ilustración editorial de panadería</span>
+        <div className="home-hero__brand-panel">
+          <div className="home-hero__panel-topline">
+            <span>Panadería por encargo</span>
+            <span>Guatemala</span>
+          </div>
+          <div className="home-hero__logo-stage">
+            <OfficialLogo
+              className="official-logo home-hero__logo"
+              priority
+              sizes="(min-width: 68rem) 27rem, 82vw"
+            />
+            <p>Buenos momentos, preparados por encargo.</p>
+          </div>
+          <div className="home-hero__panel-label">
+            <span>Menú de panadería</span>
             <ul aria-label="Categorías del menú">
               {menuCategories.map((category) => (
                 <li key={category.id}>{category.label}</li>
