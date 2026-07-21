@@ -1,5 +1,21 @@
 # Accessibility Report
 
+## Milestone 4 basic accessibility review — 2026-07-21
+
+Status: **Basic checklist PASS; not a WCAG conformance claim.**
+
+| Check                           | Observed result                                                                                                                                                                                                |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Official brand access           | PASS: both original-logo images expose `Güteli Bakery` alternative text; the header image remains inside the labelled `Güteli Bakery, inicio` home link, and responsive rendering preserves the 864:240 ratio. |
+| Decorative treatment            | PASS: basket SVGs and bakery motifs are hidden from assistive technology; product-specific add-control names and quantity-aware Canasta link names remain explicit.                                            |
+| Keyboard and focus              | PASS within the 60-test Chromium suite: skip-link focus, mobile route selection, menu addition, order-form sequence, validation recovery, summary, copy success/fallback, and handoff states remain covered.   |
+| Forms and errors                | PASS: visible labels, required-state errors, linked error text, and focused error-summary recovery remain unchanged and covered.                                                                               |
+| Targets and responsive overflow | PASS: site-controlled targets retain the tested 44px minimum; the artifact suite confirms five expected mobile footer links and no horizontal overflow at 390px or 1440px.                                     |
+| Reduced motion                  | PASS: the existing reduced-motion contract remains in the complete default browser suite.                                                                                                                      |
+| Contrast spot-check             | PASS: unchanged verified token pairs remain at least 5.11:1 for the checked text combinations. This is a token spot-check, not a complete rendered-page audit.                                                 |
+
+The exact slogan and concise demo notice remain visible text, and the slogan is separate from the logo alternative text. No axe, Lighthouse, screen-reader session, or comprehensive WCAG audit was run.
+
 ## Milestone 3 basic accessibility review — 2026-07-21
 
 Status: **Basic checklist PASS; not a WCAG conformance claim.**

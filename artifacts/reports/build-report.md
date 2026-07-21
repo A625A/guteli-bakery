@@ -1,5 +1,17 @@
 # Build Report
 
+## Milestone 4 final candidate — 2026-07-21
+
+Status: **Static build and local preview PASS; awaiting user visual approval.**
+
+- `npm run build`: PASS. Next.js statically generated `/`, `/_not-found`, `/cart`, `/contact`, `/menu`, and `/order`.
+- `npm run start`: PASS. The generated default `out/` served `/`, `/menu/`, `/cart/`, `/order/`, and `/contact/` with HTTP 200; the server stopped cleanly.
+- Default-export inspection found the exact slogan `Buenos momentos empiezan con algo recién horneado.` and exact banner `Sitio demo — ninguna solicitud se envía.`
+- The default HTML contains no active `href="https://wa.me/"`, unapproved test destination, flyer reference, removed `.home-hero__wordmark`, or removed `Referencia original de la marca` caption.
+- The confirmed public phone/destination may remain in public configuration, but default demo mode produces no active link.
+
+The build remains a candidate artifact. It was not deployed, and no merge, tag, or push is implied by this report.
+
 ## Milestone 3 portfolio-polish candidate — 2026-07-21
 
 Status: **Default and explicit-live static builds PASS; default demo export restored and locally verified.**

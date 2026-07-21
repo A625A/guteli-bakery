@@ -1,5 +1,27 @@
 # Test Report
 
+## Milestone 4 final verification — 2026-07-21
+
+Status: **PASS on `milestone-4-brand-refinement` at code HEAD `7e33af8`; awaiting user visual approval.**
+
+| Command or evidence               | Observed result                                                                                                                                                             |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm install`                     | PASS: dependency graph already up to date.                                                                                                                                  |
+| `npm run format:check`            | PASS.                                                                                                                                                                       |
+| `npm run lint`                    | PASS.                                                                                                                                                                       |
+| `npm run typecheck`               | PASS.                                                                                                                                                                       |
+| `npm test`                        | PASS: 6 files and 40 tests.                                                                                                                                                 |
+| First sandboxed Playwright launch | Environment failure before tests: `listen EPERM 127.0.0.1:3000`. Systematic debugging identified sandbox port denial; the permitted rerun exercised real browser behavior.  |
+| `npm run test:e2e`                | PASS: 60/60 Chromium tests.                                                                                                                                                 |
+| `npm run test:e2e:live`           | PASS: 1/1 confirms the approved destination.                                                                                                                                |
+| `npm run test:e2e:unavailable`    | PASS: 1/1 proves an unapproved destination fails closed.                                                                                                                    |
+| `npm run build`                   | PASS: `/`, `/_not-found`, `/cart`, `/contact`, `/menu`, and `/order` statically generated.                                                                                  |
+| `npm run start`                   | PASS: `/`, `/menu/`, `/cart/`, `/order/`, and `/contact/` each returned HTTP 200; server stopped cleanly.                                                                   |
+| Default export safety             | PASS: exact slogan and banner present; no active `href="https://wa.me/"`, unapproved test destination, flyer reference, removed `.home-hero__wordmark`, or removed caption. |
+| Artifact integrity                | PASS: 14 tracked Milestone 4 PNGs; required six inspected at original resolution; all ten Milestone 3 PNG hashes preserved.                                                 |
+
+Review RED/GREEN: the initial whole-branch review found one Important unofficial code-rendered hero wordmark. A fail-first contract required `.home-hero__wordmark` to be absent, then commit `7e33af8` replaced it with the neutral `Selección ilustrada` label and refreshed only the two homepage images. Follow-up review found no Critical, Important, or Minor finding and returned **Ready for visual approval**.
+
 ## Milestone 3 verification — 2026-07-21
 
 Status: **PASS on `milestone-3-portfolio-polish`; visual approval and integration remain pending.**

@@ -1,5 +1,21 @@
 # Release Summary
 
+## Milestone 4 completed visual candidate — 2026-07-21
+
+Status: **Completed candidate awaiting user visual approval. Not merged, tagged, pushed, or deployed.**
+
+Milestone 4 anchors the interface in the supplied original logo, adds the exact approved slogan `Buenos momentos empiezan con algo recién horneado.`, reduces mobile demo/footer density, and introduces restrained Canasta vocabulary, category labels, basket motifs, and warmer feedback without changing the approved static order-request architecture or handoff rules.
+
+Logo provenance is explicit: `assets/reference/guteli-brand-reference.jpeg` is the canonical 1131×1600 progressive JPEG at SHA-256 `4af05f831029c5d07f835c9cea51d510956f5e5beaa5e46bc1e30bf7b0a1d194`. `public/brand/guteli-logo-original.jpeg` is the lossless `864x240+160+48` crop containing only the original GÜTELI BAKERY wordmark, pretzel-heart symbol, original colors, and surrounding dark field. It contains no product photography, menu copy, phone number, or slogan and was not redrawn, traced, recolored, sharpened, simplified, or distorted.
+
+The fresh final gate passed dependency install, format check, lint, typecheck, 40 unit tests, 60 default Chromium tests, one confirmed-live test, one fail-closed unavailable test, static export of all six routes, five-route HTTP 200 preview, default-export safety inspection, and screenshot integrity. The first sandboxed Playwright launch failed before tests with `listen EPERM 127.0.0.1:3000`; the permitted rerun exercised the real browser suite and passed.
+
+Default demo mode displays exactly `Sitio demo — ninguna solicitud se envía.` and renders no active `href="https://wa.me/"`. The exported HTML contains no unapproved test destination, flyer reference, removed `.home-hero__wordmark`, or removed caption. The confirmed phone/destination may exist as public configuration but produces no active demo link.
+
+Fourteen tracked Milestone 4 PNGs provide desktop, mobile, logo, banner, footer, validation, summary, cart, menu, and demo-handoff evidence. The required six were inspected at original resolution with no overflow, clipping, logo distortion, or product photography. All ten Milestone 3 PNG hashes remain preserved.
+
+Initial whole-branch review found one Important unofficial hero wordmark. Commit `7e33af8` fixed it with fail-first coverage and refreshed the two homepage images. Follow-up review found no Critical, Important, or Minor finding and returned **Ready for visual approval**. Explicit approval is required before any integration or publication action.
+
 ## Milestone 3 approved integration — 2026-07-21
 
 Status: **Formally approved, fast-forwarded into `main`, and verified from the merged main checkout. Public deployment remains unauthorized.**

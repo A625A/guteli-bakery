@@ -43,3 +43,17 @@ Append-only record of project-level engineering decisions.
 **Decision:** Replace the former separate homepage/menu, cart, order-handoff, and final-quality milestones with one authorized Milestone 2 that delivers the complete usable customer journey and proportional evidence.
 
 **Result:** The approved foundation remains intact. Milestone 2 may implement the complete static customer experience, but no public deployment, backend, payment integration, WhatsApp bot/API, CMS, authentication, inventory system, or multi-tenant platform is authorized.
+
+## 2026-07-21 — Original-logo provenance and separation
+
+**Context:** Milestone 4 required the supplied original logo without recreating or simplifying it, while retaining a separate approved slogan and the graphic-only product-art policy.
+
+**Decision:** Use `assets/reference/guteli-brand-reference.jpeg` at verified SHA-256 `4af05f831029c5d07f835c9cea51d510956f5e5beaa5e46bc1e30bf7b0a1d194` as the canonical source. Create `public/brand/guteli-logo-original.jpeg` only through the lossless crop geometry `864x240+160+48`. Preserve the original GÜTELI BAKERY wordmark, pretzel-heart symbol, colors, proportions, and dark field; do not redraw, trace, recolor, sharpen, simplify, or distort it. Keep the exact slogan `Buenos momentos empiezan con algo recién horneado.` as separate homepage text.
+
+**Result:** Header and footer share the proportional original-logo crop. The crop contains no flyer product photography, menu copy, phone number, or slogan. The reviewed hero no longer contains the unofficial `.home-hero__wordmark`; `Selección ilustrada` is a neutral editorial label, not a replacement logo.
+
+## 2026-07-21 — Milestone 4 visual-candidate gate
+
+**Decision:** Preserve `milestone-4-brand-refinement` as a completed visual candidate awaiting explicit user approval. Do not merge, tag, push, deploy, or begin another milestone at this gate.
+
+**Result:** The final gate passed 40 unit tests, 60 default Chromium tests, the separate confirmed-live and unavailable tests, static export, five-route HTTP preview, bundle-safety inspection, screenshot integrity, and follow-up whole-branch review. The review verdict is Ready for visual approval with no Critical, Important, or Minor finding.

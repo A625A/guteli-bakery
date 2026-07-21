@@ -22,6 +22,10 @@ This directory stores evidence captured from the actual running application.
 - Milestone 3 desktop: `screenshots/desktop/milestone-3-homepage.png`, `milestone-3-menu.png`, `milestone-3-cart.png`, and `milestone-3-summary.png`, captured full-page from a 1440×1000 viewport.
 - Milestone 3 mobile: `screenshots/mobile/milestone-3-homepage.png`, `milestone-3-menu.png`, `milestone-3-cart.png`, and `milestone-3-summary.png`, captured full-page from a 390×844 viewport.
 - Milestone 3 interaction states: `screenshots/interaction-states/milestone-3-validation.png` and `milestone-3-demo-handoff.png`, captured full-page from a 1440×1000 viewport.
+- Milestone 4: completed visual candidate on `milestone-4-brand-refinement`; not approved, merged, tagged, pushed, or deployed.
+- Milestone 4 desktop: `screenshots/desktop/milestone-4-homepage.png`, `milestone-4-header-logo.png`, `milestone-4-menu.png`, `milestone-4-cart.png`, and `milestone-4-summary.png`.
+- Milestone 4 mobile: `screenshots/mobile/milestone-4-homepage.png`, `milestone-4-header-logo.png`, `milestone-4-menu.png`, `milestone-4-cart.png`, `milestone-4-summary.png`, and `milestone-4-footer.png`.
+- Milestone 4 interaction states: `screenshots/interaction-states/milestone-4-validation.png`, `milestone-4-demo-handoff.png`, and `milestone-4-mobile-demo-banner.png`.
 - Portfolio case study: `portfolio/guteli-bakery-case-study.md` documents the verified problem, solution, journey, demo-safety model, technical approach, limitations, and real screenshots.
 - Reports: build, tests, accessibility, performance, visual review, preview, and release-summary contain separately labelled Milestone 1, Milestone 2, and Milestone 3 evidence.
 - Public deployment: not authorized.
@@ -30,6 +34,8 @@ The final Milestone 2 independent follow-up review found no Critical or Importan
 
 The focused Milestone 3 follow-up review found no Critical or Important issue and returned Ready for visual approval. Its only Minor documentation omission was corrected before the final evidence commit.
 
-The external Phase 2 Obsidian project-memory notes are synchronized through Milestone 3 formal approval and merged-main verification. Frontmatter and internal wikilinks remain valid. Milestones 1, 2, and 3 are approved, merged, and verified from `main`. This remains a private repository artifact, not a public deployment. The earlier moderate PostCSS advisory remains open; Milestone 3 did not rerun the dependency audit.
+The external Phase 2 Obsidian project-memory notes are synchronized through the completed Milestone 4 visual candidate. Frontmatter and internal wikilinks remain valid. Milestones 1, 2, and 3 are approved, merged, and verified from `main`; Milestone 4 remains on its isolated branch awaiting user visual approval. This remains a private repository artifact, not a public deployment. The earlier moderate PostCSS advisory remains open; Milestone 4 did not rerun the dependency audit.
 
-Non-blocking pre-deployment refinements: shorten the mobile demo banner, review mobile footer density, prepare a shorter client-facing case study, and replace illustrations only when approved authentic product photographs become available.
+Milestone 4 provides 14 tracked PNGs. The required desktop/mobile homepage and header-logo captures plus the mobile demo-banner and footer captures were inspected at original resolution; no overflow, clipping, logo distortion, or product photography was found. All ten Milestone 3 PNG hashes remain unchanged.
+
+Non-blocking pre-deployment refinements: prepare a shorter client-facing case study and replace illustrations only when approved authentic product photographs become available.

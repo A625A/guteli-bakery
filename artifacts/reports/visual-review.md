@@ -1,5 +1,24 @@
 # Visual Review
 
+## Milestone 4 brand-refinement evidence — 2026-07-21
+
+Status: **PASS in final evidence inspection; awaiting user visual approval.**
+
+Fourteen tracked PNGs were captured from the running application under Milestone 4 filenames. The required six were opened and inspected at original resolution:
+
+- `artifacts/screenshots/desktop/milestone-4-homepage.png` — 1440×2800.
+- `artifacts/screenshots/mobile/milestone-4-homepage.png` — 390×3367.
+- `artifacts/screenshots/desktop/milestone-4-header-logo.png` — 208×58.
+- `artifacts/screenshots/mobile/milestone-4-header-logo.png` — 168×47.
+- `artifacts/screenshots/interaction-states/milestone-4-mobile-demo-banner.png` — 390×44.
+- `artifacts/screenshots/mobile/milestone-4-footer.png` — 390×277.
+
+The remaining desktop/mobile menu, cart, summary, validation, and demo-handoff images complete the 14-file set. Inspection found no horizontal overflow, overlap, clipping, logo distortion, excessive mobile density, or product photography. The original-logo crop remains crisp and proportional; the slogan is readable and separate; the single-line demo notice and compact footer remain legible; category labels and Canasta controls wrap safely.
+
+The initial whole-branch review found one Important unofficial `GÜTELI / Bakery` hero wordmark that competed with the official logo. Commit `7e33af8` removed `.home-hero__wordmark`, added the neutral `Selección ilustrada` editorial label with RED/GREEN coverage, and recaptured the desktop and mobile homepage images. The other 12 Milestone 4 captures reproduced without content changes. Follow-up review reported no Critical, Important, or Minor finding and returned **Ready for visual approval**.
+
+All ten Milestone 3 PNG SHA-256 values remain byte-preserved. This visual record does not mark Milestone 4 approved, merged, tagged, pushed, or deployed.
+
 ## Milestone 3 graphic-only portfolio evidence — 2026-07-21
 
 Status: **PASS in final evidence inspection; awaiting user visual approval.**
