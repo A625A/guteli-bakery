@@ -1,18 +1,20 @@
 # Release Summary
 
-## Milestone 3 portfolio-polish candidate — 2026-07-21
+## Milestone 3 approved integration — 2026-07-21
 
-Status: **Implementation and local verification complete on the isolated branch; awaiting visual approval. Not merged, pushed, tagged, or deployed.**
+Status: **Formally approved, fast-forwarded into `main`, and verified from the merged main checkout. Public deployment remains unauthorized.**
 
 The candidate replaces the photo-led flyer treatment with an original graphic-only editorial system, preserves the confirmed menu and order-request journey, and keeps stable illustrative media slots ready for future authentic photography. The customer interface contains no flyer product photography, fake product photography, or “Referencia original de la marca” caption.
 
 Default portfolio mode is fail-safe: it visibly identifies itself as a demonstration, renders no `wa.me` destination, and preserves review/copy fallback. Explicit live mode accepts only the confirmed `50242569861` destination; any other value becomes unavailable. Separate browser journeys prove the live and unavailable states.
 
-Current verification passes install, formatting, lint, typecheck, 40 unit tests, 59 default-demo Chromium tests, one explicit-live Chromium journey, one unavailable-destination Chromium journey, default and live static builds, restored-default bundle inspection, and HTTP 200 on all five customer routes. Ten real runtime screenshots and a separate case study are included.
+Integration preserved the complete 11-commit Milestone 3 history without squashing or a merge commit. From merged `main`, verification passed install, formatting, lint, typecheck, 40 unit tests, 59 default-demo Chromium tests, one explicit-live Chromium journey, one unavailable-destination Chromium journey, the static build, restored-default bundle inspection, and HTTP 200 on all five customer routes. Ten real runtime screenshots and a separate case study remain present and tracked.
 
 The initial independent review reported three Important findings: the photo-bearing flyer still shipped through the header, live configuration could point elsewhere while displaying the confirmed number, and a stale homepage assertion broke the full browser gate. Commit `7c78b70` resolves all three with fail-first evidence and adds a deterministic artifact scroll reset. Focused re-review found no Critical or Important issue and returned **Ready for visual approval**. Its only Minor—the plan omitted the two new handoff commands from the final gate—was corrected.
 
-No public deployment was attempted. Recommended future deployment remains a static host only after separate approval, with demo mode retained unless the confirmed live handoff is intentionally enabled.
+The default export visibly remains in demo mode and contains no exact active live/test destination. No public deployment was attempted. Recommended future deployment remains a static host only after separate approval, with demo mode retained unless the confirmed live handoff is intentionally enabled.
+
+Non-blocking pre-deployment refinements are to shorten the mobile demo banner, review mobile footer density, prepare a shorter client-facing case study, and replace illustrations only when authentic product photography is approved.
 
 ## Milestone 2 approved integration — 2026-07-21
 

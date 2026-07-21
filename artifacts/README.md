@@ -18,7 +18,7 @@ This directory stores evidence captured from the actual running application.
 - Milestone 2 desktop: `screenshots/desktop/milestone-2-homepage.png`, `screenshots/desktop/milestone-2-cart.png`, and `screenshots/desktop/milestone-2-summary.png`, captured full-page from a 1440×1000 viewport.
 - Milestone 2 mobile: `screenshots/mobile/milestone-2-homepage.png`, `screenshots/mobile/milestone-2-cart.png`, and `screenshots/mobile/milestone-2-summary.png`, captured full-page from a 390×844 viewport.
 - Milestone 2 interaction state: `screenshots/interaction-states/milestone-2-validation.png`, captured full-page from a 1440×1000 viewport with a focused one-field validation summary.
-- Milestone 3 candidate: graphic-only portfolio polish and fail-closed demo handoff implemented on `milestone-3-portfolio-polish`; visual approval and integration remain pending.
+- Milestone 3: formally approved and fast-forwarded into `main` on 2026-07-21 with all 11 commits preserved; merged-main verification passed.
 - Milestone 3 desktop: `screenshots/desktop/milestone-3-homepage.png`, `milestone-3-menu.png`, `milestone-3-cart.png`, and `milestone-3-summary.png`, captured full-page from a 1440×1000 viewport.
 - Milestone 3 mobile: `screenshots/mobile/milestone-3-homepage.png`, `milestone-3-menu.png`, `milestone-3-cart.png`, and `milestone-3-summary.png`, captured full-page from a 390×844 viewport.
 - Milestone 3 interaction states: `screenshots/interaction-states/milestone-3-validation.png` and `milestone-3-demo-handoff.png`, captured full-page from a 1440×1000 viewport.
@@ -30,4 +30,6 @@ The final Milestone 2 independent follow-up review found no Critical or Importan
 
 The focused Milestone 3 follow-up review found no Critical or Important issue and returned Ready for visual approval. Its only Minor documentation omission was corrected before the final evidence commit.
 
-The external Phase 2 Obsidian project-memory notes are synchronized through the verified Milestone 3 candidate. Frontmatter and internal wikilinks remain valid. Milestones 1 and 2 are approved, merged, and verified from `main`; Milestone 3 remains on its isolated branch awaiting visual approval. This remains a private repository artifact, not a public deployment. The earlier moderate PostCSS advisory remains open; Milestone 3 did not rerun the dependency audit.
+The external Phase 2 Obsidian project-memory notes are synchronized through Milestone 3 formal approval and merged-main verification. Frontmatter and internal wikilinks remain valid. Milestones 1, 2, and 3 are approved, merged, and verified from `main`. This remains a private repository artifact, not a public deployment. The earlier moderate PostCSS advisory remains open; Milestone 3 did not rerun the dependency audit.
+
+Non-blocking pre-deployment refinements: shorten the mobile demo banner, review mobile footer density, prepare a shorter client-facing case study, and replace illustrations only when approved authentic product photographs become available.

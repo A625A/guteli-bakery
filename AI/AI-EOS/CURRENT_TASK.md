@@ -4,7 +4,7 @@ Updated: 2026-07-21
 
 ## Objective
 
-Milestones 0, 1, and 2 are complete and formally approved. Milestone 3 portfolio polish is implemented and locally verified on the isolated `milestone-3-portfolio-polish` branch. It is not approved, merged, pushed, tagged, or deployed; user visual approval is the next gate.
+Milestones 0, 1, 2, and 3 are complete and formally approved. Milestone 3 was fast-forwarded into `main` with its complete 11-commit history preserved and verified from the merged main checkout. The approval checkpoint is limited to the existing private GitHub repository; public deployment and any larger follow-on system remain unauthorized.
 
 ## Approved product scope
 
@@ -85,7 +85,7 @@ Pretzels use “bolsa de 5” and nuditos use “bolsa de 15.” Other quantity 
 - All required npm checks, static build, local preview, screenshots, reports, and independent review pass with no Critical or Important findings.
 - No runtime dependency references the external vault, absolute local paths, secrets, or unauthorized infrastructure.
 
-## Verification checkpoint — 2026-07-21
+## Milestone 2 verification checkpoint — 2026-07-21
 
 - `npm install`, formatting, lint, route type generation plus TypeScript, and the static build passed.
 - `npm test`: 5 files and 27 tests passed.
@@ -98,7 +98,25 @@ Pretzels use “bolsa de 5” and nuditos use “bolsa de 15.” Other quantity 
 - Merged-main verification passed `npm install`, format check, lint, typecheck, 27 unit tests, 49 browser tests, static build, and HTTP 200 on all five customer routes.
 - Private GitHub `main` was pushed and remote SHA parity was verified. Public deployment and later milestones remain blocked.
 
+## Milestone 3 merged-main verification — 2026-07-21
+
+- `main` fast-forwarded from `a0324b9` to the complete Milestone 3 history without squashing or a merge commit.
+- `npm install`, `npm run format:check`, `npm run lint`, and `npm run typecheck` passed from merged `main`.
+- `npm test`: 6 files and 40 tests passed.
+- `npm run test:e2e`: all 59 default-demo Chromium tests passed, including the complete order journey, copy success/fallback, zero captured console errors, responsive overflow checks, and artifact recapture.
+- `npm run test:e2e:live` and `npm run test:e2e:unavailable`: one test each passed, proving the confirmed live destination and fail-closed unapproved destination.
+- `npm run build` produced the six expected static routes. `npm run start` served the final default export; `/`, `/menu/`, `/cart/`, `/order/`, and `/contact/` each returned HTTP 200.
+- The final default export contains the demo notice and no exact live/test destination, flyer reference, or removed customer-facing caption.
+- All ten Milestone 3 screenshots and the portfolio case study remain present and tracked.
+
+## Non-blocking pre-deployment refinements
+
+- Shorten and simplify the mobile demo banner.
+- Review mobile footer density.
+- Prepare a shorter client-facing portfolio case-study version.
+- Replace illustrations with authentic product photography only when approved images become available.
+
 ## Pending gate
 
-- Obtain user visual approval before any Milestone 3 integration action.
-- Do not merge, push, tag, or deploy until separately authorized.
+- Obtain separate authorization before any public deployment.
+- Do not begin a WhatsApp bot, backend, payments, CMS, inventory system, authentication, or another large milestone without explicit approval.
