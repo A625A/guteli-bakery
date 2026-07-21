@@ -3,11 +3,14 @@ import { describe, expect, it } from 'vitest';
 import { primaryNavigation, siteConfig } from '@/content/business';
 
 describe('site foundation contract', () => {
-  it('uses the approved Guatemala locale and currency', () => {
+  it('uses the approved Guatemala commerce configuration', () => {
     expect(siteConfig).toEqual({
       name: 'Güteli Bakery',
       locale: 'es-GT',
       currency: 'GTQ',
+      whatsappNumber: '4256-9861',
+      whatsappDigits: '50242569861',
+      advanceDays: 2,
     });
   });
 
