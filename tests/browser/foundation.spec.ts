@@ -1,8 +1,8 @@
 import { expect, test } from '@playwright/test';
 
 const routes = [
-  { path: '/', heading: 'Fundación frontend lista' },
-  { path: '/menu/', heading: 'Menú' },
+  { path: '/', heading: 'Pretzels, bagels y panes por encargo' },
+  { path: '/menu/', heading: 'Nuestro menú' },
   { path: '/cart/', heading: 'Carrito' },
   { path: '/order/', heading: 'Pedido' },
   { path: '/contact/', heading: 'Contacto' },
