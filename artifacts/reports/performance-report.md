@@ -4,7 +4,7 @@
 
 Status: **Structural observations recorded; no performance score produced.**
 
-`npm run build` completed the optimized static export successfully. The real browser journey loaded `/`, `/menu/`, `/cart/`, and `/order/` at exact 1440×1000 and 390×844 viewports, collected zero console errors, and found no horizontal overflow in any captured state. `curl -sS -I http://127.0.0.1:3000/` returned HTTP 200 from the local development preview.
+`npm run build` completed the optimized static export successfully. The real browser journey loaded `/`, `/menu/`, `/cart/`, and `/order/` at exact 1440×1000 and 390×844 viewports, collected zero console errors, and found no horizontal overflow in any captured state. `npm run start` served the static `out/` export, and all five customer routes returned HTTP 200.
 
 No Lighthouse, WebPageTest, browser timing profile, Core Web Vitals measurement, bundle-size budget, network throttling, or equivalent performance audit was run. The Playwright and build durations in command output are test/build elapsed times, not user-facing performance scores.
 

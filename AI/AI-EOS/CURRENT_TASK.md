@@ -4,7 +4,7 @@ Updated: 2026-07-21
 
 ## Objective
 
-Milestones 0 and 1 are complete, approved, committed, tagged, merged where applicable, and verified. Milestone 2 is authorized as one implementation milestone that must deliver the complete working customer-facing website MVP. No public deployment is authorized.
+Milestones 0 and 1 are complete, approved, committed, tagged, merged where applicable, and verified. The complete Milestone 2 working MVP is implemented and locally verified on `milestone-2-working-mvp`. Formal approval and merge remain pending. No public deployment is authorized.
 
 ## Approved product scope
 
@@ -52,7 +52,7 @@ Approved safe copy includes:
 
 Pretzels use “bolsa de 5” and nuditos use “bolsa de 15.” Other quantity fields remain optional in typed menu data.
 
-## Milestone 2 authorized deliverables
+## Milestone 2 delivered candidate
 
 - Complete responsive homepage, menu, cart, order, and contact experiences
 - Centralized typed confirmed menu content without invented facts
@@ -71,3 +71,19 @@ Pretzels use “bolsa de 5” and nuditos use “bolsa de 15.” Other quantity 
 - The complete journey works on desktop and mobile with keyboard access, visible focus, no horizontal overflow, and no browser-console errors.
 - All required npm checks, static build, local preview, screenshots, reports, and independent review pass with no Critical or Important findings.
 - No runtime dependency references the external vault, absolute local paths, secrets, or unauthorized infrastructure.
+
+## Verification checkpoint — 2026-07-21
+
+- `npm install`, formatting, lint, route type generation plus TypeScript, and the static build passed.
+- `npm test`: 5 files and 27 tests passed.
+- `npm run test:e2e`: 49 Chromium tests passed, including real desktop/mobile artifact capture and fail-first review regressions.
+- `npm run start` served `out/`; `/`, `/menu/`, `/cart/`, `/order/`, and `/contact/` each returned HTTP 200.
+- Seven real screenshots were recaptured by the final browser run and remained byte-identical to the inspected evidence.
+- Initial independent review reported no Critical findings and four Important findings. Pre-hydration cart loss, persistent mobile navigation, stale reviewed handoff data, Guatemala-midnight date drift, and stale evidence were addressed with regression evidence where applicable.
+- Independent follow-up review verdict: Ready to merge, with no Critical or Important finding remaining. One Minor quantity-input UX refinement is non-blocking.
+- `finishing-a-development-branch` option 3 applies: preserve the feature branch and worktree. Do not merge, push, tag, deploy, remove the worktree, or begin another milestone without approval.
+
+## Pending gate
+
+- Formal user approval
+- Any separately authorized integration decision

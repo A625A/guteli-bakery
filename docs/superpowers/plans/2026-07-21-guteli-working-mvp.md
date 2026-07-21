@@ -59,7 +59,7 @@
 - `tests/browser/order-journey.spec.ts`: user-visible cart and order behavior.
 - `tests/browser/artifacts.spec.ts`: deterministic desktop/mobile evidence capture.
 - `artifacts/**`: screenshots and honest verification reports.
-- `AI/AI-EOS/18_CAPABILITY_AUDIT.md`: verified/used Superpowers capability record.
+- `AI/AI-EOS/CAPABILITY_TABLE.md`: verified/used Superpowers capability record.
 - `AI/AI-EOS/CURRENT_TASK.md` and approved Phase 2 project-memory notes: completion state.
 
 ---
@@ -692,7 +692,7 @@ git commit -m "test(artifacts): capture Milestone 2 customer journey"
 
 **Files:**
 
-- Modify: `AI/AI-EOS/18_CAPABILITY_AUDIT.md`
+- Modify: `AI/AI-EOS/CAPABILITY_TABLE.md`
 - Modify: `AI/AI-EOS/CURRENT_TASK.md`
 - Modify externally: `/Users/andrewarana/Desktop/Empresita/Phase 2 - Guteli Demo/Current State.md`
 - Modify externally: `/Users/andrewarana/Desktop/Empresita/Phase 2 - Guteli Demo/Decisions.md`
@@ -747,7 +747,7 @@ Update only the authorized routine records plus artifact subjects that actually 
 - [ ] **Step 5: Commit the final verified state**
 
 ```bash
-git add AI/AI-EOS/18_CAPABILITY_AUDIT.md AI/AI-EOS/CURRENT_TASK.md artifacts
+git add AI/AI-EOS/CAPABILITY_TABLE.md AI/AI-EOS/CURRENT_TASK.md artifacts
 git commit -m "docs(ai-eos): record verified Milestone 2 MVP"
 git status --short
 ```

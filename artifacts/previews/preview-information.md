@@ -1,12 +1,12 @@
 # Preview Information
 
-## Milestone 2 capture — 2026-07-21
+## Milestone 2 verified preview — 2026-07-21
 
 Status: **Verified locally at capture time; public preview not authorized.**
 
-The existing Next.js development server at `http://127.0.0.1:3000` was reused by Playwright. `curl -sS -I http://127.0.0.1:3000/` returned HTTP 200 at `Tue, 21 Jul 2026 08:05:26 GMT`. The artifact spec traversed `/`, `/menu/`, `/cart/`, and `/order/` at exact 1440×1000 and 390×844 viewports and captured seven full-page PNG files with animations disabled.
+Playwright traversed `/`, `/menu/`, `/cart/`, and `/order/` at exact 1440×1000 and 390×844 viewports and captured seven full-page PNG files with animations disabled. After the final static build, `npm run start` served `out/` at `http://127.0.0.1:3000`; HEAD requests to `/`, `/menu/`, `/cart/`, `/order/`, and `/contact/` each returned HTTP 200.
 
-The process was already running before Task 8 and was not started, stopped, or published by this evidence pass. Availability after this recorded check is not guaranteed.
+The local preview was stopped cleanly after verification. Nothing was published, and availability after this recorded check is not guaranteed.
 
 ## Milestone 1 evidence (preserved)
 
