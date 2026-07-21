@@ -9,7 +9,9 @@ test('keeps add controls unavailable until the persisted cart can hydrate', asyn
   await page.goto('/menu/');
 
   await expect(
-    page.getByRole('button', { name: 'Agregar Originales de Pretzels' }),
+    page.getByRole('button', {
+      name: 'Agregar a la canasta: Originales de Pretzels',
+    }),
   ).toBeDisabled();
 
   await context.close();
@@ -85,6 +87,14 @@ test('shows all confirmed products and adds a selected quantity', async ({
   await expect(
     page.getByRole('heading', { level: 2, name: 'Nuditos' }),
   ).toBeVisible();
+  for (const note of [
+    'Nuestro sello',
+    'Para cualquier momento',
+    'Hechos para compartir',
+    'Bocados para la mesa',
+  ]) {
+    await expect(page.getByText(note, { exact: true })).toBeVisible();
+  }
   await expect(
     page.getByText('Cantidad por confirmar', { exact: true }),
   ).toHaveCount(4);
@@ -113,12 +123,16 @@ test('shows all confirmed products and adds a selected quantity', async ({
 
   await page.getByLabel('Cantidad de Originales, Pretzels').fill('2');
   await page
-    .getByRole('button', { name: 'Agregar Originales de Pretzels' })
+    .getByRole('button', {
+      name: 'Agregar a la canasta: Originales de Pretzels',
+    })
     .click();
 
-  await expect(page.getByRole('status')).toContainText('2 bolsas agregadas');
+  await expect(page.getByRole('status')).toContainText(
+    'Listo en tu canasta: 2 bolsas agregadas',
+  );
   await expect(
-    page.getByRole('link', { name: 'Carrito, 2 productos' }),
+    page.getByRole('link', { name: 'Canasta, 2 productos' }),
   ).toBeVisible();
 });
 
@@ -128,18 +142,22 @@ test('re-announces an identical repeated addition and updates the badge', async 
   await page.goto('/menu/');
 
   const addButton = page.getByRole('button', {
-    name: 'Agregar Originales de Pretzels',
+    name: 'Agregar a la canasta: Originales de Pretzels',
   });
   await addButton.click();
   const firstStatus = await page.getByRole('status').elementHandle();
 
-  await expect(page.getByRole('status')).toContainText('1 bolsa agregada');
+  await expect(page.getByRole('status')).toContainText(
+    'Listo en tu canasta: 1 bolsa agregada',
+  );
   await addButton.click();
 
   expect(await firstStatus?.evaluate((node) => node.isConnected)).toBe(false);
-  await expect(page.getByRole('status')).toContainText('1 bolsa agregada');
+  await expect(page.getByRole('status')).toContainText(
+    'Listo en tu canasta: 1 bolsa agregada',
+  );
   await expect(
-    page.getByRole('link', { name: 'Carrito, 2 productos' }),
+    page.getByRole('link', { name: 'Canasta, 2 productos' }),
   ).toBeVisible();
 });
 
@@ -150,16 +168,18 @@ test('reports only the effective addition and disables adding at 99', async ({
 
   const quantity = page.getByLabel('Cantidad de Originales, Pretzels');
   const addButton = page.getByRole('button', {
-    name: 'Agregar Originales de Pretzels',
+    name: 'Agregar a la canasta: Originales de Pretzels',
   });
   await quantity.fill('98');
   await addButton.click();
   await quantity.fill('2');
   await addButton.click();
 
-  await expect(page.getByRole('status')).toContainText('1 bolsa agregada');
+  await expect(page.getByRole('status')).toContainText(
+    'Listo en tu canasta: 1 bolsa agregada',
+  );
   await expect(
-    page.getByRole('link', { name: 'Carrito, 99 productos' }),
+    page.getByRole('link', { name: 'Canasta, 99 productos' }),
   ).toBeVisible();
   await expect(
     page.getByRole('button', {
@@ -178,30 +198,31 @@ test('all eight menu variants can be added with a keyboard', async ({
   page,
 }) => {
   const addActions = [
-    'Agregar Originales de Pretzels',
-    'Agregar Queso y jalapeño de Pretzels',
-    'Agregar Queso y pepperoni de Pretzels',
-    'Agregar Originales de Bagels',
-    'Agregar Queso y jalapeño de Bagels',
-    'Agregar Queso y pepperoni de Bagels',
-    'Agregar Burger buns de Burger buns',
-    'Agregar Nuditos de Nuditos',
+    'Agregar a la canasta: Originales de Pretzels',
+    'Agregar a la canasta: Queso y jalapeño de Pretzels',
+    'Agregar a la canasta: Queso y pepperoni de Pretzels',
+    'Agregar a la canasta: Originales de Bagels',
+    'Agregar a la canasta: Queso y jalapeño de Bagels',
+    'Agregar a la canasta: Queso y pepperoni de Bagels',
+    'Agregar a la canasta: Burger buns de Burger buns',
+    'Agregar a la canasta: Nuditos de Nuditos',
   ] as const;
 
   await page.goto('/menu/');
   await expect(
-    page.getByRole('link', { name: 'Carrito, 0 productos' }),
+    page.getByRole('link', { name: 'Canasta, 0 productos' }),
   ).toBeVisible();
 
   for (const name of addActions) {
     const button = page.getByRole('button', { name });
+    await expect(button).toHaveText('Agregar a la canasta');
     await button.focus();
     await expect(button).toBeFocused();
     await page.keyboard.press('Enter');
   }
 
   await expect(
-    page.getByRole('link', { name: 'Carrito, 8 productos' }),
+    page.getByRole('link', { name: 'Canasta, 8 productos' }),
   ).toBeVisible();
 });
 
@@ -232,11 +253,15 @@ test('menu controls remain usable without horizontal overflow on mobile', async 
 
   await page.getByLabel('Cantidad de Nuditos, Nuditos').fill('3');
   await page
-    .getByRole('button', { name: 'Agregar Nuditos de Nuditos' })
+    .getByRole('button', {
+      name: 'Agregar a la canasta: Nuditos de Nuditos',
+    })
     .click();
-  await expect(page.getByRole('status')).toContainText('3 bolsas agregadas');
+  await expect(page.getByRole('status')).toContainText(
+    'Listo en tu canasta: 3 bolsas agregadas',
+  );
   await page.locator('summary', { hasText: 'Abrir menú' }).click();
   await expect(
-    page.getByRole('link', { name: 'Carrito, 3 productos' }),
+    page.getByRole('link', { name: 'Canasta, 3 productos' }),
   ).toBeVisible();
 });

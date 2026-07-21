@@ -21,10 +21,10 @@ export type MenuProduct = {
 };
 
 export const menuCategories = [
-  { id: 'pretzels', label: 'Pretzels' },
-  { id: 'bagels', label: 'Bagels' },
-  { id: 'burger-buns', label: 'Burger buns' },
-  { id: 'nuditos', label: 'Nuditos' },
+  { id: 'pretzels', label: 'Pretzels', note: 'Nuestro sello' },
+  { id: 'bagels', label: 'Bagels', note: 'Para cualquier momento' },
+  { id: 'burger-buns', label: 'Burger buns', note: 'Hechos para compartir' },
+  { id: 'nuditos', label: 'Nuditos', note: 'Bocados para la mesa' },
 ] as const;
 
 export const menuProducts: readonly MenuProduct[] = [

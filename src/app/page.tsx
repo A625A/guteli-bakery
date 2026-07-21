@@ -90,7 +90,7 @@ export default function HomePage() {
             <span>01</span>
             <div>
               <h3>Elige del menú</h3>
-              <p>Agrega productos y cantidades al carrito.</p>
+              <p>Agrega productos y cantidades a la canasta.</p>
             </div>
           </li>
           <li>

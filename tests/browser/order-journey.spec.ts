@@ -32,17 +32,22 @@ test('completes a delivery request without sending it', async ({
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await page.goto('/menu/');
   await page
-    .getByRole('button', { name: 'Agregar Originales de Pretzels' })
+    .getByRole('button', {
+      name: 'Agregar a la canasta: Originales de Pretzels',
+    })
     .click();
   await page.goto('/cart/');
   await page
-    .getByLabel('Cantidad de Originales, Pretzels en el carrito')
+    .getByLabel('Cantidad de Originales, Pretzels en la canasta')
     .fill('2');
   await expect(
     page.getByTestId('cart-line-pretzel-original').getByText('Q120'),
   ).toBeVisible();
   await expect(page.getByText('Subtotal estimado: Q120')).toBeVisible();
-  await page.getByRole('link', { name: 'Completar datos del pedido' }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Tu selección' }),
+  ).toBeVisible();
+  await page.getByRole('link', { name: 'Completar mi solicitud' }).click();
 
   await page.getByRole('button', { name: 'Revisar solicitud' }).click();
   const errorSummary = page.getByRole('main').getByRole('alert');
@@ -71,7 +76,9 @@ test('completes a delivery request without sending it', async ({
     'Ubicación de entrega: Zona 10, Guatemala',
   );
   await page.getByRole('button', { name: 'Copiar resumen' }).click();
-  await expect(page.getByRole('status')).toHaveText('Resumen copiado.');
+  await expect(page.getByRole('status')).toHaveText(
+    'Resumen copiado. Listo para compartir.',
+  );
 
   await expect(
     page.getByText(
@@ -98,7 +105,9 @@ test('offers a menu recovery path when the cart is empty', async ({ page }) => {
   await page.goto('/cart/');
 
   await expect(
-    page.getByRole('heading', { name: 'Tu carrito está vacío' }),
+    page.getByRole('heading', {
+      name: 'Tu canasta espera algo recién horneado',
+    }),
   ).toBeVisible();
   await expect(
     page.getByRole('link', { name: 'Explorar el menú' }),
@@ -121,16 +130,18 @@ test('persists cart changes across reload and removes a line on request', async 
   await page.goto('/menu/');
   await page.getByLabel('Cantidad de Originales, Pretzels').fill('3');
   await page
-    .getByRole('button', { name: 'Agregar Originales de Pretzels' })
+    .getByRole('button', {
+      name: 'Agregar a la canasta: Originales de Pretzels',
+    })
     .click();
   await page.goto('/cart/');
 
   await expect(
-    page.getByLabel('Cantidad de Originales, Pretzels en el carrito'),
+    page.getByLabel('Cantidad de Originales, Pretzels en la canasta'),
   ).toHaveValue('3');
   await page.reload();
   await expect(
-    page.getByLabel('Cantidad de Originales, Pretzels en el carrito'),
+    page.getByLabel('Cantidad de Originales, Pretzels en la canasta'),
   ).toHaveValue('3');
   await expect(page.getByText('Subtotal estimado: Q180')).toBeVisible();
 
@@ -138,10 +149,12 @@ test('persists cart changes across reload and removes a line on request', async 
     .getByRole('button', { name: 'Quitar Originales de Pretzels' })
     .click();
   await expect(
-    page.getByRole('heading', { name: 'Tu carrito está vacío' }),
+    page.getByRole('heading', {
+      name: 'Tu canasta espera algo recién horneado',
+    }),
   ).toBeVisible();
   await expect(
-    page.getByRole('link', { name: 'Carrito, 0 productos' }),
+    page.getByRole('link', { name: 'Canasta, 0 productos' }),
   ).toBeVisible();
 });
 
@@ -155,7 +168,9 @@ test('recovers malformed saved cart data as an empty cart', async ({
   await page.goto('/cart/');
 
   await expect(
-    page.getByRole('heading', { name: 'Tu carrito está vacío' }),
+    page.getByRole('heading', {
+      name: 'Tu canasta espera algo recién horneado',
+    }),
   ).toBeVisible();
   await expect
     .poll(() =>
@@ -196,7 +211,9 @@ test('selected fulfillment and copy feedback expose clear state', async ({
   await completeRequiredOrderFields(page, 'Recogida');
   await page.getByRole('button', { name: 'Revisar solicitud' }).click();
   await page.getByRole('button', { name: 'Copiar resumen' }).click();
-  await expect(page.getByRole('status')).toHaveText('Resumen copiado.');
+  await expect(page.getByRole('status')).toHaveText(
+    'Resumen copiado. Listo para compartir.',
+  );
 });
 
 test('invalidates the reviewed demo handoff when details change', async ({

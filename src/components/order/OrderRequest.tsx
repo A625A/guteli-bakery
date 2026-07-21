@@ -101,7 +101,7 @@ export function OrderRequest({ handoff }: { handoff: WhatsAppHandoff }) {
 
     try {
       await navigator.clipboard.writeText(summary);
-      setCopyStatus('Resumen copiado.');
+      setCopyStatus('Resumen copiado. Listo para compartir.');
     } catch {
       setCopyStatus(
         'No se pudo copiar automáticamente. Selecciona y copia el resumen manualmente.',
@@ -122,7 +122,7 @@ export function OrderRequest({ handoff }: { handoff: WhatsAppHandoff }) {
 
       {!hydrated ? (
         <p className="request-page__loading" role="status">
-          Cargando tu carrito…
+          Cargando tu canasta…
         </p>
       ) : lines.length === 0 ? (
         <section className="request-empty" aria-labelledby="empty-order-title">

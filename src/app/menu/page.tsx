@@ -15,7 +15,7 @@ export default function MenuPage() {
         </div>
         <div className="menu-page__guidance">
           <p>
-            Agrega las cantidades que deseas y revisa tu carrito antes de enviar
+            Agrega las cantidades que deseas y revisa tu canasta antes de enviar
             la solicitud.
           </p>
           <p>

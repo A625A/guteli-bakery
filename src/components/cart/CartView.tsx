@@ -4,6 +4,7 @@ import Link from 'next/link';
 import type { ChangeEvent } from 'react';
 
 import { useCart } from '@/components/cart/CartProvider';
+import { BasketIcon } from '@/components/shared/BasketIcon';
 import { operationalCopy } from '@/content/business';
 import { formatGTQ } from '@/lib/money';
 
@@ -25,7 +26,7 @@ export function CartView() {
     <main id="main-content" className="cart-page" tabIndex={-1}>
       <header className="request-page__intro">
         <p className="eyebrow">Revisa tu selección</p>
-        <h1>Carrito</h1>
+        <h1>Tu canasta</h1>
         <p>
           Ajusta cada cantidad antes de preparar tu solicitud. Puedes solicitar
           hasta 99 unidades por cada opción del menú.
@@ -34,18 +35,16 @@ export function CartView() {
 
       {!hydrated ? (
         <p className="request-page__loading" role="status">
-          Cargando tu carrito…
+          Cargando tu canasta…
         </p>
       ) : lines.length === 0 ? (
         <section className="request-empty" aria-labelledby="empty-cart-title">
-          <p className="request-empty__number" aria-hidden="true">
-            00
-          </p>
+          <BasketIcon className="basket-icon request-empty__basket" />
           <div>
-            <h2 id="empty-cart-title">Tu carrito está vacío</h2>
-            <p>
-              Elige productos y cantidades para iniciar una solicitud de pedido.
-            </p>
+            <h2 id="empty-cart-title">
+              Tu canasta espera algo recién horneado
+            </h2>
+            <p>Explora el menú y elige lo que te gustaría compartir.</p>
             <Link className="button-link button-link--primary" href="/menu/">
               Explorar el menú
             </Link>
@@ -78,7 +77,7 @@ export function CartView() {
                     <div className="cart-line__quantity">
                       <label htmlFor={inputId}>
                         Cantidad de {line.product.name},{' '}
-                        {line.product.categoryLabel} en el carrito
+                        {line.product.categoryLabel} en la canasta
                       </label>
                       <input
                         id={inputId}
@@ -111,14 +110,14 @@ export function CartView() {
 
           <aside className="cart-totals" aria-labelledby="cart-total-title">
             <p className="eyebrow">Estimación</p>
-            <h2 id="cart-total-title">Resumen del carrito</h2>
+            <h2 id="cart-total-title">Tu selección</h2>
             <p className="cart-totals__subtotal">
               Subtotal estimado: {formatGTQ(subtotal)}
             </p>
             <p>{operationalCopy.confirmation}.</p>
             <p>{operationalCopy.deliveryCost}.</p>
             <Link className="button-link button-link--primary" href="/order/">
-              Completar datos del pedido
+              Completar mi solicitud
             </Link>
           </aside>
         </div>

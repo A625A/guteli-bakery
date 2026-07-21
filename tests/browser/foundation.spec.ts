@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 const routes = [
   { path: '/', heading: 'Pretzels, bagels y panes por encargo' },
   { path: '/menu/', heading: 'Nuestro menú' },
-  { path: '/cart/', heading: 'Carrito' },
+  { path: '/cart/', heading: 'Tu canasta' },
   { path: '/order/', heading: 'Pedido' },
   { path: '/contact/', heading: 'Contacto' },
 ] as const;
@@ -11,7 +11,7 @@ const routes = [
 const navigationDestinations = [
   { name: 'Inicio', path: '/' },
   { name: 'Menú', path: '/menu/' },
-  { name: 'Carrito, 0 productos', path: '/cart/' },
+  { name: 'Canasta, 0 productos', path: '/cart/' },
   { name: 'Pedido', path: '/order/' },
   { name: 'Contacto', path: '/contact/' },
 ] as const;
@@ -19,7 +19,7 @@ const navigationDestinations = [
 const footerNavigationDestinations = [
   { name: 'Inicio', path: '/' },
   { name: 'Menú', path: '/menu/' },
-  { name: 'Carrito', path: '/cart/' },
+  { name: 'Canasta', path: '/cart/' },
   { name: 'Pedido', path: '/order/' },
   { name: 'Contacto', path: '/contact/' },
 ] as const;
@@ -70,8 +70,13 @@ for (const route of routes) {
     });
     expect(logoMetrics.ratio).toBeCloseTo(864 / 240, 1);
     await expect(
-      page.getByRole('link', { name: 'Carrito, 0 productos' }),
+      page.getByRole('link', { name: 'Canasta, 0 productos' }),
     ).toBeVisible();
+    const basketIcons = page.locator('.cart-badge__icon');
+    await expect(basketIcons).toHaveCount(2);
+    for (const basketIcon of await basketIcons.all()) {
+      await expect(basketIcon).toHaveAttribute('aria-hidden', 'true');
+    }
     await expect(
       page.getByRole('contentinfo').getByText('4256-9861'),
     ).toBeVisible();
@@ -393,7 +398,7 @@ test('cart badge restores a safe saved quantity after hydration', async ({
   await page.goto('/');
 
   await expect(
-    page.getByRole('link', { name: 'Carrito, 2 productos' }),
+    page.getByRole('link', { name: 'Canasta, 2 productos' }),
   ).toBeVisible();
 });
 

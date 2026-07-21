@@ -20,7 +20,10 @@ export function MenuCatalog() {
               <p className="menu-category__number" aria-hidden="true">
                 {String(menuCategories.indexOf(category) + 1).padStart(2, '0')}
               </p>
-              <h2 id={headingId}>{category.label}</h2>
+              <div>
+                <h2 id={headingId}>{category.label}</h2>
+                <p className="menu-category__note">{category.note}</p>
+              </div>
             </div>
             <div className="menu-category__products">
               {products.map((product) => (

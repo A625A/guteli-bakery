@@ -26,7 +26,7 @@ function getAddedMessage(product: MenuProduct, quantity: number): string {
       ? 'producto agregado'
       : 'productos agregados';
 
-  return `${quantity} ${unit} al carrito: ${product.name} de ${product.categoryLabel}.`;
+  return `Listo en tu canasta: ${quantity} ${unit} — ${product.name} de ${product.categoryLabel}.`;
 }
 
 export function ProductCard({ product }: ProductCardProps) {
@@ -99,10 +99,15 @@ export function ProductCard({ product }: ProductCardProps) {
             type="button"
             onClick={addToCart}
             disabled={!hydrated || isAtCapacity}
+            aria-label={
+              isAtCapacity
+                ? `Máximo de 99 alcanzado para ${product.name} de ${product.categoryLabel}`
+                : `Agregar a la canasta: ${product.name} de ${product.categoryLabel}`
+            }
           >
             {isAtCapacity
               ? `Máximo de 99 alcanzado para ${product.name} de ${product.categoryLabel}`
-              : `Agregar ${product.name} de ${product.categoryLabel}`}
+              : 'Agregar a la canasta'}
           </button>
         </div>
         {isAtCapacity ? (

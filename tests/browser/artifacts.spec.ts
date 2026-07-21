@@ -76,10 +76,14 @@ async function buildTwoItemCart(page: Page, mobile: boolean) {
   await page.goto('/menu/');
 
   await page
-    .getByRole('button', { name: 'Agregar Originales de Pretzels' })
+    .getByRole('button', {
+      name: 'Agregar a la canasta: Originales de Pretzels',
+    })
     .click();
   await page
-    .getByRole('button', { name: 'Agregar Originales de Bagels' })
+    .getByRole('button', {
+      name: 'Agregar a la canasta: Originales de Bagels',
+    })
     .click();
 
   if (mobile) {
@@ -87,9 +91,9 @@ async function buildTwoItemCart(page: Page, mobile: boolean) {
   }
 
   await expect(
-    page.getByRole('link', { name: 'Carrito, 2 productos' }),
+    page.getByRole('link', { name: 'Canasta, 2 productos' }),
   ).toBeVisible();
-  await page.getByRole('link', { name: 'Carrito, 2 productos' }).click();
+  await page.getByRole('link', { name: 'Canasta, 2 productos' }).click();
   await expect(page).toHaveURL(/\/cart\/$/);
 
   if (mobile) {
@@ -140,9 +144,7 @@ test.describe.serial('Milestone 3 evidence capture', () => {
     await buildTwoItemCart(page, false);
     await capture(page, screenshots.desktop.cart);
 
-    await page
-      .getByRole('link', { name: 'Completar datos del pedido' })
-      .click();
+    await page.getByRole('link', { name: 'Completar mi solicitud' }).click();
     await fillPickupRequest(page, false);
     await page.getByRole('button', { name: 'Revisar solicitud' }).click();
 
@@ -169,7 +171,9 @@ test.describe.serial('Milestone 3 evidence capture', () => {
     await capture(page, screenshots.desktop.summary);
 
     await page.getByRole('button', { name: 'Copiar resumen' }).click();
-    await expect(page.getByRole('status')).toHaveText('Resumen copiado.');
+    await expect(page.getByRole('status')).toHaveText(
+      'Resumen copiado. Listo para compartir.',
+    );
     await expect(
       page.getByText(
         'Modo demostración: copia el resumen para probar el flujo.',
@@ -201,9 +205,7 @@ test.describe.serial('Milestone 3 evidence capture', () => {
     await buildTwoItemCart(page, true);
     await capture(page, screenshots.mobile.cart);
 
-    await page
-      .getByRole('link', { name: 'Completar datos del pedido' })
-      .click();
+    await page.getByRole('link', { name: 'Completar mi solicitud' }).click();
     await fillPickupRequest(page);
     await page.getByRole('button', { name: 'Revisar solicitud' }).click();
     await expect(

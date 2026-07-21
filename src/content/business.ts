@@ -18,7 +18,7 @@ export const operationalCopy = {
 export const primaryNavigation = [
   { href: '/', label: 'Inicio' },
   { href: '/menu/', label: 'Menú' },
-  { href: '/cart/', label: 'Carrito' },
+  { href: '/cart/', label: 'Canasta' },
   { href: '/order/', label: 'Pedido' },
   { href: '/contact/', label: 'Contacto' },
 ] as const;

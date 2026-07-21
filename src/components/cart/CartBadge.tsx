@@ -3,6 +3,7 @@
 import Link from 'next/link';
 
 import { useCart } from '@/components/cart/CartProvider';
+import { BasketIcon } from '@/components/shared/BasketIcon';
 
 export function CartBadge() {
   const { hydrated, itemCount } = useCart();
@@ -13,10 +14,11 @@ export function CartBadge() {
       className="cart-badge"
       href="/cart/"
       aria-label={
-        hydrated ? `Carrito, ${itemCount} ${itemLabel}` : 'Carrito, cargando'
+        hydrated ? `Canasta, ${itemCount} ${itemLabel}` : 'Canasta, cargando'
       }
     >
-      <span>Carrito</span>
+      <BasketIcon className="basket-icon cart-badge__icon" />
+      <span>Canasta</span>
       <span className="cart-badge__count" aria-hidden="true">
         {hydrated ? itemCount : '…'}
       </span>

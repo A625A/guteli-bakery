@@ -19,7 +19,7 @@ describe('site foundation contract', () => {
     expect(primaryNavigation).toEqual([
       { href: '/', label: 'Inicio' },
       { href: '/menu/', label: 'Menú' },
-      { href: '/cart/', label: 'Carrito' },
+      { href: '/cart/', label: 'Canasta' },
       { href: '/order/', label: 'Pedido' },
       { href: '/contact/', label: 'Contacto' },
     ]);
