@@ -79,11 +79,11 @@ Expected: FAIL because the current hero contains no official-logo image and stil
 Use the installed lossless JPEG utility against the already verified full-logo crop:
 
 ```bash
-jpegtran -copy all -perfect -crop 224x224+560+8 -outfile public/brand/guteli-symbol-original.jpeg public/brand/guteli-logo-original.jpeg
+jpegtran -copy all -perfect -crop 224x224+560+16 -outfile public/brand/guteli-symbol-original.jpeg public/brand/guteli-logo-original.jpeg
 sips -g pixelWidth -g pixelHeight public/brand/guteli-symbol-original.jpeg
 ```
 
-Expected: `pixelWidth: 224` and `pixelHeight: 224`. Inspect the result at original resolution before using it.
+Expected: `pixelWidth: 224` and `pixelHeight: 224`. The `y=16` boundary is required by the source JPEG's 16px lossless iMCU grid; `y=8` would silently produce a 224×232 output. Inspect the result at original resolution before using it.
 
 - [ ] **Step 4: Extend the logo component without changing defaults**
 
