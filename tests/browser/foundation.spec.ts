@@ -441,6 +441,7 @@ test('footer exposes compact navigation and the live demo contact state', async 
   await expect(
     footer.getByRole('img', { name: 'Güteli Bakery' }),
   ).toBeVisible();
+  await expect(footer.getByText('4256-9861', { exact: true })).toBeVisible();
   await expect(
     footer.getByText('Costo de envío por confirmar según ubicación', {
       exact: true,
