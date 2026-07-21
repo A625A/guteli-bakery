@@ -1,7 +1,7 @@
 # Güteli Portfolio Polish Design
 
-**Date:** 2026-07-21  
-**Status:** Approved direction derived from the authorized Milestone 3 brief and the user's graphic-only decision  
+**Date:** 2026-07-21
+**Status:** Approved direction derived from the authorized Milestone 3 brief and the user's graphic-only decision
 **Scope:** Visual and interaction refinement of the existing frontend-only MVP; no public deployment
 
 ## Outcome

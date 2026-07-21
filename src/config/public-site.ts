@@ -1,3 +1,5 @@
+import { siteConfig } from '@/content/business';
+
 export type PublicSiteEnvironment = {
   demoMode?: string;
   whatsappDestination?: string;
@@ -13,8 +15,6 @@ export type PublicSiteConfig = {
   handoff: WhatsAppHandoff;
 };
 
-const whatsappDestinationPattern = /^\d{8,15}$/;
-
 export function resolvePublicSiteConfig(
   environment: PublicSiteEnvironment,
 ): PublicSiteConfig {
@@ -26,7 +26,7 @@ export function resolvePublicSiteConfig(
 
   if (
     environment.whatsappDestination &&
-    whatsappDestinationPattern.test(environment.whatsappDestination)
+    environment.whatsappDestination === siteConfig.whatsappDigits
   ) {
     return {
       isDemoMode,

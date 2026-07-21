@@ -119,7 +119,7 @@ describe('public site configuration', () => {
 
 - [ ] **Step 2: Run the focused test and observe RED**
 
-Run: `npm test -- tests/unit/public-site-config.test.ts`  
+Run: `npm test -- tests/unit/public-site-config.test.ts`
 Expected: FAIL because `@/config/public-site` does not exist.
 
 - [ ] **Step 3: Implement the smallest pure resolver**
@@ -181,7 +181,7 @@ NEXT_PUBLIC_DEMO_MODE=true
 
 - [ ] **Step 5: Verify GREEN and the full unit suite**
 
-Run: `npm test -- tests/unit/public-site-config.test.ts && npm test`  
+Run: `npm test -- tests/unit/public-site-config.test.ts && npm test`
 Expected: configuration tests pass and the full existing unit suite remains green.
 
 - [ ] **Step 6: Commit the behavior boundary**
@@ -247,7 +247,7 @@ await expect(page.locator('a[href*="wa.me"]')).toHaveCount(0);
 
 - [ ] **Step 2: Run the two browser files and observe RED**
 
-Run: `npm run test:e2e -- tests/browser/foundation.spec.ts tests/browser/order-journey.spec.ts`  
+Run: `npm run test:e2e -- tests/browser/foundation.spec.ts tests/browser/order-journey.spec.ts`
 Expected: FAIL because the banner is absent and current contact, footer, and order components render `wa.me` links.
 
 - [ ] **Step 3: Add the shared demo banner and pass configuration through server routes**
@@ -302,7 +302,7 @@ In contact and footer, branch on `publicSiteConfig.handoff.kind`; render a link 
 
 - [ ] **Step 5: Verify GREEN and preserve copy fallback**
 
-Run: `npm test && npm run test:e2e -- tests/browser/foundation.spec.ts tests/browser/order-journey.spec.ts`  
+Run: `npm test && npm run test:e2e -- tests/browser/foundation.spec.ts tests/browser/order-journey.spec.ts`
 Expected: unit suite passes; both browser files pass; default pages contain no active `wa.me` link; summary copy success and rejection paths still pass.
 
 - [ ] **Step 6: Commit demo-safe integration**
@@ -468,7 +468,7 @@ button {
 
 - [ ] **Step 5: Verify the shell at all target widths**
 
-Run: `npm run format:check && npm run lint && npm run typecheck && npm run test:e2e -- tests/browser/foundation.spec.ts`  
+Run: `npm run format:check && npm run lint && npm run typecheck && npm run test:e2e -- tests/browser/foundation.spec.ts`
 Expected: all commands pass, no target width overflows, reduced motion reports no decorative animation, and shell semantics remain intact.
 
 - [ ] **Step 6: Commit the editorial foundation**
@@ -514,7 +514,7 @@ test('homepage uses the approved graphic-only editorial treatment', async ({
 
 - [ ] **Step 2: Run the focused test and observe RED**
 
-Run: `npm run test:e2e -- tests/browser/foundation.spec.ts -g "graphic-only"`  
+Run: `npm run test:e2e -- tests/browser/foundation.spec.ts -g "graphic-only"`
 Expected: FAIL because the current hero includes the cropped reference image and caption.
 
 - [ ] **Step 3: Replace the hero with the editorial composition**
@@ -579,7 +579,7 @@ Keep the confirmed four-category price preview and three-step request explanatio
 
 - [ ] **Step 5: Verify behavior and inspect real screenshots**
 
-Run: `npm run test:e2e -- tests/browser/foundation.spec.ts`  
+Run: `npm run test:e2e -- tests/browser/foundation.spec.ts`
 Expected: homepage policy and shell tests pass at every target width. Capture temporary 390px and 1440px screenshots and inspect that the hero reads as graphic illustration, text does not collide, and primary action remains obvious.
 
 - [ ] **Step 6: Commit the homepage polish**
@@ -627,7 +627,7 @@ test('menu exposes graphic media slots without product photography', async ({
 
 - [ ] **Step 2: Run the focused test and observe RED**
 
-Run: `npm run test:e2e -- tests/browser/foundation.spec.ts -g "graphic media"`  
+Run: `npm run test:e2e -- tests/browser/foundation.spec.ts -g "graphic media"`
 Expected: FAIL because product media slots are absent.
 
 - [ ] **Step 3: Create the stable artwork slot**
@@ -681,7 +681,7 @@ Use one category heading per group, consistent product field order, two cards pe
 
 - [ ] **Step 5: Verify preserved menu-to-cart behavior**
 
-Run: `npm test && npm run test:e2e -- tests/browser/foundation.spec.ts tests/browser/order-journey.spec.ts`  
+Run: `npm test && npm run test:e2e -- tests/browser/foundation.spec.ts tests/browser/order-journey.spec.ts`
 Expected: all existing cart behavior passes, eight honest media slots render, added-item announcements remain accessible, and no viewport overflows.
 
 - [ ] **Step 6: Commit menu and cart polish**
@@ -727,7 +727,7 @@ test('selected fulfillment and copy feedback expose clear state', async ({
 
 - [ ] **Step 2: Run the focused test and observe RED**
 
-Run: `npm run test:e2e -- tests/browser/order-journey.spec.ts -g "selected fulfillment"`  
+Run: `npm run test:e2e -- tests/browser/order-journey.spec.ts -g "selected fulfillment"`
 Expected: FAIL because the selected label lacks the explicit data state.
 
 - [ ] **Step 3: Add explicit selected state and preserve semantics**
@@ -773,7 +773,7 @@ Use a single-column order layout below 64rem, allow the summary to sit alongside
 
 - [ ] **Step 5: Run complete behavior and accessibility regression files**
 
-Run: `npm run test:e2e -- tests/browser/foundation.spec.ts tests/browser/order-journey.spec.ts`  
+Run: `npm run test:e2e -- tests/browser/foundation.spec.ts tests/browser/order-journey.spec.ts`
 Expected: all keyboard, validation, date, copy, demo-handoff, target-size, overflow, and no-console-error checks pass.
 
 - [ ] **Step 6: Commit customer-state polish**
@@ -857,7 +857,7 @@ const screenshots = {
 
 - [ ] **Step 2: Capture and visually inspect the real application**
 
-Run: `npm run test:e2e -- tests/browser/artifacts.spec.ts`  
+Run: `npm run test:e2e -- tests/browser/artifacts.spec.ts`
 Expected: artifact tests pass and all ten Milestone 3 PNG files exist. Inspect every image for clipping, awkward empty space, misleading illustration, weak hierarchy, inconsistent controls, text collisions, and accidental active WhatsApp links; fix confirmed issues and rerun the affected tests.
 
 - [ ] **Step 3: Write the standalone portfolio case study**
@@ -933,7 +933,7 @@ The five Phase 2 vault notes listed in this task live outside the repository and
 
 - [ ] **Step 8: Confirm clean handoff state without integrating or deploying**
 
-Run: `git status --short --branch && git log --oneline --decorate -8`  
+Run: `git status --short --branch && git log --oneline --decorate -8`
 Expected: branch `milestone-3-portfolio-polish` is clean, commit history is preserved, no deployment occurred, and the branch is ready for visual approval.
 
 Stop and report the before/after summary, screenshot paths, design and interaction changes, demo behavior, verification results, limitations, Git status, and recommended deployment path. Do not merge, push, deploy, or begin another milestone without approval.

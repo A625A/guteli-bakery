@@ -27,7 +27,13 @@ test('homepage presents the factual ordering path and canonical price previews',
     }),
   ).toBeVisible();
   await expect(
-    page.getByRole('img', { name: 'Logotipo original de Güteli Bakery' }),
+    page.getByRole('link', { name: 'Güteli Bakery, inicio' }),
+  ).toBeVisible();
+  await expect(page.locator('img[src*="guteli-brand-reference"]')).toHaveCount(
+    0,
+  );
+  await expect(
+    page.getByText('Ilustración editorial de panadería', { exact: true }),
   ).toBeVisible();
   await expect(page.getByRole('link', { name: 'Ver el menú' })).toHaveAttribute(
     'href',

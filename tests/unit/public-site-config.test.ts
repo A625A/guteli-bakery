@@ -15,19 +15,26 @@ describe('public site configuration', () => {
     },
   );
 
-  it('enables a configured live destination only with explicit false', () => {
+  it('enables the confirmed live destination only with explicit false', () => {
     expect(
       resolvePublicSiteConfig({
         demoMode: 'false',
-        whatsappDestination: '50255555555',
+        whatsappDestination: '50242569861',
       }),
     ).toEqual({
       isDemoMode: false,
-      handoff: { kind: 'live', destination: '50255555555' },
+      handoff: { kind: 'live', destination: '50242569861' },
     });
   });
 
-  it.each([undefined, '', '502 5555-5555', '+50255555555', '1234567'])(
+  it.each([
+    undefined,
+    '',
+    '502 4256-9861',
+    '+50242569861',
+    '1234567',
+    '50255555555',
+  ])(
     'fails closed when a live destination is invalid: %s',
     (whatsappDestination) => {
       expect(

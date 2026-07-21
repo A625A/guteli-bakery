@@ -35,12 +35,15 @@ async function capture(page: Page, screenshotPath: string) {
       portal.remove();
     }
   });
-  await page.evaluate(() => {
+  const scrollBehavior = await page.evaluate(() => {
     const root = document.documentElement;
-    const scrollBehavior = root.style.scrollBehavior;
-    root.style.scrollBehavior = 'auto';
+    const current = {
+      priority: root.style.getPropertyPriority('scroll-behavior'),
+      value: root.style.getPropertyValue('scroll-behavior'),
+    };
+    root.style.setProperty('scroll-behavior', 'auto', 'important');
     window.scrollTo(0, 0);
-    root.style.scrollBehavior = scrollBehavior;
+    return current;
   });
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
   await page.evaluate(() => document.fonts.ready);
@@ -56,6 +59,17 @@ async function capture(page: Page, screenshotPath: string) {
     fullPage: true,
     path: screenshotPath,
   });
+  await page.evaluate(({ priority, value }) => {
+    if (value) {
+      document.documentElement.style.setProperty(
+        'scroll-behavior',
+        value,
+        priority,
+      );
+    } else {
+      document.documentElement.style.removeProperty('scroll-behavior');
+    }
+  }, scrollBehavior);
 }
 
 async function buildTwoItemCart(page: Page, mobile: boolean) {

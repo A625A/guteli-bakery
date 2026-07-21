@@ -15,6 +15,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "test:e2e:live": "playwright test --config=playwright.live.config.ts",
+    "test:e2e:unavailable": "playwright test --config=playwright.unavailable.config.ts",
     "test:e2e:install": "playwright install chromium",
     "build": "next build",
     "start": "serve out -l 3000"
