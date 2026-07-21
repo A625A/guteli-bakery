@@ -6,6 +6,7 @@ describe('site foundation contract', () => {
   it('uses the approved Guatemala commerce configuration', () => {
     expect(siteConfig).toEqual({
       name: 'Güteli Bakery',
+      slogan: 'Buenos momentos empiezan con algo recién horneado.',
       locale: 'es-GT',
       currency: 'GTQ',
       whatsappNumber: '4256-9861',

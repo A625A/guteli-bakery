@@ -10,8 +10,9 @@ export default function HomePage() {
     <main id="main-content" className="home-page" tabIndex={-1}>
       <section className="home-hero">
         <div className="home-hero__copy">
-          <p className="eyebrow">Panadería por encargo · Guatemala</p>
+          <p className="eyebrow">Güteli Bakery · Panadería por encargo</p>
           <h1>Pretzels, bagels y panes por encargo</h1>
+          <p className="home-hero__slogan">{siteConfig.slogan}</p>
           <p className="home-hero__intro">
             Explora el menú, arma tu solicitud y envíala para confirmar los
             detalles por WhatsApp.

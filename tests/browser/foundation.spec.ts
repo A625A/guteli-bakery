@@ -93,7 +93,7 @@ test('default portfolio mode is identified and exposes no WhatsApp destination',
 
   await expect(
     page.getByRole('note', { name: 'Modo demostración' }),
-  ).toContainText('Sitio de demostración');
+  ).toHaveText('Sitio demo — ninguna solicitud se envía.');
   await expect(page.locator('a[href*="wa.me"]')).toHaveCount(0);
 
   await page.goto('/contact/');
@@ -105,6 +105,21 @@ test('default portfolio mode is identified and exposes no WhatsApp destination',
         exact: true,
       }),
   ).toBeVisible();
+});
+
+test('homepage presents the approved slogan separately from the official logo', async ({
+  page,
+}) => {
+  await page.goto('/');
+
+  await expect(
+    page.getByText('Buenos momentos empiezan con algo recién horneado.', {
+      exact: true,
+    }),
+  ).toHaveCount(1);
+  await expect(
+    page.getByRole('img', { name: 'Güteli Bakery' }).first(),
+  ).not.toHaveAttribute('alt', /Buenos momentos/);
 });
 
 test('homepage uses the approved graphic-only editorial treatment', async ({
@@ -403,9 +418,10 @@ test('the missing route keeps the final shell and a focusable main target', asyn
   await expect(main).toBeFocused();
 });
 
-test('footer exposes navigation and factual request guidance', async ({
+test('footer exposes compact navigation and the live demo contact state', async ({
   page,
 }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
 
   const footer = page.getByRole('contentinfo');
@@ -423,15 +439,18 @@ test('footer exposes navigation and factual request guidance', async ({
     footer.getByText('Pedidos con 2 días de anticipación.', { exact: true }),
   ).toBeVisible();
   await expect(
+    footer.getByRole('img', { name: 'Güteli Bakery' }),
+  ).toBeVisible();
+  await expect(
     footer.getByText('Costo de envío por confirmar según ubicación', {
       exact: true,
     }),
-  ).toBeVisible();
+  ).toHaveCount(0);
   await expect(
     footer.getByText('El pedido queda sujeto a confirmación por WhatsApp', {
       exact: true,
     }),
-  ).toBeVisible();
+  ).toHaveCount(0);
   await expect(footer.locator('a[href*="wa.me"]')).toHaveCount(0);
   await expect(
     footer.getByText('Las solicitudes no se envían desde esta demostración.', {

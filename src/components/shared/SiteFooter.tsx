@@ -1,10 +1,6 @@
 import Link from 'next/link';
 
-import {
-  operationalCopy,
-  primaryNavigation,
-  siteConfig,
-} from '@/content/business';
+import { primaryNavigation, siteConfig } from '@/content/business';
 import { publicSiteConfig } from '@/config/public-site';
 import { buildWhatsAppUrl } from '@/lib/whatsapp';
 import { OfficialLogo } from '@/components/shared/OfficialLogo';
@@ -24,8 +20,6 @@ export function SiteFooter() {
         <div className="site-footer__facts">
           <OfficialLogo className="official-logo official-logo--footer" />
           <p>Pedidos con {siteConfig.advanceDays} días de anticipación.</p>
-          <p>{operationalCopy.deliveryCost}</p>
-          <p>{operationalCopy.confirmation}</p>
         </div>
 
         <nav
