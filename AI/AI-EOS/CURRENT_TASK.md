@@ -83,9 +83,8 @@ Pretzels use “bolsa de 5” and nuditos use “bolsa de 15.” Other quantity 
 - Independent follow-up review verdict: Ready to merge, with no Critical or Important finding remaining. One Minor quantity-input UX refinement is non-blocking.
 - Formal approval was received. `finishing-a-development-branch` option 1 fast-forwarded `main` to the complete Milestone 2 history without squashing.
 - Merged-main verification passed `npm install`, format check, lint, typecheck, 27 unit tests, 49 browser tests, static build, and HTTP 200 on all five customer routes.
-- The approved private GitHub push is the only remaining integration action. Public deployment and later milestones remain blocked.
+- Private GitHub `main` was pushed and remote SHA parity was verified. Public deployment and later milestones remain blocked.
 
 ## Pending gate
 
-- Verify the approved private GitHub push reaches the local `main` HEAD.
 - Obtain separate authorization before deployment or another milestone.

@@ -12,6 +12,8 @@ Independent follow-up verdict: **Ready to merge**, with no Critical or Important
 
 Integration preserved all 15 feature commits without squashing. From merged `main`, install, formatting, lint, typecheck, 27 unit tests, 49 Chromium tests, static build, and the five-route HTTP 200 production-preview check passed.
 
+The verified `main` history was pushed to the private GitHub repository and local/remote SHA parity was confirmed. The clean feature worktree and fully merged local branch were then removed through the finishing workflow.
+
 No public deployment was attempted. No Lighthouse or equivalent synthetic performance score was produced. The static build retained the known workspace-root inference warning caused by the main checkout and worktree lockfiles; Playwright retained the environment-only `NO_COLOR`/`FORCE_COLOR` warning. The earlier Milestone 1 PostCSS advisory remains open and was not re-audited in Milestone 2.
 
 ## Milestone 1 evidence (preserved)
