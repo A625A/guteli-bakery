@@ -11,6 +11,11 @@ type ProductCardProps = {
   product: MenuProduct;
 };
 
+type Announcement = {
+  id: number;
+  message: string;
+};
+
 function getAddedMessage(product: MenuProduct, quantity: number): string {
   const unit = product.saleUnit?.toLocaleLowerCase('es-GT').startsWith('bolsa')
     ? quantity === 1
@@ -24,10 +29,15 @@ function getAddedMessage(product: MenuProduct, quantity: number): string {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const { addItem } = useCart();
+  const { addItem, items } = useCart();
   const [quantity, setQuantity] = useState(1);
-  const [announcement, setAnnouncement] = useState('');
+  const [announcement, setAnnouncement] = useState<Announcement | null>(null);
   const inputId = `quantity-${product.id}`;
+  const capacityId = `capacity-${product.id}`;
+  const currentQuantity =
+    items.find((item) => item.productId === product.id)?.quantity ?? 0;
+  const remainingCapacity = Math.max(0, 99 - currentQuantity);
+  const isAtCapacity = remainingCapacity === 0;
 
   function updateQuantity(event: ChangeEvent<HTMLInputElement>) {
     const nextQuantity = Math.trunc(event.currentTarget.valueAsNumber);
@@ -40,8 +50,18 @@ export function ProductCard({ product }: ProductCardProps) {
   }
 
   function addToCart() {
-    addItem(product.id, quantity);
-    setAnnouncement(getAddedMessage(product, quantity));
+    const effectiveQuantity = Math.min(quantity, remainingCapacity);
+
+    if (effectiveQuantity < 1) {
+      return;
+    }
+
+    addItem(product.id, effectiveQuantity);
+    setQuantity(1);
+    setAnnouncement((currentAnnouncement) => ({
+      id: (currentAnnouncement?.id ?? 0) + 1,
+      message: getAddedMessage(product, effectiveQuantity),
+    }));
   }
 
   return (
@@ -66,14 +86,23 @@ export function ProductCard({ product }: ProductCardProps) {
           inputMode="numeric"
           value={quantity}
           onChange={updateQuantity}
+          disabled={isAtCapacity}
+          aria-describedby={isAtCapacity ? capacityId : undefined}
         />
-        <button type="button" onClick={addToCart}>
-          Agregar {product.name} de {product.categoryLabel}
+        <button type="button" onClick={addToCart} disabled={isAtCapacity}>
+          {isAtCapacity
+            ? `Máximo de 99 alcanzado para ${product.name} de ${product.categoryLabel}`
+            : `Agregar ${product.name} de ${product.categoryLabel}`}
         </button>
       </div>
+      {isAtCapacity ? (
+        <p className="product-card__capacity" id={capacityId}>
+          Máximo de 99 productos en el carrito.
+        </p>
+      ) : null}
       {announcement ? (
-        <p className="product-card__status" role="status">
-          {announcement}
+        <p className="product-card__status" key={announcement.id} role="status">
+          {announcement.message}
         </p>
       ) : null}
     </article>

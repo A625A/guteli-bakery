@@ -67,6 +67,28 @@ test('shows all confirmed products and adds a selected quantity', async ({
   await expect(
     page.getByText('Cantidad por confirmar', { exact: true }),
   ).toHaveCount(4);
+  await expect(page.getByText('Bolsa de 5', { exact: true })).toHaveCount(3);
+  await expect(page.getByText('Bolsa de 15', { exact: true })).toHaveCount(1);
+
+  const expectedPrices = [
+    'Q60',
+    'Q75',
+    'Q75',
+    'Q60',
+    'Q75',
+    'Q75',
+    'Q55',
+    'Q60',
+  ];
+
+  for (const [index, price] of expectedPrices.entries()) {
+    await expect(
+      page
+        .getByTestId('product-card')
+        .nth(index)
+        .getByText(price, { exact: true }),
+    ).toBeVisible();
+  }
 
   await page.getByLabel('Cantidad de Originales, Pretzels').fill('2');
   await page
@@ -77,6 +99,53 @@ test('shows all confirmed products and adds a selected quantity', async ({
   await expect(
     page.getByRole('link', { name: 'Carrito, 2 productos' }),
   ).toBeVisible();
+});
+
+test('re-announces an identical repeated addition and updates the badge', async ({
+  page,
+}) => {
+  await page.goto('/menu/');
+
+  const addButton = page.getByRole('button', {
+    name: 'Agregar Originales de Pretzels',
+  });
+  await addButton.click();
+  const firstStatus = await page.getByRole('status').elementHandle();
+
+  await expect(page.getByRole('status')).toContainText('1 bolsa agregada');
+  await addButton.click();
+
+  expect(await firstStatus?.evaluate((node) => node.isConnected)).toBe(false);
+  await expect(page.getByRole('status')).toContainText('1 bolsa agregada');
+  await expect(
+    page.getByRole('link', { name: 'Carrito, 2 productos' }),
+  ).toBeVisible();
+});
+
+test('reports only the effective addition and disables adding at 99', async ({
+  page,
+}) => {
+  await page.goto('/menu/');
+
+  const quantity = page.getByLabel('Cantidad de Originales, Pretzels');
+  const addButton = page.getByRole('button', {
+    name: 'Agregar Originales de Pretzels',
+  });
+  await quantity.fill('98');
+  await addButton.click();
+  await quantity.fill('2');
+  await addButton.click();
+
+  await expect(page.getByRole('status')).toContainText('1 bolsa agregada');
+  await expect(
+    page.getByRole('link', { name: 'Carrito, 99 productos' }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('button', {
+      name: 'Máximo de 99 alcanzado para Originales de Pretzels',
+    }),
+  ).toBeDisabled();
+  await expect(quantity).toBeDisabled();
 });
 
 test('all eight menu variants can be added with a keyboard', async ({
