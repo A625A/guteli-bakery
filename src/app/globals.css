@@ -111,47 +111,19 @@ summary:focus-visible {
   text-decoration: none;
 }
 
-.brand-mark {
-  display: grid;
-  width: 11rem;
-  height: 3rem;
-  grid-template-columns: 1fr auto;
-  grid-template-rows: 1fr auto;
-  align-items: center;
-  column-gap: var(--space-2);
-  padding: 0.35rem 0.55rem;
-  border-radius: var(--radius-small);
-  background: var(--color-brand);
-  color: var(--color-brand-contrast);
+.official-logo {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
 }
 
-.brand-mark__name {
-  align-self: end;
-  font-family: var(--font-display);
-  font-size: 1.25rem;
-  letter-spacing: 0.08em;
-  line-height: 0.9;
+.official-logo--header {
+  width: clamp(10.5rem, 20vw, 13rem);
 }
 
-.brand-mark__bakery {
-  align-self: start;
-  color: var(--color-accent);
-  font-size: 0.55rem;
-  font-weight: 900;
-  letter-spacing: 0.32em;
-  line-height: 1;
-  text-transform: uppercase;
-}
-
-.brand-mark__symbol {
-  width: 2.25rem;
-  grid-column: 2;
-  grid-row: 1 / -1;
-  fill: none;
-  stroke: var(--color-accent);
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 6;
+.official-logo--footer {
+  width: min(12rem, 100%);
 }
 
 .desktop-navigation {
@@ -1502,20 +1474,9 @@ button:disabled,
   line-height: 1.4;
 }
 
-.site-footer__brand {
-  font-family: var(--font-display);
-  font-size: 1.2rem;
-  font-weight: 800;
-}
-
 @media (min-width: 48rem) {
   .site-header__inner {
     padding-block: var(--space-4);
-  }
-
-  .brand-mark {
-    width: 13rem;
-    height: 3.4rem;
   }
 
   .desktop-navigation {

@@ -7,6 +7,7 @@ import {
 } from '@/content/business';
 import { publicSiteConfig } from '@/config/public-site';
 import { buildWhatsAppUrl } from '@/lib/whatsapp';
+import { OfficialLogo } from '@/components/shared/OfficialLogo';
 
 const footerInquiry =
   'Hola, quisiera información sobre los productos de Güteli Bakery.';
@@ -21,7 +22,7 @@ export function SiteFooter() {
     <footer className="site-footer">
       <div className="site-footer__inner">
         <div className="site-footer__facts">
-          <p className="site-footer__brand">{siteConfig.name}</p>
+          <OfficialLogo className="official-logo official-logo--footer" />
           <p>Pedidos con {siteConfig.advanceDays} días de anticipación.</p>
           <p>{operationalCopy.deliveryCost}</p>
           <p>{operationalCopy.confirmation}</p>

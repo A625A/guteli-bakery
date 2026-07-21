@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRef, type MouseEvent } from 'react';
 
 import { CartBadge } from '@/components/cart/CartBadge';
-import { BrandMark } from '@/components/shared/BrandMark';
+import { OfficialLogo } from '@/components/shared/OfficialLogo';
 import { primaryNavigation } from '@/content/business';
 
 function NavigationLinks() {
@@ -36,7 +36,10 @@ export function SiteHeader() {
           href="/"
           aria-label="Güteli Bakery, inicio"
         >
-          <BrandMark />
+          <OfficialLogo
+            priority
+            className="official-logo official-logo--header"
+          />
         </Link>
 
         <nav className="desktop-navigation" aria-label="Navegación principal">

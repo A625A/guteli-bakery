@@ -49,6 +49,26 @@ for (const route of routes) {
     await expect(
       page.getByRole('link', { name: 'Güteli Bakery, inicio' }),
     ).toBeVisible();
+    const officialLogos = page.getByRole('img', { name: 'Güteli Bakery' });
+    await expect(officialLogos).toHaveCount(2);
+    await expect(officialLogos.first()).toHaveAttribute(
+      'src',
+      /\/brand\/guteli-logo-original\.jpeg$/,
+    );
+    const logoMetrics = await officialLogos.first().evaluate((image) => {
+      const element = image as HTMLImageElement;
+      const box = element.getBoundingClientRect();
+      return {
+        naturalHeight: element.naturalHeight,
+        naturalWidth: element.naturalWidth,
+        ratio: box.width / box.height,
+      };
+    });
+    expect(logoMetrics).toMatchObject({
+      naturalHeight: 240,
+      naturalWidth: 864,
+    });
+    expect(logoMetrics.ratio).toBeCloseTo(864 / 240, 1);
     await expect(
       page.getByRole('link', { name: 'Carrito, 0 productos' }),
     ).toBeVisible();
