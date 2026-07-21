@@ -4,7 +4,7 @@ import Link from 'next/link';
 import type { ChangeEvent } from 'react';
 
 import { useCart } from '@/components/cart/CartProvider';
-import { BasketIcon } from '@/components/shared/BasketIcon';
+import { BrandSymbol } from '@/components/shared/BrandSymbol';
 import { operationalCopy } from '@/content/business';
 import { formatGTQ } from '@/lib/money';
 
@@ -39,7 +39,9 @@ export function CartView() {
         </p>
       ) : lines.length === 0 ? (
         <section className="request-empty" aria-labelledby="empty-cart-title">
-          <BasketIcon className="basket-icon request-empty__basket" />
+          <BrandSymbol
+            className="brand-symbol--empty request-empty__brand-seal"
+          />
           <div>
             <h2 id="empty-cart-title">
               Tu canasta espera algo recién horneado

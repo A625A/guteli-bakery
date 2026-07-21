@@ -1,5 +1,6 @@
-import { operationalCopy, siteConfig } from '@/content/business';
+import { BrandSymbol } from '@/components/shared/BrandSymbol';
 import { publicSiteConfig } from '@/config/public-site';
+import { operationalCopy, siteConfig } from '@/content/business';
 import { buildWhatsAppUrl } from '@/lib/whatsapp';
 
 const contactQuestion =
@@ -27,6 +28,7 @@ export default function ContactPage() {
 
       <div className="contact-layout">
         <section className="contact-card" aria-labelledby="contact-number">
+          <BrandSymbol className="brand-symbol--contact" />
           <p className="eyebrow">WhatsApp</p>
           <h2 id="contact-number">{siteConfig.whatsappNumber}</h2>
           <p>Pedidos con {siteConfig.advanceDays} días de anticipación.</p>

@@ -20,7 +20,7 @@ export function MenuCatalog() {
               <p className="menu-category__number" aria-hidden="true">
                 {String(menuCategories.indexOf(category) + 1).padStart(2, '0')}
               </p>
-              <div>
+              <div className="menu-category__copy">
                 <h2 id={headingId}>{category.label}</h2>
                 <p className="menu-category__note">{category.note}</p>
               </div>

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 
 import { useCart } from '@/components/cart/CartProvider';
+import { BrandSymbol } from '@/components/shared/BrandSymbol';
 import type { WhatsAppHandoff } from '@/config/public-site';
 import { operationalCopy, siteConfig } from '@/content/business';
 import {
@@ -316,8 +317,15 @@ export function OrderRequest({ handoff }: { handoff: WhatsAppHandoff }) {
 
           {summary ? (
             <section className="order-summary" aria-labelledby="summary-title">
-              <p className="eyebrow">Todavía no se ha enviado</p>
-              <h2 id="summary-title">Tu solicitud está lista para revisar</h2>
+              <div className="order-summary__brand-heading">
+                <div>
+                  <p className="eyebrow">Todavía no se ha enviado</p>
+                  <h2 id="summary-title">
+                    Tu solicitud está lista para revisar
+                  </h2>
+                </div>
+                <BrandSymbol className="brand-symbol--summary" />
+              </div>
               <p>{operationalCopy.confirmation}</p>
               <label htmlFor="order-summary-text">
                 Resumen de la solicitud

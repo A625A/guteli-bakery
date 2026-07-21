@@ -16,6 +16,7 @@ export function SiteFooter() {
 
   return (
     <footer className="site-footer">
+      <span className="site-footer__top-rule" aria-hidden="true" />
       <div className="site-footer__inner">
         <div className="site-footer__facts">
           <OfficialLogo className="official-logo official-logo--footer" />

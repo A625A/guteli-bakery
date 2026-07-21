@@ -149,6 +149,17 @@ test('homepage hero is anchored by the official logo', async ({ page }) => {
   expect(ratioDifference).toBeLessThan(0.02);
 });
 
+test('secondary brand seals are restrained and decorative', async ({
+  page,
+}) => {
+  for (const path of ['/menu/', '/cart/', '/contact/']) {
+    await page.goto(path);
+    const symbols = page.locator('main img[src*="guteli-symbol-original"]');
+    await expect(symbols).toHaveCount(1);
+    await expect(symbols.first()).toHaveAttribute('alt', '');
+  }
+});
+
 test('menu exposes graphic media slots without product photography', async ({
   page,
 }) => {

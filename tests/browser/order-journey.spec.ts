@@ -124,7 +124,7 @@ test('offers a menu recovery path when the cart is empty', async ({ page }) => {
   await expect(page.getByLabel('Nombre completo')).toHaveCount(0);
 });
 
-test('persists cart changes across reload and removes a line on request', async ({
+test('removing the final item restores the empty cart state', async ({
   page,
 }) => {
   await page.goto('/menu/');
@@ -153,6 +153,7 @@ test('persists cart changes across reload and removes a line on request', async 
       name: 'Tu canasta espera algo recién horneado',
     }),
   ).toBeVisible();
+  await expect(page.locator('.request-empty__brand-seal')).toBeVisible();
   await expect(
     page.getByRole('link', { name: 'Canasta, 0 productos' }),
   ).toBeVisible();
