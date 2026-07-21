@@ -37,3 +37,9 @@ Append-only record of project-level engineering decisions.
 **Decision:** Formally approve Milestone 1 and merge `milestone-1-foundation` into `main` using a fast-forward-only merge. Preserve every feature-branch commit; do not squash, push, deploy, or start Milestone 2.
 
 **Result:** `main` contains the complete Milestone 1 history. Verification from `main` passed dependency installation, formatting, lint, type generation and TypeScript, three unit tests, nine Chromium tests, static export, and an HTTP 200 production preview. A worktree-portability regression was fixed with RED/GREEN coverage, and an empty untracked legacy `app/` directory was removed so Next.js resolves the approved `src/app/` tree. Milestone 2 remains gated on explicit user approval.
+
+## 2026-07-21 — Consolidated Milestone 2 working MVP
+
+**Decision:** Replace the former separate homepage/menu, cart, order-handoff, and final-quality milestones with one authorized Milestone 2 that delivers the complete usable customer journey and proportional evidence.
+
+**Result:** The approved foundation remains intact. Milestone 2 may implement the complete static customer experience, but no public deployment, backend, payment integration, WhatsApp bot/API, CMS, authentication, inventory system, or multi-tenant platform is authorized.

@@ -1,10 +1,10 @@
 # Current Task
 
-Updated: 2026-07-19
+Updated: 2026-07-21
 
 ## Objective
 
-Milestone 1 is formally approved and merged into `main` as of 2026-07-19. The complete feature-branch history was preserved through a fast-forward merge, and the required install, lint, typecheck, unit, browser, build, and local-preview checks passed from `main`. Milestone 2 remains blocked until explicit user approval. No deployment is authorized.
+Milestones 0 and 1 are complete, approved, committed, tagged, merged where applicable, and verified. Milestone 2 is authorized as one implementation milestone that must deliver the complete working customer-facing website MVP. No public deployment is authorized.
 
 ## Approved product scope
 
@@ -52,19 +52,22 @@ Approved safe copy includes:
 
 Pretzels use “bolsa de 5” and nuditos use “bolsa de 15.” Other quantity fields remain optional in typed menu data.
 
-## Milestone 1 repository deliverables
+## Milestone 2 authorized deliverables
 
-- Static Spanish-first shells for home, menu, cart, order, and contact
-- Portable npm commands and static `out/` preview
-- Verified formatting, linting, type, unit, Playwright, build, and direct runtime evidence
-- Real 1440×1000 desktop and 390×844 mobile screenshots
-- Repository capability and artifact reports
-- Formally approved Milestone 1 checkpoint on `main`
+- Complete responsive homepage, menu, cart, order, and contact experiences
+- Centralized typed confirmed menu content without invented facts
+- Browser-local cart persistence for product IDs and quantities only
+- Pickup or delivery selection, customer form, and Guatemala-local two-day date validation
+- Readable and copyable Spanish order summary
+- User-controlled WhatsApp click-to-chat handoff with visible fallback
+- Real desktop and mobile screenshots of the homepage and complete order journey
+- Proportional build, test, accessibility, visual, preview, and release evidence
 
 ## Acceptance criteria
 
-- No runtime dependency references the external vault or an absolute local path.
-- The static application builds into `out/` and its five foundation routes serve locally.
-- The Task 4 repository evidence is complete and committed.
-- The three external Obsidian-vault evidence notes are synchronized and all 19 Phase 2 notes and 69 wikilinks are validated.
-- Milestone 1 is merged, documented, and verified from `main`; Milestone 2 requires explicit user approval before work begins.
+- The real confirmed menu is visible and cart add, update, remove, subtotal, and invalid-persistence recovery work.
+- The order form enforces required information and the Guatemala-local two-day rule.
+- Spanish summary, copy fallback, WhatsApp URL, and handoff fallback work without automatic sending or confirmation claims.
+- The complete journey works on desktop and mobile with keyboard access, visible focus, no horizontal overflow, and no browser-console errors.
+- All required npm checks, static build, local preview, screenshots, reports, and independent review pass with no Critical or Important findings.
+- No runtime dependency references the external vault, absolute local paths, secrets, or unauthorized infrastructure.

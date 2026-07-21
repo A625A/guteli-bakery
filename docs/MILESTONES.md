@@ -14,36 +14,22 @@ Status: complete and formally approved.
 
 ## Milestone 1 — Frontend foundation
 
-Status: complete, formally approved, and merged into `main`; Milestone 2 is blocked until explicit user approval.
+Status: complete, formally approved, and merged into `main`.
 
 - Initialize the frontend application
 - Configure TypeScript, formatting, linting, tests, and portable scripts
 - Establish design tokens and global structure
 - Verify the application starts locally
 
-## Milestone 2 — Brand, homepage, and menu
+## Milestone 2 — Complete working website MVP
 
-Status: blocked until explicit user approval.
+Status: authorized as the complete working website MVP.
 
-- Build the shared layout, homepage, typed menu, and product cards
-- Verify desktop and mobile rendering
-- Capture real running-application screenshots
+- Build the finished responsive homepage, complete confirmed menu, cart, order form, contact experience, navigation, and footer
+- Implement browser-local cart persistence, GTQ subtotal, pickup/delivery choice, customer validation, and Guatemala-local two-day date validation
+- Generate a readable Spanish summary, copy fallback, and user-controlled WhatsApp click-to-chat handoff
+- Verify the complete journey on desktop and mobile and capture real running-application screenshots
+- Complete proportional accessibility, visual, build, test, preview, and release evidence
+- Finish only when no Critical or Important review findings remain
 
-## Milestone 3 — Cart
-
-- Implement cart domain logic, browser persistence, recovery, and UI states
-- Test calculations and capture interaction evidence
-
-## Milestone 4 — Order request and WhatsApp handoff
-
-- Build the order form, fulfillment rules, local-date validation, order summary, copy fallback, and WhatsApp URL
-- Test validation and encoding and capture all required states
-
-## Milestone 5 — Final quality gate
-
-- Complete accessibility, visual, and performance review
-- Run formatter, linter, type checker, tests, and production build
-- Complete artifact reports and project memory
-- Present the local preview and evidence
-
-Public deployment is not part of these milestones and requires separate explicit approval.
+The former Milestones 2, 3, 4, and final quality pass are consolidated into this milestone. Public deployment is not part of Milestone 2 and requires separate explicit approval.
