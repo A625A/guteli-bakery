@@ -1,5 +1,13 @@
 # Performance Report
 
+## Milestone 3 runtime observations — 2026-07-21
+
+Status: **Static runtime observations recorded; no performance score produced.**
+
+The optimized default and explicit-live static exports compiled successfully. The final default export packages the code-rendered header mark and original SVG/CSS bakery illustrations; it does not package or preload the 192 KB photo-bearing flyer. The 59-test browser run exercised all five customer routes, responsive states, reduced-motion behavior, and artifact capture without a console-error finding in the captured journeys. The default static preview returned HTTP 200 for every customer route.
+
+No Lighthouse, Core Web Vitals capture, bundle analyzer, network throttling, or performance budget was run. Build and test elapsed times are not user-facing performance scores.
+
 ## Milestone 2 runtime observations — 2026-07-21
 
 Status: **Structural observations recorded; no performance score produced.**

@@ -1,5 +1,13 @@
 # Preview Information
 
+## Milestone 3 verified local preview — 2026-07-21
+
+Status: **Verified locally; stopped after checks; not publicly deployed.**
+
+The restored default-demo static export was served with `npm run start` at `http://127.0.0.1:3000`. Requests to `/`, `/menu/`, `/cart/`, `/order/`, and `/contact/` each returned HTTP 200. The exported homepage includes the demo notice and no exact live or test WhatsApp destination.
+
+The server stopped cleanly after verification. Public deployment remains explicitly unauthorized.
+
 ## Milestone 2 verified preview — 2026-07-21
 
 Status: **Verified locally at capture time; public preview not authorized.**

@@ -4,7 +4,7 @@ Updated: 2026-07-21
 
 ## Objective
 
-Milestones 0, 1, and 2 are complete and formally approved. Milestone 2 was fast-forwarded into `main` with its complete commit history preserved and verified from the merged main checkout. No public deployment or later milestone is authorized.
+Milestones 0, 1, and 2 are complete and formally approved. Milestone 3 portfolio polish is implemented and locally verified on the isolated `milestone-3-portfolio-polish` branch. It is not approved, merged, pushed, tagged, or deployed; user visual approval is the next gate.
 
 ## Approved product scope
 
@@ -63,6 +63,19 @@ Pretzels use “bolsa de 5” and nuditos use “bolsa de 15.” Other quantity 
 - Real desktop and mobile screenshots of the homepage and complete order journey
 - Proportional build, test, accessibility, visual, preview, and release evidence
 
+## Milestone 3 verified candidate
+
+- Original graphic-only editorial homepage using typography and SVG/CSS bakery forms
+- Code-rendered compact brand mark; the photo-bearing reference flyer is absent from the customer bundle
+- Eight clearly labelled category-illustration slots sized for later authentic photography
+- Polished responsive menu, cart, form, validation, summary, copy, and contact states
+- Visible default demo banner with no active WhatsApp destination
+- Explicit live mode restricted to the confirmed `50242569861` destination; all other destinations fail closed
+- Separate live and unavailable browser configuration tests
+- Ten real runtime screenshots and a standalone portfolio case study
+- Independent review findings addressed in commit `7c78b70`
+- Focused follow-up review: Ready for visual approval, with no Critical or Important finding remaining
+
 ## Acceptance criteria
 
 - The real confirmed menu is visible and cart add, update, remove, subtotal, and invalid-persistence recovery work.
@@ -87,4 +100,5 @@ Pretzels use “bolsa de 5” and nuditos use “bolsa de 15.” Other quantity 
 
 ## Pending gate
 
-- Obtain separate authorization before deployment or another milestone.
+- Obtain user visual approval before any Milestone 3 integration action.
+- Do not merge, push, tag, or deploy until separately authorized.

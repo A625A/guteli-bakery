@@ -1,5 +1,20 @@
 # Accessibility Report
 
+## Milestone 3 basic accessibility review — 2026-07-21
+
+Status: **Basic checklist PASS; not a WCAG conformance claim.**
+
+| Check                           | Observed result                                                                                                                                                                                                                                                                                                                                                                      |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Semantics and text alternatives | PASS: the five customer routes retain named navigation, one main landmark, headings, and labelled controls. Decorative bakery vectors and the code-rendered header mark are hidden from assistive technology; the header link supplies the brand name, and each illustrative menu slot has an explicit category-illustration label. No customer-facing raster product image remains. |
+| Keyboard and focus              | PASS: the 59-test Chromium suite covers skip-link focus transfer at desktop and mobile widths, the five-link mobile menu and route-close behavior, logical order-form keyboard sequence, focused validation recovery, and keyboard addition of all eight menu variants.                                                                                                              |
+| Form labels and errors          | PASS: every order field is associated with a visible label; required fields expose `aria-invalid` and linked error text; the error summary receives focus and links to the invalid field.                                                                                                                                                                                            |
+| Target size and overflow        | PASS: site-controlled interactive targets meet the tested 44px minimum on all five routes at 390px; route checks at 320, 768, 1024, and 1440px found no horizontal overflow on the homepage.                                                                                                                                                                                         |
+| Reduced motion                  | PASS: the browser regression verifies smooth scrolling and decorative illustration animation are disabled when reduced motion is requested.                                                                                                                                                                                                                                          |
+| Contrast spot-check             | PASS for the checked design-token pairs: body text/background 15.60:1, muted text/background 7.26:1, brand contrast 15.60:1, accent on brand 5.89:1, caramel on background 5.11:1, error text/surface 6.91:1, and focus colors 5.52:1 or better. This is a targeted token calculation, not a full rendered-page contrast audit.                                                      |
+
+No high-risk violation was found in this checklist. No axe, Lighthouse, screen-reader session, or comprehensive WCAG audit was run.
+
 ## Milestone 2 basic browser observations — 2026-07-21
 
 Status: **Basic browser checklist PASS; not a WCAG conformance claim.**

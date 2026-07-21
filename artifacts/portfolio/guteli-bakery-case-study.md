@@ -8,7 +8,7 @@ Güteli Bakery had confirmed products, prices, ordering caveats, a logo, and a W
 
 The project is a Spanish-first, mobile-first storefront and order-request experience. Customers can browse the confirmed menu, select quantities, review a cart estimate, enter fulfillment details, validate the minimum request date, generate a readable summary, and copy that summary for coordination.
 
-The visual system uses Güteli's confirmed name and wordmark with original editorial typography, flat brand color, abstract pretzel-inspired line work, packaging-style labels, and clearly identified category illustrations. It does not reuse the flyer’s product photographs or imply that the artwork depicts Güteli's actual products.
+The visual system uses Güteli's confirmed name with original editorial typography, flat brand color, abstract pretzel-inspired line work, packaging-style labels, and clearly identified category illustrations. It does not reuse the flyer’s product photographs or imply that the artwork depicts Güteli's actual products.
 
 ## Customer journey
 
@@ -55,7 +55,7 @@ The product-card media region is isolated in `ProductArtwork`. Verified high-res
 
 Portfolio builds fail safely into demo mode. A persistent banner explains that no request is sent, the complete summary and copy flow remain usable, and no active `wa.me` link is rendered in the order page, contact page, or footer.
 
-Live handoff requires both the exact public setting `NEXT_PUBLIC_DEMO_MODE=false` and a valid digits-only `NEXT_PUBLIC_WHATSAPP_DESTINATION`. The displayed business number is separate from the configured send destination and is never silently reused. Missing or malformed live configuration shows an unavailable state and preserves manual copy.
+Live handoff requires both the exact public setting `NEXT_PUBLIC_DEMO_MODE=false` and `NEXT_PUBLIC_WHATSAPP_DESTINATION=50242569861`, which matches the confirmed displayed business number. A missing, malformed, or different destination fails closed into an unavailable state and preserves manual copy.
 
 ## Selected screenshots
 

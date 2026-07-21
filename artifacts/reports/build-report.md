@@ -1,5 +1,17 @@
 # Build Report
 
+## Milestone 3 portfolio-polish candidate — 2026-07-21
+
+Status: **Default and explicit-live static builds PASS; default demo export restored and locally verified.**
+
+- `npm install` completed successfully and installed the locked dependency graph in the isolated worktree.
+- `npm run build` compiled Next.js 16.2.10 and generated the same six static routes: `/`, `/_not-found`, `/cart`, `/contact`, `/menu`, and `/order`.
+- An explicit live build with `NEXT_PUBLIC_DEMO_MODE=false` and the confirmed `50242569861` destination also passed. Its exported links used that destination, and searches found neither the unapproved test destination nor the flyer reference.
+- The default build was run again after the live proof. Its final `out/` contains the visible demo banner and no exact live/test WhatsApp destination, photo-bearing flyer reference, or removed “Referencia original de la marca” caption.
+- `npm run start` served the restored default `out/`; `/`, `/menu/`, `/cart/`, `/order/`, and `/contact/` each returned HTTP 200 before the server stopped cleanly.
+
+The only build warning was Next.js workspace-root inference caused by lockfiles in the main checkout and isolated worktree. No fresh dependency audit was run; the preserved Milestone 1 PostCSS advisory remains the current dependency-risk record.
+
 ## Milestone 2 working candidate — 2026-07-21
 
 Status: **Static build PASS.**

@@ -1,5 +1,19 @@
 # Visual Review
 
+## Milestone 3 graphic-only portfolio evidence — 2026-07-21
+
+Status: **PASS in final evidence inspection; awaiting user visual approval.**
+
+All ten PNGs were recaptured from the running application and visually inspected. They contain typography, original SVG/CSS bakery forms, category-labelled illustrative slots, and a code-rendered Güteli header mark; they contain no flyer crop, product photography, fake product photography, or “Referencia original de la marca” caption.
+
+- Desktop 1440px: homepage 1440×2730, menu 1440×4597, cart 1440×1445, summary 1440×1845.
+- Mobile 390px: homepage 390×3403, menu 390×5811, cart 390×2084, summary 390×2691.
+- Interaction states: validation 1440×2088 and demo handoff 1440×1845.
+
+Inspection confirmed a clear editorial hierarchy, readable menu/card rhythm, stable future-ready media slots, visible category-illustration disclosure, legible form and summary content, selected fulfillment styling, focused validation summary, copy-success feedback, complete footers, and no visible clipping or horizontal overflow. The new compact wordmark remains readable at desktop and mobile widths and does not load the reference flyer.
+
+The final complete browser run passed all 59 cases and recaptured the same evidence paths. Visual approval is still a user gate; these observations do not authorize integration or deployment.
+
 ## Milestone 2 evidence — 2026-07-21
 
 Status: **PASS after capture-state corrections.**

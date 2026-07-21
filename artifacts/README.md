@@ -23,9 +23,11 @@ This directory stores evidence captured from the actual running application.
 - Milestone 3 mobile: `screenshots/mobile/milestone-3-homepage.png`, `milestone-3-menu.png`, `milestone-3-cart.png`, and `milestone-3-summary.png`, captured full-page from a 390×844 viewport.
 - Milestone 3 interaction states: `screenshots/interaction-states/milestone-3-validation.png` and `milestone-3-demo-handoff.png`, captured full-page from a 1440×1000 viewport.
 - Portfolio case study: `portfolio/guteli-bakery-case-study.md` documents the verified problem, solution, journey, demo-safety model, technical approach, limitations, and real screenshots.
-- Reports: build, tests, accessibility, performance, visual review, preview, and release-summary contain separately labelled Milestone 1 and Milestone 2 evidence.
+- Reports: build, tests, accessibility, performance, visual review, preview, and release-summary contain separately labelled Milestone 1, Milestone 2, and Milestone 3 evidence.
 - Public deployment: not authorized.
 
-Final independent follow-up review found no Critical or Important issue. One Minor quantity-input UX refinement remains non-blocking.
+The final Milestone 2 independent follow-up review found no Critical or Important issue. One Minor quantity-input UX refinement remains non-blocking.
 
-The external Phase 2 Obsidian project-memory notes remain synchronized through Milestone 2; Milestone 3 candidate evidence will be recorded after its final verification and review. Frontmatter and internal wikilinks remain valid. Milestones 1 and 2 are approved, merged, and verified from `main`; Milestone 3 remains on its isolated branch awaiting visual approval. This remains a private repository artifact, not a public deployment. The earlier moderate PostCSS advisory remains open unless the final Milestone 3 verification reports otherwise.
+The focused Milestone 3 follow-up review found no Critical or Important issue and returned Ready for visual approval. Its only Minor documentation omission was corrected before the final evidence commit.
+
+The external Phase 2 Obsidian project-memory notes are synchronized through the verified Milestone 3 candidate. Frontmatter and internal wikilinks remain valid. Milestones 1 and 2 are approved, merged, and verified from `main`; Milestone 3 remains on its isolated branch awaiting visual approval. This remains a private repository artifact, not a public deployment. The earlier moderate PostCSS advisory remains open; Milestone 3 did not rerun the dependency audit.

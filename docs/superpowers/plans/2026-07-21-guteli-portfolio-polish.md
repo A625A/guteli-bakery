@@ -905,6 +905,8 @@ npm run lint
 npm run typecheck
 npm test
 npm run test:e2e
+npm run test:e2e:live
+npm run test:e2e:unavailable
 npm run build
 npm run start
 ```
