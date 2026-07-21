@@ -73,3 +73,12 @@ Availability is session-specific and must be rechecked before use.
 | `browser:control-in-app-browser` | Yes | Yes | Inspect the live app at real desktop and mobile viewports | Navigated the localhost app, inspected DOM and screenshots, and reset the viewport; deterministic capture remained in Playwright. |
 | `accessibility-basic-check` | Yes | Yes | Apply the proportional accessibility checklist | Guided semantic, label, focus, keyboard, target-size, overflow, and contrast-evidence checks recorded in the accessibility report. |
 | `obsidian-markdown` | Yes | Yes | Maintain the authorized Phase 2 project memory | Preserved frontmatter and wikilinks while synchronizing Current State, Decisions, Testing, and Session Log. |
+
+## Milestone 3 capability record
+
+| Skill | Verified | Used in milestone | Purpose | Result |
+|---|---:|---:|---|---|
+| `superpowers:using-superpowers` | Yes | Yes | Route meaningful Milestone 3 tasks through applicable workflows | Selected and sequenced brainstorming, planning, isolated-worktree, implementation, review, and verification workflows before production changes. |
+| `superpowers:brainstorming` | Yes | Yes | Define a focused portfolio-polish direction without reopening the approved architecture | Audited the working MVP and evidence, confirmed the user-selected graphic-only direction, and committed the self-reviewed design specification as `b466f3d`. |
+| `superpowers:writing-plans` | Yes | Yes | Convert the approved direction into an executable implementation plan | Created the task-by-task Milestone 3 plan with fail-first behavior checks, exact file boundaries, evidence capture, and a clean coverage/placeholder/type self-review. |
+| `superpowers:using-git-worktrees` | Yes | Yes | Isolate Milestone 3 from the approved `main` baseline | Created branch `milestone-3-portfolio-polish` in ignored worktree `.worktrees/milestone-3-portfolio-polish`; `main` remained unchanged. |
