@@ -1,5 +1,22 @@
 # Accessibility Report
 
+## Milestone 2 basic browser observations — 2026-07-21
+
+Status: **Basic browser checklist PASS; not a WCAG conformance claim.**
+
+| Check                        | Observed result                                                                                                                                                                                                                            |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Customer-journey semantics   | PASS: accessible roles and labels drove the real `/` → `/menu/` → `/cart/` → `/order/` journey; two distinct cart lines, pickup controls, the requested-date field, summary, and WhatsApp action were located by their accessible names.   |
+| Validation and focus         | PASS: leaving only `Nombre completo` blank produced one linked error, moved focus to the `role="alert"` summary, exposed the field error in the full-page capture, and preserved the entered phone, pickup mode, and current minimum date. |
+| Keyboard and targets         | PASS in the full 45-test Chromium suite: the skip link transfers focus at 1440×1000 and 390×844; site-controlled mobile links, buttons, menu controls, error recovery links, and footer links meet the tested 44px minimum geometry.       |
+| Overflow and console         | PASS: every artifact capture asserted `scrollWidth <= clientWidth`; the full suite passed mobile overflow coverage on `/`, `/menu/`, `/cart/`, `/order/`, and `/contact/`. The artifact journey collected zero browser console errors.     |
+| Summary readability          | PASS: the labelled read-only summary remains visible with pickup mode, both products, subtotal content, copy control, and explicit WhatsApp handoff; the complete text is available in its scrollable textarea.                            |
+| Contrast and automated audit | Not measured: no axe, Lighthouse, or contrast checker was run.                                                                                                                                                                             |
+
+Remaining Minor accessibility findings from the inspected evidence: none observed. This is limited to the implemented browser checks and visual inspection, not a comprehensive assistive-technology audit.
+
+## Milestone 1 evidence (preserved)
+
 Status: **Basic checklist PASS; Milestone 1 formally approved — 2026-07-19**
 
 | Check                           | Result                                                                                                                                                                      |

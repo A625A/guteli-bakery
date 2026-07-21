@@ -1,5 +1,21 @@
 # Build Report
 
+## Milestone 2 working candidate — 2026-07-21
+
+Status: **Static build PASS.**
+
+Command: `npm run build`
+
+Result: Next.js 16.2.10 compiled successfully, completed TypeScript, and reported six statically prerendered routes: `/`, `/_not-found`, `/cart`, `/contact`, `/menu`, and `/order`. The command exited 0.
+
+Observed non-blocking warning: Next.js inferred the workspace root from `/Users/andrewarana/Desktop/Guteli Bakery/package-lock.json` and reported the worktree lockfile as additional. No build error or dynamic/server route was produced.
+
+Local runtime check: `curl -sS -I http://127.0.0.1:3000/` returned HTTP 200 from the already-running Next.js development server at `Tue, 21 Jul 2026 08:05:26 GMT`.
+
+Task 8 did not rerun `npm audit`; the Milestone 1 dependency-audit record below is preserved and must not be read as a fresh 2026-07-21 audit.
+
+## Milestone 1 evidence (preserved)
+
 Status: **Merged-main static build and preview PASS — 2026-07-19**
 
 Command: `npm run build`
