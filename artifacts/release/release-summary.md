@@ -1,14 +1,16 @@
 # Release Summary
 
-## Milestone 2 candidate — 2026-07-21
+## Milestone 2 approved integration — 2026-07-21
 
-Status: **Working MVP and local evidence verified on `milestone-2-working-mvp`; formal approval, merge, and public release remain pending.**
+Status: **Formally approved, fast-forwarded into `main`, and verified from the merged main checkout. Public deployment remains unauthorized.**
 
 The working candidate completed install, formatting, lint, route type generation plus TypeScript, 27 Vitest tests, 49 Chromium Playwright tests, and the Next.js static build. `npm run start` served the static export, and all five customer routes returned HTTP 200. The browser suite includes a reproducible two-item customer journey at 1440×1000 and 390×844, one focused validation state, zero captured console errors, and no horizontal overflow in the captured states. Seven real runtime screenshots were generated, visually inspected at original detail, and remained byte-identical after the final browser run.
 
 Independent review found four Important issues: a mobile menu that persisted across client navigation, reviewed order details that could become stale before WhatsApp handoff, a date threshold that could become stale across Guatemala midnight, and evidence records that lagged the reviewed HEAD. The three behavior defects were reproduced with fail-first browser tests and fixed; this evidence synchronization resolves the fourth. No Critical finding was reported.
 
 Independent follow-up verdict: **Ready to merge**, with no Critical or Important finding remaining. One non-blocking Minor recommends explicit feedback instead of silently clamping invalid menu quantities.
+
+Integration preserved all 15 feature commits without squashing. From merged `main`, install, formatting, lint, typecheck, 27 unit tests, 49 Chromium tests, static build, and the five-route HTTP 200 production-preview check passed.
 
 No public deployment was attempted. No Lighthouse or equivalent synthetic performance score was produced. The static build retained the known workspace-root inference warning caused by the main checkout and worktree lockfiles; Playwright retained the environment-only `NO_COLOR`/`FORCE_COLOR` warning. The earlier Milestone 1 PostCSS advisory remains open and was not re-audited in Milestone 2.
 

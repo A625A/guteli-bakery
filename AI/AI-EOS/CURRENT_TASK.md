@@ -4,7 +4,7 @@ Updated: 2026-07-21
 
 ## Objective
 
-Milestones 0 and 1 are complete, approved, committed, tagged, merged where applicable, and verified. The complete Milestone 2 working MVP is implemented and locally verified on `milestone-2-working-mvp`. Formal approval and merge remain pending. No public deployment is authorized.
+Milestones 0, 1, and 2 are complete and formally approved. Milestone 2 was fast-forwarded into `main` with its complete commit history preserved and verified from the merged main checkout. No public deployment or later milestone is authorized.
 
 ## Approved product scope
 
@@ -81,9 +81,11 @@ Pretzels use “bolsa de 5” and nuditos use “bolsa de 15.” Other quantity 
 - Seven real screenshots were recaptured by the final browser run and remained byte-identical to the inspected evidence.
 - Initial independent review reported no Critical findings and four Important findings. Pre-hydration cart loss, persistent mobile navigation, stale reviewed handoff data, Guatemala-midnight date drift, and stale evidence were addressed with regression evidence where applicable.
 - Independent follow-up review verdict: Ready to merge, with no Critical or Important finding remaining. One Minor quantity-input UX refinement is non-blocking.
-- `finishing-a-development-branch` option 3 applies: preserve the feature branch and worktree. Do not merge, push, tag, deploy, remove the worktree, or begin another milestone without approval.
+- Formal approval was received. `finishing-a-development-branch` option 1 fast-forwarded `main` to the complete Milestone 2 history without squashing.
+- Merged-main verification passed `npm install`, format check, lint, typecheck, 27 unit tests, 49 browser tests, static build, and HTTP 200 on all five customer routes.
+- The approved private GitHub push is the only remaining integration action. Public deployment and later milestones remain blocked.
 
 ## Pending gate
 
-- Formal user approval
-- Any separately authorized integration decision
+- Verify the approved private GitHub push reaches the local `main` HEAD.
+- Obtain separate authorization before deployment or another milestone.
