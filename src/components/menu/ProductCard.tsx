@@ -29,7 +29,7 @@ function getAddedMessage(product: MenuProduct, quantity: number): string {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const { addItem, items } = useCart();
+  const { addItem, hydrated, items } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [announcement, setAnnouncement] = useState<Announcement | null>(null);
   const inputId = `quantity-${product.id}`;
@@ -86,10 +86,14 @@ export function ProductCard({ product }: ProductCardProps) {
           inputMode="numeric"
           value={quantity}
           onChange={updateQuantity}
-          disabled={isAtCapacity}
+          disabled={!hydrated || isAtCapacity}
           aria-describedby={isAtCapacity ? capacityId : undefined}
         />
-        <button type="button" onClick={addToCart} disabled={isAtCapacity}>
+        <button
+          type="button"
+          onClick={addToCart}
+          disabled={!hydrated || isAtCapacity}
+        >
           {isAtCapacity
             ? `Máximo de 99 alcanzado para ${product.name} de ${product.categoryLabel}`
             : `Agregar ${product.name} de ${product.categoryLabel}`}

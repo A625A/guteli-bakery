@@ -1,5 +1,20 @@
 import { expect, test } from '@playwright/test';
 
+test('keeps add controls unavailable until the persisted cart can hydrate', async ({
+  browser,
+}) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  const page = await context.newPage();
+
+  await page.goto('/menu/');
+
+  await expect(
+    page.getByRole('button', { name: 'Agregar Originales de Pretzels' }),
+  ).toBeDisabled();
+
+  await context.close();
+});
+
 test('homepage presents the factual ordering path and canonical price previews', async ({
   page,
 }) => {
@@ -168,6 +183,9 @@ test('all eight menu variants can be added with a keyboard', async ({
   ] as const;
 
   await page.goto('/menu/');
+  await expect(
+    page.getByRole('link', { name: 'Carrito, 0 productos' }),
+  ).toBeVisible();
 
   for (const name of addActions) {
     const button = page.getByRole('button', { name });
