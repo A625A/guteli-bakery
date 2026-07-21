@@ -97,7 +97,7 @@ export function ProductCard({ product }: ProductCardProps) {
       </div>
       {isAtCapacity ? (
         <p className="product-card__capacity" id={capacityId}>
-          Máximo de 99 productos en el carrito.
+          Máximo de 99 unidades para esta opción del menú.
         </p>
       ) : null}
       {announcement ? (

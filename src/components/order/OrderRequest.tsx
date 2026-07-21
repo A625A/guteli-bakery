@@ -1,0 +1,323 @@
+'use client';
+
+import Link from 'next/link';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
+
+import { useCart } from '@/components/cart/CartProvider';
+import { operationalCopy, siteConfig } from '@/content/business';
+import {
+  validateOrder,
+  type OrderErrors,
+  type OrderFormValues,
+} from '@/domain/order';
+import { getMinimumOrderDate } from '@/lib/date';
+import { buildOrderSummary } from '@/lib/order-summary';
+import { buildWhatsAppUrl } from '@/lib/whatsapp';
+
+const initialValues: OrderFormValues = {
+  name: '',
+  phone: '',
+  fulfillment: 'pickup',
+  requestedDate: '',
+  location: '',
+  notes: '',
+};
+
+const fieldLabels: Record<keyof OrderFormValues, string> = {
+  name: 'Nombre completo',
+  phone: 'Teléfono',
+  fulfillment: 'Modalidad',
+  requestedDate: 'Fecha solicitada',
+  location: 'Ubicación o dirección',
+  notes: 'Notas opcionales',
+};
+
+export function OrderRequest() {
+  const { hydrated, lines } = useCart();
+  const [values, setValues] = useState<OrderFormValues>(initialValues);
+  const [errors, setErrors] = useState<OrderErrors>({});
+  const [summary, setSummary] = useState<string | null>(null);
+  const [copyStatus, setCopyStatus] = useState('');
+  const [minimumDate] = useState(() => getMinimumOrderDate(new Date(), 2));
+  const errorSummaryRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (Object.keys(errors).length > 0) {
+      errorSummaryRef.current?.focus();
+    }
+  }, [errors]);
+
+  function setField<Key extends keyof OrderFormValues>(
+    field: Key,
+    value: OrderFormValues[Key],
+  ) {
+    setValues((currentValues) => ({ ...currentValues, [field]: value }));
+  }
+
+  function reviewRequest(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const nextErrors = validateOrder(values, minimumDate);
+
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
+      return;
+    }
+
+    setErrors({});
+    setCopyStatus('');
+    setSummary(buildOrderSummary(lines, values));
+  }
+
+  async function copySummary() {
+    if (!summary) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(summary);
+      setCopyStatus('Resumen copiado.');
+    } catch {
+      setCopyStatus(
+        'No se pudo copiar automáticamente. Selecciona y copia el resumen manualmente.',
+      );
+    }
+  }
+
+  return (
+    <main id="main-content" className="order-page" tabIndex={-1}>
+      <header className="request-page__intro">
+        <p className="eyebrow">Solicitud sin pago en línea</p>
+        <h1>Pedido</h1>
+        <p>
+          Completa tus datos, revisa el resumen y decide cuándo abrir WhatsApp.
+          Nada se envía al revisar la solicitud.
+        </p>
+      </header>
+
+      {!hydrated ? (
+        <p className="request-page__loading" role="status">
+          Cargando tu carrito…
+        </p>
+      ) : lines.length === 0 ? (
+        <section className="request-empty" aria-labelledby="empty-order-title">
+          <p className="request-empty__number" aria-hidden="true">
+            00
+          </p>
+          <div>
+            <h2 id="empty-order-title">Agrega productos antes de continuar</h2>
+            <p>
+              Tu solicitud necesita al menos una opción del menú para crear el
+              resumen.
+            </p>
+            <Link className="button-link button-link--primary" href="/menu/">
+              Ir al menú
+            </Link>
+          </div>
+        </section>
+      ) : (
+        <div className="order-layout">
+          <form className="order-form" noValidate onSubmit={reviewRequest}>
+            {Object.keys(errors).length > 0 ? (
+              <div
+                className="order-errors"
+                ref={errorSummaryRef}
+                role="alert"
+                tabIndex={-1}
+              >
+                <h2>Revisa los campos</h2>
+                <p>Corrige lo indicado y vuelve a revisar tu solicitud.</p>
+                <ul>
+                  {Object.entries(errors).map(([field, error]) => (
+                    <li key={field}>
+                      <a href={`#order-${field}`}>
+                        {fieldLabels[field as keyof OrderFormValues]}: {error}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+
+            <fieldset className="order-form__section">
+              <legend>Datos de contacto</legend>
+              <div className="form-field">
+                <label htmlFor="order-name">Nombre completo</label>
+                <input
+                  id="order-name"
+                  name="name"
+                  autoComplete="name"
+                  value={values.name}
+                  aria-invalid={Boolean(errors.name)}
+                  aria-describedby={
+                    errors.name ? 'order-name-error' : undefined
+                  }
+                  onChange={(event) => setField('name', event.target.value)}
+                />
+                {errors.name ? (
+                  <p className="form-field__error" id="order-name-error">
+                    {errors.name}
+                  </p>
+                ) : null}
+              </div>
+              <div className="form-field">
+                <label htmlFor="order-phone">Teléfono</label>
+                <input
+                  id="order-phone"
+                  name="phone"
+                  type="tel"
+                  autoComplete="tel"
+                  inputMode="tel"
+                  value={values.phone}
+                  aria-invalid={Boolean(errors.phone)}
+                  aria-describedby={
+                    errors.phone ? 'order-phone-error' : undefined
+                  }
+                  onChange={(event) => setField('phone', event.target.value)}
+                />
+                {errors.phone ? (
+                  <p className="form-field__error" id="order-phone-error">
+                    {errors.phone}
+                  </p>
+                ) : null}
+              </div>
+            </fieldset>
+
+            <fieldset className="order-form__section">
+              <legend>Entrega del pedido</legend>
+              <div className="fulfillment-options">
+                <label>
+                  <input
+                    type="radio"
+                    name="fulfillment"
+                    value="pickup"
+                    checked={values.fulfillment === 'pickup'}
+                    onChange={() => setField('fulfillment', 'pickup')}
+                  />
+                  Recogida
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="fulfillment"
+                    value="delivery"
+                    checked={values.fulfillment === 'delivery'}
+                    onChange={() => setField('fulfillment', 'delivery')}
+                  />
+                  Envío
+                </label>
+              </div>
+              <p className="fulfillment-guidance">
+                {values.fulfillment === 'pickup'
+                  ? operationalCopy.pickupInformation
+                  : operationalCopy.deliveryCost}
+              </p>
+              {values.fulfillment === 'delivery' ? (
+                <div className="form-field">
+                  <label htmlFor="order-location">Ubicación o dirección</label>
+                  <textarea
+                    id="order-location"
+                    name="location"
+                    rows={3}
+                    autoComplete="street-address"
+                    value={values.location}
+                    aria-invalid={Boolean(errors.location)}
+                    aria-describedby={
+                      errors.location ? 'order-location-error' : undefined
+                    }
+                    onChange={(event) =>
+                      setField('location', event.target.value)
+                    }
+                  />
+                  {errors.location ? (
+                    <p className="form-field__error" id="order-location-error">
+                      {errors.location}
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
+              <div className="form-field">
+                <label htmlFor="order-requestedDate">Fecha solicitada</label>
+                <input
+                  id="order-requestedDate"
+                  name="requestedDate"
+                  type="date"
+                  min={minimumDate}
+                  value={values.requestedDate}
+                  aria-invalid={Boolean(errors.requestedDate)}
+                  aria-describedby={
+                    errors.requestedDate
+                      ? 'order-requestedDate-error'
+                      : 'order-date-help'
+                  }
+                  onChange={(event) =>
+                    setField('requestedDate', event.target.value)
+                  }
+                />
+                <p className="form-field__help" id="order-date-help">
+                  Disponible a partir del {minimumDate}.
+                </p>
+                {errors.requestedDate ? (
+                  <p
+                    className="form-field__error"
+                    id="order-requestedDate-error"
+                  >
+                    {errors.requestedDate}
+                  </p>
+                ) : null}
+              </div>
+              <div className="form-field">
+                <label htmlFor="order-notes">Notas opcionales</label>
+                <textarea
+                  id="order-notes"
+                  name="notes"
+                  rows={4}
+                  value={values.notes}
+                  onChange={(event) => setField('notes', event.target.value)}
+                />
+              </div>
+            </fieldset>
+
+            <button className="order-form__submit" type="submit">
+              Revisar solicitud
+            </button>
+          </form>
+
+          {summary ? (
+            <section className="order-summary" aria-labelledby="summary-title">
+              <p className="eyebrow">Todavía no se ha enviado</p>
+              <h2 id="summary-title">Tu solicitud está lista para revisar</h2>
+              <p>{operationalCopy.confirmation}</p>
+              <label htmlFor="order-summary-text">
+                Resumen de la solicitud
+              </label>
+              <textarea
+                id="order-summary-text"
+                rows={16}
+                value={summary}
+                readOnly
+              />
+              <div className="order-summary__actions">
+                <button type="button" onClick={copySummary}>
+                  Copiar resumen
+                </button>
+                <a
+                  className="button-link button-link--primary"
+                  href={buildWhatsAppUrl(siteConfig.whatsappDigits, summary)}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Abrir WhatsApp con mi solicitud
+                </a>
+              </div>
+              {copyStatus ? (
+                <p className="order-summary__status" role="status">
+                  {copyStatus}
+                </p>
+              ) : null}
+            </section>
+          ) : null}
+        </div>
+      )}
+    </main>
+  );
+}

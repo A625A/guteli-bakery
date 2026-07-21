@@ -1,11 +1,5 @@
-import { FoundationPage } from '@/components/shared/FoundationPage';
+import { OrderRequest } from '@/components/order/OrderRequest';
 
 export default function OrderPage() {
-  return (
-    <FoundationPage
-      eyebrow="Ruta reservada"
-      title="Pedido"
-      description="El formulario, el resumen y la entrega por WhatsApp se implementarán en Milestone 4."
-    />
-  );
+  return <OrderRequest />;
 }

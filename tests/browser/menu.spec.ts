@@ -146,6 +146,11 @@ test('reports only the effective addition and disables adding at 99', async ({
     }),
   ).toBeDisabled();
   await expect(quantity).toBeDisabled();
+  await expect(
+    page.getByText('Máximo de 99 unidades para esta opción del menú.', {
+      exact: true,
+    }),
+  ).toBeVisible();
 });
 
 test('all eight menu variants can be added with a keyboard', async ({
