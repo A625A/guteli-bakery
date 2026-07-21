@@ -72,7 +72,6 @@ async function buildTwoItemCart(page: Page, mobile: boolean) {
   await expect(page).toHaveURL(/\/cart\/$/);
 
   if (mobile) {
-    await page.locator('summary', { hasText: 'Abrir menú' }).click();
     await expect(page.locator('details.mobile-navigation')).not.toHaveAttribute(
       'open',
       '',

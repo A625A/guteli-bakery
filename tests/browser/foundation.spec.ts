@@ -144,6 +144,18 @@ test('mobile menu exposes the approved five destinations', async ({ page }) => {
   }
 });
 
+test('mobile menu closes after selecting a destination', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+
+  const mobileNavigation = page.locator('details.mobile-navigation');
+  await mobileNavigation.locator('summary').click();
+  await mobileNavigation.getByRole('link', { name: 'Menú' }).click();
+
+  await expect(page).toHaveURL(/\/menu\/$/);
+  await expect(mobileNavigation).not.toHaveAttribute('open', '');
+});
+
 test('contact exposes only factual guidance and an explicit neutral WhatsApp link', async ({
   page,
 }) => {

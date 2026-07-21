@@ -183,6 +183,28 @@ test('shows pickup guidance and omits a delivery location from the summary', asy
   await expect(summary).not.toContainText('Ubicación de entrega:');
 });
 
+test('invalidates the WhatsApp handoff when reviewed details change', async ({
+  page,
+}) => {
+  await openOrderWithSavedCart(page);
+  await completeRequiredOrderFields(page, 'Recogida');
+  await page.getByRole('button', { name: 'Revisar solicitud' }).click();
+
+  const handoff = page.getByRole('link', {
+    name: 'Abrir WhatsApp con mi solicitud',
+  });
+  await expect(handoff).toBeVisible();
+
+  await page.getByLabel('Nombre completo').fill('Ana Pérez');
+  await expect(handoff).toHaveCount(0);
+  await expect(page.getByLabel('Resumen de la solicitud')).toHaveCount(0);
+
+  await page.getByRole('button', { name: 'Revisar solicitud' }).click();
+  await expect(handoff).toBeVisible();
+  await page.getByLabel('Envío').check();
+  await expect(handoff).toHaveCount(0);
+});
+
 test('requires delivery location and preserves active form progress on error', async ({
   page,
 }) => {
@@ -358,6 +380,27 @@ test('rejects a requested date earlier than the Guatemala minimum', async ({
 
   await expect(page.getByRole('main').getByRole('alert')).toContainText(
     `Selecciona una fecha a partir del ${minimumDate}.`,
+  );
+});
+
+test('refreshes the two-day minimum after Guatemala midnight', async ({
+  page,
+}) => {
+  await page.clock.install({ time: new Date('2026-07-21T05:30:00.000Z') });
+  await openOrderWithSavedCart(page);
+
+  const date = page.getByLabel('Fecha solicitada');
+  await expect(date).toHaveAttribute('min', '2026-07-22');
+  await page.getByLabel('Nombre completo').fill('Ana López');
+  await page.getByLabel('Teléfono').fill('5555 5555');
+  await date.fill('2026-07-22');
+
+  await page.clock.setFixedTime(new Date('2026-07-21T06:30:00.000Z'));
+  await page.getByRole('button', { name: 'Revisar solicitud' }).click();
+
+  await expect(date).toHaveAttribute('min', '2026-07-23');
+  await expect(page.getByRole('main').getByRole('alert')).toContainText(
+    'Selecciona una fecha a partir del 2026-07-23.',
   );
 });
 

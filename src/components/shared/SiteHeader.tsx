@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { useRef, type MouseEvent } from 'react';
 
 import { CartBadge } from '@/components/cart/CartBadge';
 import { BrandMark } from '@/components/shared/BrandMark';
@@ -17,6 +20,14 @@ function NavigationLinks() {
 }
 
 export function SiteHeader() {
+  const mobileNavigationRef = useRef<HTMLDetailsElement>(null);
+
+  function closeMobileNavigation(event: MouseEvent<HTMLElement>) {
+    if ((event.target as HTMLElement).closest('a')) {
+      mobileNavigationRef.current?.removeAttribute('open');
+    }
+  }
+
   return (
     <header className="site-header">
       <div className="site-header__inner">
@@ -32,9 +43,12 @@ export function SiteHeader() {
           <NavigationLinks />
         </nav>
 
-        <details className="mobile-navigation">
+        <details className="mobile-navigation" ref={mobileNavigationRef}>
           <summary>Abrir menú</summary>
-          <nav aria-label="Navegación principal">
+          <nav
+            aria-label="Navegación principal"
+            onClick={closeMobileNavigation}
+          >
             <NavigationLinks />
           </nav>
         </details>

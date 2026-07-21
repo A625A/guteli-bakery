@@ -39,7 +39,9 @@ export function OrderRequest() {
   const [summary, setSummary] = useState<string | null>(null);
   const [copyStatus, setCopyStatus] = useState('');
   const [errorFocusRequest, setErrorFocusRequest] = useState(0);
-  const [minimumDate] = useState(() => getMinimumOrderDate(new Date(), 2));
+  const [minimumDate, setMinimumDate] = useState(() =>
+    getMinimumOrderDate(new Date(), siteConfig.advanceDays),
+  );
   const errorSummaryRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -53,11 +55,19 @@ export function OrderRequest() {
     value: OrderFormValues[Key],
   ) {
     setValues((currentValues) => ({ ...currentValues, [field]: value }));
+    setSummary(null);
+    setCopyStatus('');
   }
 
   function reviewRequest(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const nextErrors = validateOrder(values, minimumDate);
+    const currentMinimumDate = getMinimumOrderDate(
+      new Date(),
+      siteConfig.advanceDays,
+    );
+    const nextErrors = validateOrder(values, currentMinimumDate);
+
+    setMinimumDate(currentMinimumDate);
 
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
@@ -74,6 +84,8 @@ export function OrderRequest() {
     const nextValues = { ...values, fulfillment };
 
     setValues(nextValues);
+    setSummary(null);
+    setCopyStatus('');
     setErrors((currentErrors) =>
       Object.keys(currentErrors).length > 0
         ? validateOrder(nextValues, minimumDate)
