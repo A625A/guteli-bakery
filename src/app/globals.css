@@ -260,7 +260,7 @@ h1 {
 .contact-page {
   width: min(100%, var(--content-wide));
   margin: 0 auto;
-  padding: var(--space-8) var(--content-gutter);
+  padding: var(--space-section) var(--content-gutter);
 }
 
 .contact-page__intro {
@@ -282,8 +282,9 @@ h1 {
 
 .contact-card,
 .contact-guidance {
-  padding: var(--space-5);
+  padding: clamp(1.5rem, 4vw, 3rem);
   border-top: 0.4rem solid var(--color-accent);
+  border-radius: 0 0 var(--radius-medium) var(--radius-medium);
 }
 
 .contact-card {
@@ -306,6 +307,15 @@ h1 {
 
 .contact-card > p:not(.eyebrow) {
   margin: var(--space-3) 0 0;
+}
+
+.contact-card__handoff-note {
+  max-width: 28rem;
+  padding: var(--space-3) var(--space-4);
+  border-left: 0.25rem solid var(--color-accent);
+  background: rgb(255 106 0 / 12%);
+  color: var(--color-surface-strong);
+  font-weight: 800;
 }
 
 .contact-card .button-link {
@@ -973,12 +983,12 @@ button:disabled,
 .order-page {
   width: min(100%, var(--content-wide));
   margin: 0 auto;
-  padding: var(--space-8) var(--content-gutter);
+  padding: var(--space-section) var(--content-gutter);
 }
 
 .request-page__intro {
   max-width: 46rem;
-  padding-bottom: var(--space-7);
+  padding-bottom: clamp(3rem, 7vw, 5.5rem);
 }
 
 .request-page__intro > p:last-child {
@@ -1188,7 +1198,7 @@ button:disabled,
   padding: var(--space-5);
   border: 2px solid var(--color-error);
   border-radius: var(--radius-medium);
-  background: var(--color-surface);
+  background: #fff4ed;
 }
 
 .order-errors p {
@@ -1218,9 +1228,11 @@ button:disabled,
   display: grid;
   gap: var(--space-5);
   margin: 0;
-  padding: var(--space-5) 0 0;
-  border: 0;
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
   border-top: 0.35rem solid var(--color-brand);
+  border-radius: 0 0 var(--radius-medium) var(--radius-medium);
+  background: rgb(255 250 240 / 58%);
 }
 
 .order-form__section legend {
@@ -1246,6 +1258,14 @@ button:disabled,
   background: var(--color-surface);
   color: var(--color-text);
   font: inherit;
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.form-field :is(input, textarea):focus-visible {
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 0.18rem rgb(255 106 0 / 18%);
 }
 
 .form-field textarea,
@@ -1288,6 +1308,15 @@ button:disabled,
   cursor: pointer;
   background: var(--color-surface);
   font-weight: 800;
+  transition:
+    border-color var(--transition-fast),
+    background-color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.fulfillment-options label[data-selected='true'] {
+  border-color: var(--color-accent);
+  background: var(--color-surface-strong);
 }
 
 .fulfillment-options input {
@@ -1314,6 +1343,10 @@ button:disabled,
   color: var(--color-brand-contrast);
   font: inherit;
   font-weight: 800;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-fast);
 }
 
 .order-form__submit:hover,
@@ -1326,7 +1359,9 @@ button:disabled,
   align-self: start;
   padding: var(--space-5);
   border-top: 0.4rem solid var(--color-accent);
+  border-radius: 0 0 var(--radius-medium) var(--radius-medium);
   background: var(--color-surface-strong);
+  box-shadow: var(--shadow-soft);
 }
 
 .order-summary > p:not(.eyebrow) {
@@ -1355,8 +1390,27 @@ button:disabled,
 }
 
 .order-summary__status {
+  display: flex;
+  min-height: 2.75rem;
+  align-items: center;
   margin: var(--space-4) 0 0;
+  padding: var(--space-2) var(--space-3);
+  border-left: 0.25rem solid var(--color-success);
+  background: rgb(36 97 59 / 10%);
   color: var(--color-success);
+  font-weight: 800;
+}
+
+.order-summary__handoff-note {
+  display: flex;
+  min-height: 3rem;
+  align-items: center;
+  margin: 0;
+  padding: var(--space-3);
+  border: 2px solid var(--color-brand);
+  border-radius: var(--radius-medium);
+  color: var(--color-brand);
+  font-size: 0.9rem;
   font-weight: 800;
 }
 
@@ -1549,6 +1603,11 @@ button:disabled,
   .order-layout {
     grid-template-columns: minmax(0, 1fr) minmax(23rem, 0.9fr);
     align-items: start;
+  }
+
+  .order-summary {
+    position: sticky;
+    top: 7rem;
   }
 }
 

@@ -17,8 +17,11 @@ export default function ContactPage() {
         <p className="eyebrow">Consulta directa</p>
         <h1>Contacto</h1>
         <p>
-          Abre una conversación solamente cuando quieras hacer una consulta. El
-          enlace no envía mensajes por sí solo.
+          {publicSiteConfig.handoff.kind === 'demo'
+            ? 'Esta demostración muestra cómo se coordina una consulta sin abrir un chat real.'
+            : publicSiteConfig.handoff.kind === 'live'
+              ? 'Abre una conversación solamente cuando quieras hacer una consulta. El enlace no envía mensajes por sí solo.'
+              : 'Consulta la información confirmada mientras el envío por WhatsApp no está disponible.'}
         </p>
       </header>
 

@@ -246,6 +246,12 @@ test('contact exposes factual guidance without an active demo destination', asyn
   const main = page.getByRole('main');
   await expect(main.getByText('4256-9861', { exact: true })).toBeVisible();
   await expect(
+    main.getByText(
+      'Esta demostración muestra cómo se coordina una consulta sin abrir un chat real.',
+      { exact: true },
+    ),
+  ).toBeVisible();
+  await expect(
     main.getByText('Pedidos con 2 días de anticipación.', { exact: true }),
   ).toBeVisible();
   await expect(

@@ -213,7 +213,7 @@ export function OrderRequest({ handoff }: { handoff: WhatsAppHandoff }) {
             <fieldset className="order-form__section">
               <legend>Entrega del pedido</legend>
               <div className="fulfillment-options">
-                <label>
+                <label data-selected={values.fulfillment === 'pickup'}>
                   <input
                     type="radio"
                     name="fulfillment"
@@ -222,9 +222,9 @@ export function OrderRequest({ handoff }: { handoff: WhatsAppHandoff }) {
                     checked={values.fulfillment === 'pickup'}
                     onChange={() => changeFulfillment('pickup')}
                   />
-                  Recogida
+                  <span>Recogida</span>
                 </label>
-                <label>
+                <label data-selected={values.fulfillment === 'delivery'}>
                   <input
                     type="radio"
                     name="fulfillment"
@@ -233,7 +233,7 @@ export function OrderRequest({ handoff }: { handoff: WhatsAppHandoff }) {
                     checked={values.fulfillment === 'delivery'}
                     onChange={() => changeFulfillment('delivery')}
                   />
-                  Envío
+                  <span>Envío</span>
                 </label>
               </div>
               <p className="fulfillment-guidance">

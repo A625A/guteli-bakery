@@ -182,6 +182,23 @@ test('shows pickup guidance and omits a delivery location from the summary', asy
   await expect(summary).not.toContainText('Ubicación de entrega:');
 });
 
+test('selected fulfillment and copy feedback expose clear state', async ({
+  context,
+  page,
+}) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await openOrderWithSavedCart(page);
+
+  const pickup = page.getByLabel('Recogida');
+  await expect(pickup).toBeChecked();
+  await expect(pickup.locator('..')).toHaveAttribute('data-selected', 'true');
+
+  await completeRequiredOrderFields(page, 'Recogida');
+  await page.getByRole('button', { name: 'Revisar solicitud' }).click();
+  await page.getByRole('button', { name: 'Copiar resumen' }).click();
+  await expect(page.getByRole('status')).toHaveText('Resumen copiado.');
+});
+
 test('invalidates the reviewed demo handoff when details change', async ({
   page,
 }) => {
