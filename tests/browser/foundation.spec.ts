@@ -132,6 +132,10 @@ test('homepage uses the approved graphic-only editorial treatment', async ({
 }) => {
   await page.goto('/');
 
+  await expect(page.locator('.home-hero__wordmark')).toHaveCount(0);
+  await expect(
+    page.getByText('Selección ilustrada', { exact: true }),
+  ).toBeVisible();
   await expect(page.getByText('Referencia original de la marca')).toHaveCount(
     0,
   );

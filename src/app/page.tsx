@@ -28,10 +28,7 @@ export default function HomePage() {
         </div>
 
         <div className="home-hero__art">
-          <div className="home-hero__wordmark" aria-label="Güteli Bakery">
-            <strong>GÜTELI</strong>
-            <span>Bakery</span>
-          </div>
+          <p className="home-hero__editorial-label">Selección ilustrada</p>
           <BakeryIllustration variant="hero" />
           <p className="home-hero__stamp">Hecho por encargo · Guatemala</p>
           <div className="home-hero__label">
