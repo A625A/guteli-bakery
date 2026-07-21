@@ -103,6 +103,19 @@ test('homepage uses the approved graphic-only editorial treatment', async ({
   );
 });
 
+test('menu exposes graphic media slots without product photography', async ({
+  page,
+}) => {
+  await page.goto('/menu/');
+
+  await expect(page.getByTestId('product-card')).toHaveCount(8);
+  await expect(page.locator('.product-card__media')).toHaveCount(8);
+  await expect(page.locator('.product-card img')).toHaveCount(0);
+  await expect(page.locator('.product-card__art-note').first()).toHaveText(
+    'Ilustración de categoría',
+  );
+});
+
 const viewports = [
   { name: 'desktop', width: 1440, height: 1000 },
   { name: 'mobile', width: 390, height: 844 },

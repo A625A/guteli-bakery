@@ -8,6 +8,10 @@ export default function MenuPage() {
         <div>
           <p className="eyebrow">Ocho opciones para tu solicitud</p>
           <h1>Nuestro menú</h1>
+          <p className="menu-page__count">
+            <strong>08</strong>
+            <span>opciones confirmadas en 4 categorías</span>
+          </p>
         </div>
         <div className="menu-page__guidance">
           <p>

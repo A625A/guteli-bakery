@@ -3,6 +3,7 @@
 import { useState, type ChangeEvent } from 'react';
 
 import { useCart } from '@/components/cart/CartProvider';
+import { ProductArtwork } from '@/components/menu/ProductArtwork';
 import { operationalCopy } from '@/content/business';
 import type { MenuProduct } from '@/content/menu';
 import { formatGTQ } from '@/lib/money';
@@ -66,49 +67,59 @@ export function ProductCard({ product }: ProductCardProps) {
 
   return (
     <article className="product-card" data-testid="product-card">
-      <p className="product-card__category">{product.categoryLabel}</p>
-      <h3>{product.name}</h3>
-      <p className="product-card__unit">
-        {product.saleUnit ?? operationalCopy.quantityUnknown}
-      </p>
-      <strong className="product-card__price">
-        {formatGTQ(product.price)}
-      </strong>
-      <div className="product-card__actions">
-        <label htmlFor={inputId}>
-          Cantidad de {product.name}, {product.categoryLabel}
-        </label>
-        <input
-          id={inputId}
-          type="number"
-          min="1"
-          max="99"
-          inputMode="numeric"
-          value={quantity}
-          onChange={updateQuantity}
-          disabled={!hydrated || isAtCapacity}
-          aria-describedby={isAtCapacity ? capacityId : undefined}
-        />
-        <button
-          type="button"
-          onClick={addToCart}
-          disabled={!hydrated || isAtCapacity}
-        >
-          {isAtCapacity
-            ? `Máximo de 99 alcanzado para ${product.name} de ${product.categoryLabel}`
-            : `Agregar ${product.name} de ${product.categoryLabel}`}
-        </button>
+      <ProductArtwork
+        category={product.category}
+        label={product.categoryLabel}
+      />
+      <div className="product-card__body">
+        <p className="product-card__category">{product.categoryLabel}</p>
+        <h3>{product.name}</h3>
+        <p className="product-card__unit">
+          {product.saleUnit ?? operationalCopy.quantityUnknown}
+        </p>
+        <strong className="product-card__price">
+          {formatGTQ(product.price)}
+        </strong>
+        <div className="product-card__actions">
+          <label htmlFor={inputId}>
+            Cantidad de {product.name}, {product.categoryLabel}
+          </label>
+          <input
+            id={inputId}
+            type="number"
+            min="1"
+            max="99"
+            inputMode="numeric"
+            value={quantity}
+            onChange={updateQuantity}
+            disabled={!hydrated || isAtCapacity}
+            aria-describedby={isAtCapacity ? capacityId : undefined}
+          />
+          <button
+            type="button"
+            onClick={addToCart}
+            disabled={!hydrated || isAtCapacity}
+          >
+            {isAtCapacity
+              ? `Máximo de 99 alcanzado para ${product.name} de ${product.categoryLabel}`
+              : `Agregar ${product.name} de ${product.categoryLabel}`}
+          </button>
+        </div>
+        {isAtCapacity ? (
+          <p className="product-card__capacity" id={capacityId}>
+            Máximo de 99 unidades para esta opción del menú.
+          </p>
+        ) : null}
+        {announcement ? (
+          <p
+            className="product-card__status"
+            key={announcement.id}
+            role="status"
+          >
+            {announcement.message}
+          </p>
+        ) : null}
       </div>
-      {isAtCapacity ? (
-        <p className="product-card__capacity" id={capacityId}>
-          Máximo de 99 unidades para esta opción del menú.
-        </p>
-      ) : null}
-      {announcement ? (
-        <p className="product-card__status" key={announcement.id} role="status">
-          {announcement.message}
-        </p>
-      ) : null}
     </article>
   );
 }
