@@ -296,6 +296,48 @@ test('marks every custom-validated required order field in the markup', async ({
   );
 });
 
+test('order fields follow a logical keyboard sequence', async ({ page }) => {
+  await openOrderWithSavedCart(page);
+
+  const orderControls = page.locator(
+    '.order-form :is(input, textarea, button)',
+  );
+  await expect(orderControls).toHaveCount(7);
+
+  const name = page.getByLabel('Nombre completo');
+  await name.focus();
+  await expect(name).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(page.getByLabel('Teléfono')).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(page.getByLabel('Recogida')).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(page.getByLabel('Fecha solicitada')).toBeFocused();
+
+  const controls = await orderControls.evaluateAll((elements) =>
+    elements.map((element) => {
+      const control = element as HTMLInputElement | HTMLTextAreaElement;
+
+      return control.id || control.value || control.textContent?.trim();
+    }),
+  );
+
+  expect(controls).toEqual([
+    'order-name',
+    'order-phone',
+    'pickup',
+    'delivery',
+    'order-requestedDate',
+    'order-notes',
+    'Revisar solicitud',
+  ]);
+
+  const positiveTabIndexes = await orderControls.evaluateAll((elements) =>
+    elements.filter((element) => (element as HTMLElement).tabIndex > 0),
+  );
+  expect(positiveTabIndexes).toEqual([]);
+});
+
 test('rejects a requested date earlier than the Guatemala minimum', async ({
   page,
 }) => {

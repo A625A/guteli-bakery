@@ -1,11 +1,54 @@
-import { FoundationPage } from '@/components/shared/FoundationPage';
+import { operationalCopy, siteConfig } from '@/content/business';
+import { buildWhatsAppUrl } from '@/lib/whatsapp';
+
+const contactQuestion =
+  'Hola, quisiera hacer una consulta sobre Güteli Bakery.';
 
 export default function ContactPage() {
+  const whatsappUrl = buildWhatsAppUrl(
+    siteConfig.whatsappDigits,
+    contactQuestion,
+  );
+
   return (
-    <FoundationPage
-      eyebrow="Ruta reservada"
-      title="Contacto"
-      description="La experiencia final de contacto se incorporará después de verificar esta base."
-    />
+    <main id="main-content" className="contact-page" tabIndex={-1}>
+      <header className="contact-page__intro">
+        <p className="eyebrow">Consulta directa</p>
+        <h1>Contacto</h1>
+        <p>
+          Abre una conversación solamente cuando quieras hacer una consulta. El
+          enlace no envía mensajes por sí solo.
+        </p>
+      </header>
+
+      <div className="contact-layout">
+        <section className="contact-card" aria-labelledby="contact-number">
+          <p className="eyebrow">WhatsApp</p>
+          <h2 id="contact-number">{siteConfig.whatsappNumber}</h2>
+          <p>Pedidos con {siteConfig.advanceDays} días de anticipación.</p>
+          <a
+            className="button-link button-link--primary"
+            href={whatsappUrl}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Hacer una consulta por WhatsApp
+          </a>
+        </section>
+
+        <section
+          className="contact-guidance"
+          aria-labelledby="contact-guidance-title"
+        >
+          <p className="eyebrow">Antes de solicitar</p>
+          <h2 id="contact-guidance-title">Información por confirmar</h2>
+          <ul>
+            <li>{operationalCopy.deliveryCost}</li>
+            <li>{operationalCopy.pickupInformation}</li>
+            <li>{operationalCopy.confirmation}</li>
+          </ul>
+        </section>
+      </div>
+    </main>
   );
 }

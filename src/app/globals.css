@@ -27,6 +27,16 @@ body {
   line-height: 1.6;
 }
 
+main,
+section,
+article,
+header,
+footer,
+nav,
+div {
+  min-width: 0;
+}
+
 a {
   color: inherit;
 }
@@ -220,6 +230,92 @@ h1 {
   border-radius: var(--radius-medium);
   background: var(--color-surface);
   box-shadow: var(--shadow-soft);
+}
+
+.not-found-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.contact-page {
+  width: min(100%, var(--content-wide));
+  margin: 0 auto;
+  padding: var(--space-8) var(--content-gutter);
+}
+
+.contact-page__intro {
+  max-width: 46rem;
+  padding-bottom: var(--space-7);
+}
+
+.contact-page__intro > p:last-child {
+  max-width: 38rem;
+  margin: var(--space-5) 0 0;
+  color: var(--color-text-muted);
+  font-size: 1.08rem;
+}
+
+.contact-layout {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.contact-card,
+.contact-guidance {
+  padding: var(--space-5);
+  border-top: 0.4rem solid var(--color-accent);
+}
+
+.contact-card {
+  background: var(--color-brand);
+  color: var(--color-brand-contrast);
+}
+
+.contact-card .eyebrow {
+  color: var(--color-accent);
+}
+
+.contact-card h2,
+.contact-guidance h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 6vw, 2.75rem);
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+
+.contact-card > p:not(.eyebrow) {
+  margin: var(--space-3) 0 0;
+}
+
+.contact-card .button-link {
+  margin-top: var(--space-6);
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: var(--color-brand);
+}
+
+.contact-card .button-link:focus-visible {
+  outline-color: var(--color-focus-on-dark);
+}
+
+.contact-guidance {
+  border-right: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  border-left: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.contact-guidance ul {
+  display: grid;
+  gap: var(--space-3);
+  margin: var(--space-5) 0 0;
+  padding-left: var(--space-5);
+}
+
+.contact-guidance li::marker {
+  color: var(--color-accent-hover);
 }
 
 .home-page,
@@ -607,8 +703,19 @@ h1 {
 }
 
 .text-link {
+  display: inline-flex;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  align-items: center;
   color: var(--color-accent-hover);
   font-weight: 800;
+}
+
+button:disabled,
+[aria-disabled='true'] {
+  cursor: not-allowed;
+  filter: saturate(0.55);
+  opacity: 0.58;
 }
 
 .cart-page,
@@ -637,6 +744,16 @@ h1 {
   border-top: 1px solid var(--color-border);
   color: var(--color-text-muted);
   font-weight: 800;
+}
+
+.request-page__loading::before {
+  display: inline-block;
+  width: 0.75rem;
+  height: 0.75rem;
+  margin-right: var(--space-2);
+  border-radius: 50%;
+  background: var(--color-accent);
+  content: '';
 }
 
 .request-empty {
@@ -1072,6 +1189,11 @@ h1 {
 
   .foundation-page {
     padding: 7rem 0;
+  }
+
+  .contact-layout {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    align-items: stretch;
   }
 
   .home-hero {

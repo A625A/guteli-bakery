@@ -27,6 +27,9 @@ const footerNavigationDestinations = [
 const footerWhatsAppUrl =
   'https://wa.me/50242569861?text=Hola%2C%20quisiera%20informaci%C3%B3n%20sobre%20los%20productos%20de%20G%C3%BCteli%20Bakery.';
 
+const contactWhatsAppUrl =
+  'https://wa.me/50242569861?text=Hola%2C%20quisiera%20hacer%20una%20consulta%20sobre%20G%C3%BCteli%20Bakery.';
+
 for (const route of routes) {
   test(`${route.path} renders the final Spanish site shell`, async ({
     page,
@@ -55,7 +58,9 @@ for (const route of routes) {
     await expect(
       page.getByRole('link', { name: 'Carrito, 0 productos' }),
     ).toBeVisible();
-    await expect(page.getByText('4256-9861')).toBeVisible();
+    await expect(
+      page.getByRole('contentinfo').getByText('4256-9861'),
+    ).toBeVisible();
     expect(
       await page.evaluate(
         () =>
@@ -139,6 +144,104 @@ test('mobile menu exposes the approved five destinations', async ({ page }) => {
   }
 });
 
+test('contact exposes only factual guidance and an explicit neutral WhatsApp link', async ({
+  page,
+}) => {
+  await page.goto('/contact/');
+
+  const main = page.getByRole('main');
+  await expect(main.getByText('4256-9861', { exact: true })).toBeVisible();
+  await expect(
+    main.getByText('Pedidos con 2 días de anticipación.', { exact: true }),
+  ).toBeVisible();
+  await expect(
+    main.getByText('Costo de envío por confirmar según ubicación', {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(
+    main.getByText('Solicita información de recogida por WhatsApp', {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(
+    main.getByText('El pedido queda sujeto a confirmación por WhatsApp', {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(
+    main.getByRole('link', { name: 'Hacer una consulta por WhatsApp' }),
+  ).toHaveAttribute('href', contactWhatsAppUrl);
+});
+
+for (const route of routes) {
+  test(`${route.path} has no mobile overflow and exposes 44 pixel interactive targets`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(route.path);
+    await page.locator('summary', { hasText: 'Abrir menú' }).click();
+
+    expect(
+      await page.evaluate(
+        () =>
+          document.documentElement.scrollWidth <=
+          document.documentElement.clientWidth,
+      ),
+    ).toBe(true);
+
+    const interactiveTargets = page.locator(
+      '.site-header a:visible, .site-header summary:visible, main a:visible, main button:visible, .site-footer a:visible',
+    );
+    expect(await interactiveTargets.count()).toBeGreaterThan(0);
+
+    for (const target of await interactiveTargets.all()) {
+      const box = await target.boundingBox();
+      const targetName = await target.evaluate((element) => ({
+        className: element.className,
+        tagName: element.tagName,
+        text: element.textContent?.trim(),
+      }));
+
+      expect(box).not.toBeNull();
+      expect(
+        Math.min(box?.width ?? 0, box?.height ?? 0),
+        `${targetName.tagName}.${targetName.className} "${targetName.text}"`,
+      ).toBeGreaterThanOrEqual(44);
+    }
+  });
+}
+
+test('desktop shows its navigation and keeps the mobile control hidden', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto('/');
+
+  await expect(page.locator('.desktop-navigation')).toBeVisible();
+  await expect(page.locator('.mobile-navigation')).toBeHidden();
+});
+
+for (const path of ['/contact/', '/ruta-inexistente/']) {
+  test(`${path} keeps the footer at the desktop document bottom`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.goto(path);
+
+    const footerBottom = await page
+      .locator('footer')
+      .evaluate((footer) =>
+        Math.round(footer.getBoundingClientRect().bottom + window.scrollY),
+      );
+    const documentBottom = await page.evaluate(() =>
+      Math.round(document.documentElement.scrollHeight),
+    );
+
+    expect(footerBottom).toBe(documentBottom);
+  });
+}
+
 test('cart badge restores a safe saved quantity after hydration', async ({
   page,
 }) => {
@@ -161,7 +264,9 @@ test('the missing route keeps the final shell and a focusable main target', asyn
 }) => {
   await page.goto('/ruta-inexistente/');
 
-  await expect(page.locator('main#main-content')).toBeVisible();
+  const main = page.locator('main#main-content');
+  await expect(main).toBeVisible();
+  await expect(main).toHaveAttribute('tabindex', '-1');
   await expect(
     page.getByRole('heading', { level: 1, name: 'Página no encontrada' }),
   ).toBeVisible();
@@ -169,6 +274,10 @@ test('the missing route keeps the final shell and a focusable main target', asyn
     page.getByRole('link', { name: 'Güteli Bakery, inicio' }),
   ).toBeVisible();
   await expect(page.getByText('4256-9861')).toBeVisible();
+
+  await page.keyboard.press('Tab');
+  await page.keyboard.press('Enter');
+  await expect(main).toBeFocused();
 });
 
 test('footer exposes navigation and factual request guidance', async ({
