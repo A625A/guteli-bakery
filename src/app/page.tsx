@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { BrandMark } from '@/components/shared/BrandMark';
+import { BakeryIllustration } from '@/components/shared/BakeryIllustration';
 import { operationalCopy, siteConfig } from '@/content/business';
 import { menuCategories, menuProducts } from '@/content/menu';
 import { formatGTQ } from '@/lib/money';
@@ -33,6 +34,10 @@ export default function HomePage() {
             aria-label="Logotipo original de Güteli Bakery"
           >
             <BrandMark />
+            <BakeryIllustration
+              className="home-brand__illustration"
+              variant="section"
+            />
           </div>
           <figcaption>Referencia original de la marca</figcaption>
         </figure>

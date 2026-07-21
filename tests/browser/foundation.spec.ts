@@ -92,6 +92,44 @@ const viewports = [
   { name: 'mobile', width: 390, height: 844 },
 ] as const;
 
+const responsiveViewports = [
+  { name: 'compact', width: 320, height: 800 },
+  { name: 'mobile', width: 390, height: 844 },
+  { name: 'tablet', width: 768, height: 900 },
+  { name: 'intermediate', width: 1024, height: 900 },
+  { name: 'desktop', width: 1440, height: 1000 },
+] as const;
+
+for (const viewport of responsiveViewports) {
+  test(`${viewport.name} shell has no horizontal overflow`, async ({
+    page,
+  }) => {
+    await page.setViewportSize(viewport);
+    await page.goto('/');
+
+    expect(
+      await page.evaluate(
+        () =>
+          document.documentElement.scrollWidth <=
+          document.documentElement.clientWidth,
+      ),
+    ).toBe(true);
+  });
+}
+
+test('reduced motion disables smooth scrolling and decorative animation', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+
+  await expect(page.locator('html')).toHaveCSS('scroll-behavior', 'auto');
+  await expect(page.locator('.bakery-illustration')).toHaveCSS(
+    'animation-name',
+    'none',
+  );
+});
+
 for (const viewport of viewports) {
   test(`the skip link moves focus to main on ${viewport.name}`, async ({
     page,

@@ -10,6 +10,7 @@ export function BrandMark() {
         src={brandReference}
         alt=""
         fill
+        priority
         sizes="(min-width: 48rem) 13rem, 11rem"
       />
     </span>
