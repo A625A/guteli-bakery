@@ -18,9 +18,14 @@ This directory stores evidence captured from the actual running application.
 - Milestone 2 desktop: `screenshots/desktop/milestone-2-homepage.png`, `screenshots/desktop/milestone-2-cart.png`, and `screenshots/desktop/milestone-2-summary.png`, captured full-page from a 1440×1000 viewport.
 - Milestone 2 mobile: `screenshots/mobile/milestone-2-homepage.png`, `screenshots/mobile/milestone-2-cart.png`, and `screenshots/mobile/milestone-2-summary.png`, captured full-page from a 390×844 viewport.
 - Milestone 2 interaction state: `screenshots/interaction-states/milestone-2-validation.png`, captured full-page from a 1440×1000 viewport with a focused one-field validation summary.
+- Milestone 3 candidate: graphic-only portfolio polish and fail-closed demo handoff implemented on `milestone-3-portfolio-polish`; visual approval and integration remain pending.
+- Milestone 3 desktop: `screenshots/desktop/milestone-3-homepage.png`, `milestone-3-menu.png`, `milestone-3-cart.png`, and `milestone-3-summary.png`, captured full-page from a 1440×1000 viewport.
+- Milestone 3 mobile: `screenshots/mobile/milestone-3-homepage.png`, `milestone-3-menu.png`, `milestone-3-cart.png`, and `milestone-3-summary.png`, captured full-page from a 390×844 viewport.
+- Milestone 3 interaction states: `screenshots/interaction-states/milestone-3-validation.png` and `milestone-3-demo-handoff.png`, captured full-page from a 1440×1000 viewport.
+- Portfolio case study: `portfolio/guteli-bakery-case-study.md` documents the verified problem, solution, journey, demo-safety model, technical approach, limitations, and real screenshots.
 - Reports: build, tests, accessibility, performance, visual review, preview, and release-summary contain separately labelled Milestone 1 and Milestone 2 evidence.
 - Public deployment: not authorized.
 
 Final independent follow-up review found no Critical or Important issue. One Minor quantity-input UX refinement remains non-blocking.
 
-The external Phase 2 Obsidian project-memory notes are synchronized. Frontmatter and internal wikilinks remain valid. Milestones 1 and 2 are approved, merged, and verified from `main`. This remains a private repository artifact, not a public deployment. The earlier moderate PostCSS advisory remains open; Milestone 2 did not rerun the dependency audit.
+The external Phase 2 Obsidian project-memory notes remain synchronized through Milestone 2; Milestone 3 candidate evidence will be recorded after its final verification and review. Frontmatter and internal wikilinks remain valid. Milestones 1 and 2 are approved, merged, and verified from `main`; Milestone 3 remains on its isolated branch awaiting visual approval. This remains a private repository artifact, not a public deployment. The earlier moderate PostCSS advisory remains open unless the final Milestone 3 verification reports otherwise.

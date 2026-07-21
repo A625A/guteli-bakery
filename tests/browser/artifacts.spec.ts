@@ -6,18 +6,26 @@ const artifactPath = (...segments: string[]) =>
 
 const screenshots = {
   desktop: {
-    homepage: artifactPath('desktop', 'milestone-2-homepage.png'),
-    cart: artifactPath('desktop', 'milestone-2-cart.png'),
-    summary: artifactPath('desktop', 'milestone-2-summary.png'),
-    validation: artifactPath(
-      'interaction-states',
-      'milestone-2-validation.png',
-    ),
+    homepage: artifactPath('desktop', 'milestone-3-homepage.png'),
+    menu: artifactPath('desktop', 'milestone-3-menu.png'),
+    cart: artifactPath('desktop', 'milestone-3-cart.png'),
+    summary: artifactPath('desktop', 'milestone-3-summary.png'),
   },
   mobile: {
-    homepage: artifactPath('mobile', 'milestone-2-homepage.png'),
-    cart: artifactPath('mobile', 'milestone-2-cart.png'),
-    summary: artifactPath('mobile', 'milestone-2-summary.png'),
+    homepage: artifactPath('mobile', 'milestone-3-homepage.png'),
+    menu: artifactPath('mobile', 'milestone-3-menu.png'),
+    cart: artifactPath('mobile', 'milestone-3-cart.png'),
+    summary: artifactPath('mobile', 'milestone-3-summary.png'),
+  },
+  states: {
+    validation: artifactPath(
+      'interaction-states',
+      'milestone-3-validation.png',
+    ),
+    demoHandoff: artifactPath(
+      'interaction-states',
+      'milestone-3-demo-handoff.png',
+    ),
   },
 } as const;
 
@@ -51,8 +59,7 @@ async function capture(page: Page, screenshotPath: string) {
 }
 
 async function buildTwoItemCart(page: Page, mobile: boolean) {
-  await page.getByRole('link', { name: 'Ver el menú' }).click();
-  await expect(page).toHaveURL(/\/menu\/$/);
+  await page.goto('/menu/');
 
   await page
     .getByRole('button', { name: 'Agregar Originales de Pretzels' })
@@ -95,10 +102,12 @@ async function fillPickupRequest(page: Page, includeName = true) {
   await date.fill(minimumDate ?? '');
 }
 
-test.describe.serial('Milestone 2 evidence capture', () => {
+test.describe.serial('Milestone 3 evidence capture', () => {
   test('captures the desktop customer journey and one field-error state', async ({
+    context,
     page,
   }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     const consoleErrors: string[] = [];
     page.on('console', (message) => {
       if (message.type() === 'error') {
@@ -110,6 +119,9 @@ test.describe.serial('Milestone 2 evidence capture', () => {
     await page.goto('/');
     await expect(page).toHaveTitle(/Güteli Bakery/);
     await capture(page, screenshots.desktop.homepage);
+
+    await page.goto('/menu/');
+    await capture(page, screenshots.desktop.menu);
 
     await buildTwoItemCart(page, false);
     await capture(page, screenshots.desktop.cart);
@@ -128,7 +140,7 @@ test.describe.serial('Milestone 2 evidence capture', () => {
         name: 'Nombre completo: Ingresa tu nombre.',
       }),
     ).toBeVisible();
-    await capture(page, screenshots.desktop.validation);
+    await capture(page, screenshots.states.validation);
 
     await page.getByLabel('Nombre completo').fill('Ana López');
     await page.getByRole('button', { name: 'Revisar solicitud' }).click();
@@ -141,6 +153,17 @@ test.describe.serial('Milestone 2 evidence capture', () => {
       'Modalidad: Recogida',
     );
     await capture(page, screenshots.desktop.summary);
+
+    await page.getByRole('button', { name: 'Copiar resumen' }).click();
+    await expect(page.getByRole('status')).toHaveText('Resumen copiado.');
+    await expect(
+      page.getByText(
+        'Modo demostración: copia el resumen para probar el flujo.',
+        { exact: true },
+      ),
+    ).toBeVisible();
+    await expect(page.locator('a[href*="wa.me"]')).toHaveCount(0);
+    await capture(page, screenshots.states.demoHandoff);
 
     expect(consoleErrors).toEqual([]);
   });
@@ -157,6 +180,9 @@ test.describe.serial('Milestone 2 evidence capture', () => {
     await page.goto('/');
     await expect(page).toHaveTitle(/Güteli Bakery/);
     await capture(page, screenshots.mobile.homepage);
+
+    await page.goto('/menu/');
+    await capture(page, screenshots.mobile.menu);
 
     await buildTwoItemCart(page, true);
     await capture(page, screenshots.mobile.cart);

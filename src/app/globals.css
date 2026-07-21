@@ -423,7 +423,7 @@ h1 {
   min-height: clamp(28rem, 80vw, 34rem);
   align-content: space-between;
   padding: clamp(1.5rem, 4vw, 2.5rem);
-  border-radius: 8rem var(--radius-medium) var(--radius-medium)
+  border-radius: 5rem var(--radius-medium) var(--radius-medium)
     var(--radius-medium);
   background: var(--color-brand);
   color: var(--color-brand-contrast);
@@ -1515,6 +1515,10 @@ button:disabled,
 
   .home-hero {
     padding-block: 6rem;
+  }
+
+  .home-hero__art {
+    border-top-left-radius: 8rem;
   }
 
   .home-menu-preview__list {
