@@ -16,6 +16,17 @@ const navigationDestinations = [
   { name: 'Contacto', path: '/contact/' },
 ] as const;
 
+const footerNavigationDestinations = [
+  { name: 'Inicio', path: '/' },
+  { name: 'Menú', path: '/menu/' },
+  { name: 'Carrito', path: '/cart/' },
+  { name: 'Pedido', path: '/order/' },
+  { name: 'Contacto', path: '/contact/' },
+] as const;
+
+const footerWhatsAppUrl =
+  'https://wa.me/50242569861?text=Hola%2C%20quisiera%20informaci%C3%B3n%20sobre%20los%20productos%20de%20G%C3%BCteli%20Bakery.';
+
 for (const route of routes) {
   test(`${route.path} renders the final Spanish site shell`, async ({
     page,
@@ -158,4 +169,57 @@ test('the missing route keeps the final shell and a focusable main target', asyn
     page.getByRole('link', { name: 'Güteli Bakery, inicio' }),
   ).toBeVisible();
   await expect(page.getByText('4256-9861')).toBeVisible();
+});
+
+test('footer exposes navigation and factual request guidance', async ({
+  page,
+}) => {
+  await page.goto('/');
+
+  const footer = page.getByRole('contentinfo');
+  const navigation = footer.getByRole('navigation', {
+    name: 'Navegación del pie de página',
+  });
+
+  for (const destination of footerNavigationDestinations) {
+    await expect(
+      navigation.getByRole('link', { name: destination.name, exact: true }),
+    ).toHaveAttribute('href', destination.path);
+  }
+
+  await expect(
+    footer.getByText('Pedidos con 2 días de anticipación.', { exact: true }),
+  ).toBeVisible();
+  await expect(
+    footer.getByText('Costo de envío por confirmar según ubicación', {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(
+    footer.getByText('El pedido queda sujeto a confirmación por WhatsApp', {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(
+    footer.getByRole('link', {
+      name: 'Consultar por WhatsApp al 4256-9861',
+    }),
+  ).toHaveAttribute('href', footerWhatsAppUrl);
+});
+
+test('footer links provide 44 pixel touch targets', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+
+  const targets = await page.getByRole('contentinfo').getByRole('link').all();
+  expect(targets.length).toBeGreaterThan(0);
+
+  for (const target of targets) {
+    const box = await target.boundingBox();
+
+    expect(box).not.toBeNull();
+    expect(Math.min(box?.width ?? 0, box?.height ?? 0)).toBeGreaterThanOrEqual(
+      44,
+    );
+  }
 });

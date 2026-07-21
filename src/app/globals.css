@@ -243,8 +243,38 @@ h1 {
 }
 
 .site-footer a {
+  display: inline-flex;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  align-items: center;
   font-weight: 800;
   text-underline-offset: 0.2em;
+}
+
+.site-footer a:focus-visible {
+  outline-color: var(--color-focus-on-dark);
+}
+
+.site-footer__facts {
+  display: grid;
+  align-content: start;
+  gap: var(--space-1);
+}
+
+.site-footer__navigation ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.site-footer__whatsapp {
+  width: fit-content;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
 }
 
 .site-footer__brand {
@@ -282,11 +312,18 @@ h1 {
   }
 
   .site-footer__inner {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(17rem, 1.4fr) minmax(12rem, 1fr) auto;
     align-items: start;
   }
 
-  .site-footer__inner > :last-child {
+  .site-footer__navigation ul {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+  }
+
+  .site-footer__whatsapp {
+    align-items: flex-end;
     text-align: right;
   }
 }
