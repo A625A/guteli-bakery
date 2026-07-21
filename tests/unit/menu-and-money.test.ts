@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { menuProducts } from '@/content/menu';
+import { operationalCopy } from '@/content/business';
+import { getMenuProduct, menuCategories, menuProducts } from '@/content/menu';
 import { formatGTQ } from '@/lib/money';
 
 describe('confirmed menu', () => {
@@ -21,5 +22,27 @@ describe('confirmed menu', () => {
 
   it('formats whole quetzal prices for Guatemala', () => {
     expect(formatGTQ(135)).toBe('Q135');
+  });
+
+  it('exposes the confirmed category order and product lookup', () => {
+    expect(menuCategories.map(({ id }) => id)).toEqual([
+      'pretzels',
+      'bagels',
+      'burger-buns',
+      'nuditos',
+    ]);
+    expect(getMenuProduct('pretzel-jalapeno')).toMatchObject({
+      name: 'Queso y jalapeño',
+      price: 75,
+    });
+  });
+
+  it('uses the approved fallback and confirmation language', () => {
+    expect(operationalCopy).toMatchObject({
+      quantityUnknown: 'Cantidad por confirmar',
+      deliveryCost: 'Costo de envío por confirmar según ubicación',
+      confirmation: 'El pedido queda sujeto a confirmación por WhatsApp',
+      pickupInformation: 'Solicita información de recogida por WhatsApp',
+    });
   });
 });

@@ -53,6 +53,14 @@ describe('cart', () => {
     expect(updateCartItem(cart, 'bagel-original', 100)).toEqual(cart);
   });
 
+  it('rejects invalid quantities when adding a product', () => {
+    const cart = [{ productId: 'nuditos' as const, quantity: 2 }];
+
+    expect(addCartItem(cart, 'pretzel-original', -1)).toEqual(cart);
+    expect(addCartItem(cart, 'pretzel-original', 1.5)).toEqual(cart);
+    expect(addCartItem(cart, 'pretzel-original', 100)).toEqual(cart);
+  });
+
   it('restores a valid saved cart', () => {
     expect(
       parseStoredCart(
