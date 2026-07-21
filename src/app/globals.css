@@ -346,14 +346,20 @@ h1 {
 
 .home-hero {
   display: grid;
-  min-height: 38rem;
+  min-height: 42rem;
   align-items: center;
-  gap: var(--space-7);
-  padding-block: var(--space-8);
+  gap: clamp(3rem, 7vw, 7rem);
+  padding-block: clamp(4rem, 9vw, 8rem);
 }
 
 .home-hero__copy {
-  max-width: 45rem;
+  max-width: 48rem;
+}
+
+.home-hero__copy h1 {
+  max-width: 12ch;
+  font-size: clamp(3.1rem, 8vw, 6.35rem);
+  letter-spacing: -0.055em;
 }
 
 .home-hero__intro {
@@ -400,24 +406,86 @@ h1 {
   color: var(--color-brand);
 }
 
-.home-brand {
-  width: min(100%, 28rem);
-  margin: 0;
-  justify-self: center;
-}
-
-.home-brand__image {
+.home-hero__art {
   position: relative;
+  display: grid;
   overflow: hidden;
-  padding: clamp(1rem, 4vw, 2.5rem);
-  border: 1px solid var(--color-border);
-  border-radius: 48% 48% var(--radius-medium) var(--radius-medium);
+  min-height: clamp(28rem, 80vw, 34rem);
+  align-content: space-between;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  border-radius: 8rem var(--radius-medium) var(--radius-medium)
+    var(--radius-medium);
   background: var(--color-brand);
+  color: var(--color-brand-contrast);
+  isolation: isolate;
 }
 
-.home-brand__illustration {
-  width: 100%;
-  margin-top: var(--space-4);
+.home-hero__wordmark {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid rgb(255 245 223 / 28%);
+}
+
+.home-hero__wordmark strong {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 7vw, 3rem);
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+
+.home-hero__wordmark span,
+.home-hero__stamp,
+.home-hero__label > span {
+  color: var(--color-accent);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.home-hero__art .bakery-illustration {
+  position: absolute;
+  z-index: -1;
+  top: 10%;
+  left: -10%;
+  width: 118%;
+  height: 82%;
+  opacity: 0.94;
+}
+
+.home-hero__stamp {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  right: -5.2rem;
+  margin: 0;
+  transform: rotate(90deg);
+  transform-origin: center;
+}
+
+.home-hero__label {
+  position: relative;
+  z-index: 2;
+  padding: var(--space-4);
+  border-left: 0.25rem solid var(--color-accent);
+  background: rgb(45 23 17 / 78%);
+}
+
+.home-hero__label ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-display);
+  font-size: clamp(1rem, 4vw, 1.25rem);
+  font-weight: 800;
 }
 
 .bakery-illustration {
@@ -456,21 +524,9 @@ h1 {
   }
 }
 
-.home-brand__image .brand-mark {
-  width: 100%;
-  height: clamp(5.5rem, 18vw, 8rem);
-}
-
-.home-brand figcaption {
-  margin-top: var(--space-2);
-  color: var(--color-text-muted);
-  font-size: 0.78rem;
-  text-align: center;
-}
-
 .home-menu-preview,
 .ordering-guide {
-  padding-block: var(--space-8);
+  padding-block: var(--space-section);
   border-top: 1px solid var(--color-border);
 }
 
@@ -502,7 +558,7 @@ h1 {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: var(--space-1) var(--space-4);
-  padding-top: var(--space-4);
+  padding: var(--space-5) 0 var(--space-3);
   border-top: 0.3rem solid var(--color-brand);
 }
 
@@ -600,6 +656,32 @@ h1 {
 .ordering-guide__notice p + p {
   margin-top: var(--space-1);
   font-weight: 600;
+}
+
+.ordering-guide {
+  margin-bottom: var(--space-section);
+  padding-inline: clamp(1.25rem, 4vw, 3rem);
+  border: 0;
+  border-radius: var(--radius-medium);
+  background: var(--color-brand);
+  color: var(--color-brand-contrast);
+}
+
+.ordering-guide .eyebrow,
+.ordering-guide__steps li > span {
+  color: var(--color-accent);
+}
+
+.ordering-guide__steps li {
+  border-color: rgb(255 245 223 / 24%);
+}
+
+.ordering-guide__steps p {
+  color: var(--color-surface-strong);
+}
+
+.ordering-guide__notice {
+  color: var(--color-brand);
 }
 
 .menu-page {
@@ -1271,7 +1353,6 @@ button:disabled,
   }
 
   .home-hero {
-    grid-template-columns: minmax(0, 1.35fr) minmax(17rem, 0.65fr);
     padding-block: 6rem;
   }
 
@@ -1341,6 +1422,10 @@ button:disabled,
 }
 
 @media (min-width: 68rem) {
+  .home-hero {
+    grid-template-columns: minmax(0, 1.08fr) minmax(22rem, 0.92fr);
+  }
+
   .home-menu-preview__list {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }

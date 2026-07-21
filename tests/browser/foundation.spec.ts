@@ -87,6 +87,22 @@ test('default portfolio mode is identified and exposes no WhatsApp destination',
   ).toBeVisible();
 });
 
+test('homepage uses the approved graphic-only editorial treatment', async ({
+  page,
+}) => {
+  await page.goto('/');
+
+  await expect(page.getByText('Referencia original de la marca')).toHaveCount(
+    0,
+  );
+  await expect(page.locator('.home-hero img')).toHaveCount(0);
+  await expect(page.locator('.home-hero .bakery-illustration')).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Ver el menú' })).toHaveAttribute(
+    'href',
+    '/menu/',
+  );
+});
+
 const viewports = [
   { name: 'desktop', width: 1440, height: 1000 },
   { name: 'mobile', width: 390, height: 844 },

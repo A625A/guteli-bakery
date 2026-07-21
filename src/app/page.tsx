@@ -1,6 +1,5 @@
 import Link from 'next/link';
 
-import { BrandMark } from '@/components/shared/BrandMark';
 import { BakeryIllustration } from '@/components/shared/BakeryIllustration';
 import { operationalCopy, siteConfig } from '@/content/business';
 import { menuCategories, menuProducts } from '@/content/menu';
@@ -11,7 +10,7 @@ export default function HomePage() {
     <main id="main-content" className="home-page" tabIndex={-1}>
       <section className="home-hero">
         <div className="home-hero__copy">
-          <p className="eyebrow">Güteli Bakery · Guatemala</p>
+          <p className="eyebrow">Panadería por encargo · Guatemala</p>
           <h1>Pretzels, bagels y panes por encargo</h1>
           <p className="home-hero__intro">
             Explora el menú, arma tu solicitud y envíala para confirmar los
@@ -27,26 +26,28 @@ export default function HomePage() {
           </div>
         </div>
 
-        <figure className="home-brand">
-          <div
-            className="home-brand__image"
-            role="img"
-            aria-label="Logotipo original de Güteli Bakery"
-          >
-            <BrandMark />
-            <BakeryIllustration
-              className="home-brand__illustration"
-              variant="section"
-            />
+        <div className="home-hero__art">
+          <div className="home-hero__wordmark" aria-label="Güteli Bakery">
+            <strong>GÜTELI</strong>
+            <span>Bakery</span>
           </div>
-          <figcaption>Referencia original de la marca</figcaption>
-        </figure>
+          <BakeryIllustration variant="hero" />
+          <p className="home-hero__stamp">Hecho por encargo · Guatemala</p>
+          <div className="home-hero__label">
+            <span>Ilustración editorial de panadería</span>
+            <ul aria-label="Categorías del menú">
+              {menuCategories.map((category) => (
+                <li key={category.id}>{category.label}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
       </section>
 
       <section className="home-menu-preview" aria-label="Precios del menú">
         <div className="section-heading">
           <p className="eyebrow">Una mirada al menú</p>
-          <h2>Cuatro formas de compartir</h2>
+          <h2>Cuatro categorías para elegir</h2>
           <p>Precios publicados para preparar tu solicitud.</p>
         </div>
 
