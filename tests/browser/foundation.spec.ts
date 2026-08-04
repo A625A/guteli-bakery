@@ -148,17 +148,17 @@ for (const viewport of responsiveViewports) {
   });
 }
 
-test('reduced motion disables smooth scrolling and decorative animation', async ({
+test('reduced motion disables smooth scrolling and shortens link transitions', async ({
   page,
 }) => {
-  await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
+  const action = page.getByRole('link', { name: 'Ver el menú' });
+  await expect(action).toHaveCSS('transition-duration', '0.16s, 0.16s, 0.16s');
+
+  await page.emulateMedia({ reducedMotion: 'reduce' });
 
   await expect(page.locator('html')).toHaveCSS('scroll-behavior', 'auto');
-  await expect(page.locator('.home-banner img')).toHaveCSS(
-    'animation-name',
-    'none',
-  );
+  await expect(action).toHaveCSS('transition-duration', '1e-05s');
 });
 
 for (const viewport of viewports) {

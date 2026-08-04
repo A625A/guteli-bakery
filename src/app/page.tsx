@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import Link from 'next/link';
 
 import { operationalCopy, siteConfig } from '@/content/business';
@@ -12,14 +11,22 @@ export default function HomePage() {
         className="home-banner"
         aria-label="Presentación de Güteli Bakery"
       >
-        <Image
-          src="/images/guteli-banner.png"
-          alt="Güteli Bakery: pretzels, bagels y panes por encargo"
-          width={1731}
-          height={909}
-          priority
-          sizes="100vw"
-        />
+        <picture>
+          <source
+            media="(max-width: 767px)"
+            srcSet="/images/guteli-banner-mobile.webp"
+            type="image/webp"
+          />
+          <source srcSet="/images/guteli-banner.webp" type="image/webp" />
+          <img
+            src="/images/guteli-banner.png"
+            alt="Güteli Bakery: pretzels, bagels y panes por encargo"
+            width={1731}
+            height={909}
+            decoding="async"
+            fetchPriority="high"
+          />
+        </picture>
       </section>
 
       <section className="home-action-strip" aria-label="Acciones principales">

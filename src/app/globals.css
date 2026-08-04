@@ -461,6 +461,10 @@ h1 {
   object-fit: contain;
 }
 
+.home-banner picture {
+  display: block;
+}
+
 .home-action-strip {
   display: flex;
   flex-direction: column;

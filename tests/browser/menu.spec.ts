@@ -1,4 +1,43 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Locator } from '@playwright/test';
+
+function relativeLuminance(color: string) {
+  const channels = color
+    .match(/\d+(?:\.\d+)?/g)
+    ?.slice(0, 3)
+    .map(Number);
+
+  if (!channels || channels.length !== 3) {
+    throw new Error(`Unsupported CSS color: ${color}`);
+  }
+
+  const [red, green, blue] = channels.map((channel) => {
+    const normalized = channel / 255;
+    return normalized <= 0.04045
+      ? normalized / 12.92
+      : ((normalized + 0.055) / 1.055) ** 2.4;
+  });
+
+  return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+}
+
+async function getContrastRatio(foreground: Locator, background: Locator) {
+  const foregroundColor = await foreground.evaluate(
+    (element) => getComputedStyle(element).color,
+  );
+  const backgroundColor = await background.evaluate(
+    (element) => getComputedStyle(element).backgroundColor,
+  );
+  const lighter = Math.max(
+    relativeLuminance(foregroundColor),
+    relativeLuminance(backgroundColor),
+  );
+  const darker = Math.min(
+    relativeLuminance(foregroundColor),
+    relativeLuminance(backgroundColor),
+  );
+
+  return (lighter + 0.05) / (darker + 0.05);
+}
 
 test('keeps add controls unavailable until the persisted cart can hydrate', async ({
   browser,
@@ -119,6 +158,38 @@ test('shows all confirmed products and adds a selected quantity', async ({
   await expect(
     page.getByRole('link', { name: 'Carrito, 2 productos' }),
   ).toBeVisible();
+});
+
+test('small caramel labels retain readable contrast on cream surfaces', async ({
+  page,
+}) => {
+  await page.goto('/menu/');
+
+  const productCard = page.getByTestId('product-card').first();
+  await expect(productCard).toBeVisible();
+  expect(
+    await getContrastRatio(
+      productCard.locator('.product-card__category'),
+      productCard,
+    ),
+  ).toBeGreaterThanOrEqual(4.5);
+
+  await page.evaluate(() => {
+    window.localStorage.setItem(
+      'guteli-cart-v1',
+      '[{"productId":"pretzel-original","quantity":1}]',
+    );
+  });
+  await page.goto('/cart/');
+
+  const cartLine = page.getByTestId('cart-line-pretzel-original');
+  await expect(cartLine).toBeVisible();
+  expect(
+    await getContrastRatio(
+      cartLine.locator('.cart-line__identity p'),
+      cartLine,
+    ),
+  ).toBeGreaterThanOrEqual(4.5);
 });
 
 test('re-announces an identical repeated addition and updates the badge', async ({
