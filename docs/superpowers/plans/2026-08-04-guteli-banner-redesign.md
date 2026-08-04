@@ -37,9 +37,11 @@
 ### Task 1: Lock the approved homepage contract with browser tests
 
 **Files:**
+
 - Create: `tests/browser/banner-redesign.spec.ts`
 
 **Interfaces:**
+
 - Consumes: existing routes and accessible names from `src/app/page.tsx` and `src/components/shared/SiteHeader.tsx`
 - Produces: browser-level contract for `.home-banner`, `.home-action-strip`, `.ordering-guide`, and `.brand-mark__symbol`
 
@@ -55,10 +57,7 @@ test('homepage uses the approved banner-led structure', async ({ page }) => {
     name: 'Güteli Bakery: pretzels, bagels y panes por encargo',
   });
   await expect(banner).toBeVisible();
-  await expect(banner).toHaveAttribute(
-    'src',
-    /\/images\/guteli-banner\.png$/,
-  );
+  await expect(banner).toHaveAttribute('src', /\/images\/guteli-banner\.png$/);
   await expect(page.locator('.home-hero__art')).toHaveCount(0);
   await expect(page.locator('.home-menu-preview')).toHaveCount(0);
   await expect(page.locator('.home-action-strip')).toContainText(
@@ -119,10 +118,12 @@ git commit -m "test: define banner redesign contract"
 ### Task 2: Add the banner and simplify the homepage
 
 **Files:**
+
 - Create: `public/images/guteli-banner.png`
 - Modify: `src/app/page.tsx`
 
 **Interfaces:**
+
 - Consumes: `siteConfig.advanceDays` from `src/content/business.ts` and the supplied PNG source
 - Produces: `.home-banner`, `.home-action-strip`, and the existing `.ordering-guide` landmark used by CSS and Playwright
 
@@ -150,11 +151,12 @@ import { operationalCopy, siteConfig } from '@/content/business';
 export default function HomePage() {
   return (
     <main id="main-content" className="home-page" tabIndex={-1}>
-      <h1 className="visually-hidden">
-        Pretzels, bagels y panes por encargo
-      </h1>
+      <h1 className="visually-hidden">Pretzels, bagels y panes por encargo</h1>
 
-      <section className="home-banner" aria-label="Presentación de Güteli Bakery">
+      <section
+        className="home-banner"
+        aria-label="Presentación de Güteli Bakery"
+      >
         <Image
           src="/images/guteli-banner.png"
           alt="Güteli Bakery: pretzels, bagels y panes por encargo"
@@ -207,7 +209,9 @@ export default function HomePage() {
         </ol>
 
         <aside className="ordering-guide__notice" aria-label="Antes de pedir">
-          <p>Haz tu pedido con {siteConfig.advanceDays} días de anticipación.</p>
+          <p>
+            Haz tu pedido con {siteConfig.advanceDays} días de anticipación.
+          </p>
           <p>{operationalCopy.confirmation}</p>
         </aside>
       </section>
@@ -236,11 +240,13 @@ git commit -m "feat: lead homepage with approved banner"
 ### Task 3: Correct the header mark and extend the visual language
 
 **Files:**
+
 - Modify: `src/components/shared/BrandMark.tsx`
 - Modify: `src/app/globals.css`
 - Modify: `src/styles/tokens.css`
 
 **Interfaces:**
+
 - Consumes: existing `BrandMark` component contract and all current shell class names
 - Produces: a CSS-only `.brand-mark__symbol` with two `.brand-mark__loop` children; responsive banner and ornamental shell styles
 
@@ -323,11 +329,13 @@ git commit -m "feat: align bakery shell with banner artwork"
 ### Task 4: Validate and capture the private preview
 
 **Files:**
+
 - Create: `artifacts/screenshots/preview/banner-redesign-desktop.png`
 - Create: `artifacts/screenshots/preview/banner-redesign-mobile.png`
 - Modify: `artifacts/previews/preview-information.md`
 
 **Interfaces:**
+
 - Consumes: production static export from `npm run build`
 - Produces: two reviewable screenshots and a verification record; no Sites deployment
 
@@ -357,12 +365,18 @@ Expected: the static export is served at `http://127.0.0.1:3000` or the exact UR
 Use Playwright against the running local preview to capture the full homepage at 1440×1000 and 390×844. Before each capture, assert:
 
 ```ts
-await expect(page.getByRole('img', {
-  name: 'Güteli Bakery: pretzels, bagels y panes por encargo',
-})).toBeVisible();
-expect(await page.evaluate(
-  () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
-)).toBe(true);
+await expect(
+  page.getByRole('img', {
+    name: 'Güteli Bakery: pretzels, bagels y panes por encargo',
+  }),
+).toBeVisible();
+expect(
+  await page.evaluate(
+    () =>
+      document.documentElement.scrollWidth <=
+      document.documentElement.clientWidth,
+  ),
+).toBe(true);
 ```
 
 Save the screenshots at the two preview paths listed above without overwriting Milestone 3 evidence.

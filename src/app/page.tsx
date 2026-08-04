@@ -6,11 +6,12 @@ import { operationalCopy, siteConfig } from '@/content/business';
 export default function HomePage() {
   return (
     <main id="main-content" className="home-page" tabIndex={-1}>
-      <h1 className="visually-hidden">
-        Pretzels, bagels y panes por encargo
-      </h1>
+      <h1 className="visually-hidden">Pretzels, bagels y panes por encargo</h1>
 
-      <section className="home-banner" aria-label="Presentación de Güteli Bakery">
+      <section
+        className="home-banner"
+        aria-label="Presentación de Güteli Bakery"
+      >
         <Image
           src="/images/guteli-banner.png"
           alt="Güteli Bakery: pretzels, bagels y panes por encargo"
@@ -63,7 +64,9 @@ export default function HomePage() {
         </ol>
 
         <aside className="ordering-guide__notice" aria-label="Antes de pedir">
-          <p>Haz tu pedido con {siteConfig.advanceDays} días de anticipación.</p>
+          <p>
+            Haz tu pedido con {siteConfig.advanceDays} días de anticipación.
+          </p>
           <p>{operationalCopy.confirmation}</p>
         </aside>
       </section>
