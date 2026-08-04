@@ -1,86 +1,40 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
-import { BakeryIllustration } from '@/components/shared/BakeryIllustration';
 import { operationalCopy, siteConfig } from '@/content/business';
-import { menuCategories, menuProducts } from '@/content/menu';
-import { formatGTQ } from '@/lib/money';
 
 export default function HomePage() {
   return (
     <main id="main-content" className="home-page" tabIndex={-1}>
-      <section className="home-hero">
-        <div className="home-hero__copy">
-          <p className="eyebrow">Panadería por encargo · Guatemala</p>
-          <h1>Pretzels, bagels y panes por encargo</h1>
-          <p className="home-hero__intro">
-            Explora el menú, arma tu solicitud y envíala para confirmar los
-            detalles por WhatsApp.
-          </p>
-          <div className="home-actions">
-            <Link className="button-link button-link--primary" href="/menu/">
-              Ver el menú
-            </Link>
-            <Link className="button-link button-link--secondary" href="/order/">
-              Preparar mi pedido
-            </Link>
-          </div>
-        </div>
+      <h1 className="visually-hidden">
+        Pretzels, bagels y panes por encargo
+      </h1>
 
-        <div className="home-hero__art">
-          <div className="home-hero__wordmark" aria-label="Güteli Bakery">
-            <strong>GÜTELI</strong>
-            <span>Bakery</span>
-          </div>
-          <BakeryIllustration variant="hero" />
-          <p className="home-hero__stamp">Hecho por encargo · Guatemala</p>
-          <div className="home-hero__label">
-            <span>Ilustración editorial de panadería</span>
-            <ul aria-label="Categorías del menú">
-              {menuCategories.map((category) => (
-                <li key={category.id}>{category.label}</li>
-              ))}
-            </ul>
-          </div>
-        </div>
+      <section className="home-banner" aria-label="Presentación de Güteli Bakery">
+        <Image
+          src="/images/guteli-banner.png"
+          alt="Güteli Bakery: pretzels, bagels y panes por encargo"
+          width={1733}
+          height={909}
+          priority
+          sizes="100vw"
+        />
       </section>
 
-      <section className="home-menu-preview" aria-label="Precios del menú">
-        <div className="section-heading">
-          <p className="eyebrow">Una mirada al menú</p>
-          <h2>Cuatro categorías para elegir</h2>
-          <p>Precios publicados para preparar tu solicitud.</p>
+      <section className="home-action-strip" aria-label="Acciones principales">
+        <div className="home-actions">
+          <Link className="button-link button-link--primary" href="/menu/">
+            Ver el menú
+          </Link>
+          <Link className="button-link button-link--secondary" href="/order/">
+            Preparar mi pedido
+          </Link>
         </div>
-
-        <div className="home-menu-preview__list">
-          {menuCategories.map((category) => {
-            const product = menuProducts.find(
-              (candidate) => candidate.category === category.id,
-            );
-
-            if (!product) {
-              return null;
-            }
-
-            return (
-              <article className="home-menu-preview__item" key={category.id}>
-                <p>{category.label}</p>
-                <h3>{product.name}</h3>
-                <span>
-                  {product.saleUnit ?? operationalCopy.quantityUnknown}
-                </span>
-                <strong>{formatGTQ(product.price)}</strong>
-              </article>
-            );
-          })}
-        </div>
-
-        <Link className="text-link home-menu-preview__link" href="/menu/">
-          Ver las ocho opciones del menú
-        </Link>
+        <p>Pedidos con {siteConfig.advanceDays} días de anticipación.</p>
       </section>
 
       <section className="ordering-guide">
-        <div className="section-heading">
+        <div className="section-heading ordering-guide__heading">
           <p className="eyebrow">Tu solicitud, paso a paso</p>
           <h2>Cómo hacer un pedido</h2>
         </div>
@@ -109,9 +63,7 @@ export default function HomePage() {
         </ol>
 
         <aside className="ordering-guide__notice" aria-label="Antes de pedir">
-          <p>
-            Haz tu pedido con {siteConfig.advanceDays} días de anticipación.
-          </p>
+          <p>Haz tu pedido con {siteConfig.advanceDays} días de anticipación.</p>
           <p>{operationalCopy.confirmation}</p>
         </aside>
       </section>
