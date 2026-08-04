@@ -1,5 +1,11 @@
 # Preview Information
 
+## Banner redesign private preview — 2026-08-04
+
+Status: **Verified locally; awaiting user approval; not deployed.**
+
+The approved banner-led homepage was checked at 1440×1000 and 390×844. The banner remains uncropped, the compact header mark is corrected, repeated hero and menu-preview areas are absent, and the existing menu-to-order journey remains intact. The current live Sites version was not replaced.
+
 ## Milestone 3 verified local preview — 2026-07-21
 
 Status: **Verified locally; stopped after checks; not publicly deployed.**
