@@ -9,6 +9,7 @@ export default defineConfig([
     '.next/**',
     '.worktrees/**',
     'out/**',
+    'dist/**',
     'coverage/**',
     'next-env.d.ts',
   ]),
