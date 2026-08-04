@@ -14,7 +14,7 @@ export default function HomePage() {
         <Image
           src="/images/guteli-banner.png"
           alt="Güteli Bakery: pretzels, bagels y panes por encargo"
-          width={1733}
+          width={1731}
           height={909}
           priority
           sizes="100vw"
