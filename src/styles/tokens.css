@@ -1,13 +1,13 @@
 :root {
-  --color-background: #fff5df;
-  --color-surface: #fffaf0;
+  --color-background: #fff3d7;
+  --color-surface: #fff8e8;
   --color-surface-strong: #efcf9e;
-  --color-text: #2d1711;
+  --color-text: #2a1b12;
   --color-text-muted: #6d493d;
-  --color-brand: #2d1711;
-  --color-brand-contrast: #fff5df;
-  --color-caramel: #a94e1d;
-  --color-accent: #ff6a00;
+  --color-brand: #2a1b12;
+  --color-brand-contrast: #fff3d7;
+  --color-caramel: #bd7d47;
+  --color-accent: #f26500;
   --color-accent-hover: #943d13;
   --color-border: #c9986f;
   --color-focus: #005fcc;
@@ -31,8 +31,7 @@
   --transition-fast: 160ms ease;
   --font-body:
     system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-display:
-    ui-rounded, 'Arial Rounded MT Bold', 'Segoe UI', system-ui, sans-serif;
+  --font-display: Georgia, 'Times New Roman', serif;
   --content-wide: 76rem;
   --content-reading: 46rem;
   --content-gutter: clamp(1rem, 4vw, 2rem);

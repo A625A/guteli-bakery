@@ -15,7 +15,7 @@ test('keeps add controls unavailable until the persisted cart can hydrate', asyn
   await context.close();
 });
 
-test('homepage presents the factual ordering path and canonical price previews', async ({
+test('homepage presents the banner-led factual ordering path', async ({
   page,
 }) => {
   await page.goto('/');
@@ -29,11 +29,10 @@ test('homepage presents the factual ordering path and canonical price previews',
   await expect(
     page.getByRole('link', { name: 'Güteli Bakery, inicio' }),
   ).toBeVisible();
-  await expect(page.locator('img[src*="guteli-brand-reference"]')).toHaveCount(
-    0,
-  );
   await expect(
-    page.getByText('Ilustración editorial de panadería', { exact: true }),
+    page.getByRole('img', {
+      name: 'Güteli Bakery: pretzels, bagels y panes por encargo',
+    }),
   ).toBeVisible();
   await expect(page.getByRole('link', { name: 'Ver el menú' })).toHaveAttribute(
     'href',
@@ -43,9 +42,9 @@ test('homepage presents the factual ordering path and canonical price previews',
     page.getByRole('link', { name: 'Preparar mi pedido' }),
   ).toHaveAttribute('href', '/order/');
 
-  const previews = page.getByRole('region', { name: 'Precios del menú' });
-  await expect(previews.getByText('Q55', { exact: true })).toBeVisible();
-  await expect(previews.getByText('Q60', { exact: true })).toHaveCount(3);
+  await expect(
+    page.getByRole('region', { name: 'Precios del menú' }),
+  ).toHaveCount(0);
   await expect(
     page
       .getByRole('list', { name: 'Cómo hacer un pedido' })

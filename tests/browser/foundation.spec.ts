@@ -87,16 +87,18 @@ test('default portfolio mode is identified and exposes no WhatsApp destination',
   ).toBeVisible();
 });
 
-test('homepage uses the approved graphic-only editorial treatment', async ({
+test('homepage uses the approved accessible banner treatment', async ({
   page,
 }) => {
   await page.goto('/');
 
-  await expect(page.getByText('Referencia original de la marca')).toHaveCount(
-    0,
-  );
-  await expect(page.locator('.home-hero img')).toHaveCount(0);
-  await expect(page.locator('.home-hero .bakery-illustration')).toBeVisible();
+  await expect(
+    page.getByRole('img', {
+      name: 'Güteli Bakery: pretzels, bagels y panes por encargo',
+    }),
+  ).toBeVisible();
+  await expect(page.locator('.home-hero')).toHaveCount(0);
+  await expect(page.locator('.home-menu-preview')).toHaveCount(0);
   await expect(page.getByRole('link', { name: 'Ver el menú' })).toHaveAttribute(
     'href',
     '/menu/',
@@ -153,7 +155,7 @@ test('reduced motion disables smooth scrolling and decorative animation', async 
   await page.goto('/');
 
   await expect(page.locator('html')).toHaveCSS('scroll-behavior', 'auto');
-  await expect(page.locator('.bakery-illustration')).toHaveCSS(
+  await expect(page.locator('.home-banner img')).toHaveCSS(
     'animation-name',
     'none',
   );
