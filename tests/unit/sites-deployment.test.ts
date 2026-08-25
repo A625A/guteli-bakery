@@ -46,6 +46,51 @@ describe('Sites deployment contract', () => {
     expect(assetRequests).toEqual([request]);
   });
 
+  it('adds security headers without changing the asset response', async () => {
+    const workerModule = await import('../../hosting/sites-worker');
+    const request = new Request('https://guteli.example/menu/');
+    const response = await workerModule.default.fetch(request, {
+      ASSETS: {
+        async fetch() {
+          return new Response('secure menu export', {
+            status: 206,
+            statusText: 'Partial Content',
+            headers: {
+              'Cache-Control': 'public, max-age=300',
+              'Content-Security-Policy': 'default-src *',
+              'Content-Type': 'text/html; charset=utf-8',
+              ETag: '"asset-v1"',
+            },
+          });
+        },
+      },
+    });
+
+    expect(response.status).toBe(206);
+    expect(response.statusText).toBe('Partial Content');
+    expect(await response.text()).toBe('secure menu export');
+    expect(response.headers.get('cache-control')).toBe('public, max-age=300');
+    expect(response.headers.get('content-type')).toBe(
+      'text/html; charset=utf-8',
+    );
+    expect(response.headers.get('etag')).toBe('"asset-v1"');
+    expect(response.headers.get('content-security-policy')).toBe(
+      "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; frame-src 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; upgrade-insecure-requests",
+    );
+    expect(response.headers.get('strict-transport-security')).toBe(
+      'max-age=31536000',
+    );
+    expect(response.headers.get('x-content-type-options')).toBe('nosniff');
+    expect(response.headers.get('referrer-policy')).toBe(
+      'strict-origin-when-cross-origin',
+    );
+    expect(response.headers.get('permissions-policy')).toBe(
+      'camera=(), geolocation=(), microphone=(), payment=(), usb=()',
+    );
+    expect(response.headers.get('x-frame-options')).toBe('DENY');
+    expect(response.headers.get('x-xss-protection')).toBe('0');
+  });
+
   it('provides the deployment build that packages the static export', async () => {
     const packageJson = JSON.parse(await readFile('package.json', 'utf8')) as {
       scripts?: Record<string, string>;
