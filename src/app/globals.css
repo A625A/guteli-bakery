@@ -277,7 +277,8 @@ summary:focus-visible {
   color: var(--color-accent-hover);
 }
 
-.site-nav__link[aria-current='page'] .site-nav__icon {
+.site-nav__link[aria-current='page']:not(.site-nav__link--order)
+  .site-nav__icon {
   color: var(--color-accent-hover);
 }
 
@@ -371,10 +372,6 @@ summary:focus-visible {
 
 .mobile-navigation .cart-badge__count {
   margin-left: auto;
-}
-
-.site-header__seal {
-  display: none;
 }
 
 .foundation-page {
@@ -1713,29 +1710,6 @@ button:disabled,
 
   .mobile-navigation {
     display: none;
-  }
-
-  .site-header__seal {
-    position: absolute;
-    bottom: -1.55rem;
-    left: 50%;
-    display: grid;
-    width: 4.8rem;
-    height: 3rem;
-    place-items: center;
-    transform: translateX(-50%);
-    border: 1px solid rgb(201 152 111 / 68%);
-    border-top: 0;
-    border-radius: 0 0 2.4rem 2.4rem;
-    background: var(--color-surface);
-    box-shadow: 0 0.7rem 1rem rgb(47 27 21 / 11%);
-    color: var(--color-accent);
-  }
-
-  .site-header__seal .site-nav__icon {
-    width: 2rem;
-    height: 2rem;
-    color: var(--color-accent);
   }
 }
 

@@ -262,6 +262,32 @@ test('header identifies the current destination and keeps its icons decorative',
   }
 });
 
+test('desktop header omits the hanging decorative seal', async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 700 });
+  await page.goto('/menu/');
+
+  await expect(page.locator('.site-header__seal')).toHaveCount(0);
+});
+
+test('current order icon remains visible against its action background', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1024, height: 700 });
+  await page.goto('/order/');
+
+  const orderAction = page
+    .locator('.desktop-navigation')
+    .getByRole('link', { name: 'Pedido', exact: true });
+  const colors = await orderAction.evaluate((element) => ({
+    background: getComputedStyle(element).backgroundColor,
+    icon: getComputedStyle(element.querySelector('.site-nav__icon')!).color,
+  }));
+
+  expect(contrastRatio(colors.icon, colors.background)).toBeGreaterThanOrEqual(
+    3,
+  );
+});
+
 test('header order action meets WCAG AA text contrast', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto('/');

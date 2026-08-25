@@ -164,10 +164,6 @@ export function SiteHeader() {
             <NavigationLinks />
           </nav>
         </details>
-
-        <span className="site-header__seal" aria-hidden="true">
-          <NavigationIcon name="menu" />
-        </span>
       </div>
     </header>
   );
