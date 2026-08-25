@@ -103,6 +103,63 @@ test('homepage presents the banner-led factual ordering path', async ({
   ).toBeVisible();
 });
 
+test('ordering guide uses decorative bakery symbols instead of visible step numbers', async ({
+  page,
+}) => {
+  await page.goto('/');
+
+  const guide = page.getByRole('list', { name: 'Cómo hacer un pedido' });
+  const icons = guide.locator('.ordering-guide__icon');
+
+  await expect(icons).toHaveCount(3);
+  for (const icon of await icons.all()) {
+    await expect(icon).toHaveAttribute('aria-hidden', 'true');
+  }
+
+  for (const number of ['01', '02', '03']) {
+    await expect(guide.getByText(number, { exact: true })).toHaveCount(0);
+  }
+});
+
+test('phone handset is centered inside its ordering-guide speech bubble', async ({
+  page,
+}) => {
+  await page.goto('/');
+
+  const geometry = await page
+    .locator('.ordering-guide__icon')
+    .nth(2)
+    .locator('svg')
+    .evaluate((svg) => {
+      const [bubble, phone] = svg.querySelectorAll('path');
+      const bubbleBox = bubble.getBBox();
+      const phoneBox = phone.getBBox();
+
+      return {
+        centerDifference: {
+          x:
+            phoneBox.x +
+            phoneBox.width / 2 -
+            (bubbleBox.x + bubbleBox.width / 2),
+          y:
+            phoneBox.y +
+            phoneBox.height / 2 -
+            (bubbleBox.y + bubbleBox.height / 2),
+        },
+        minimumInset: Math.min(
+          phoneBox.x - bubbleBox.x,
+          phoneBox.y - bubbleBox.y,
+          bubbleBox.x + bubbleBox.width - (phoneBox.x + phoneBox.width),
+          bubbleBox.y + bubbleBox.height - (phoneBox.y + phoneBox.height),
+        ),
+      };
+    });
+
+  expect(Math.abs(geometry.centerDifference.x)).toBeLessThanOrEqual(1);
+  expect(Math.abs(geometry.centerDifference.y)).toBeLessThanOrEqual(1);
+  expect(geometry.minimumInset).toBeGreaterThanOrEqual(4);
+});
+
 test('shows all confirmed products and adds a selected quantity', async ({
   page,
 }) => {

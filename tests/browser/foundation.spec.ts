@@ -24,6 +24,30 @@ const footerNavigationDestinations = [
   { name: 'Contacto', path: '/contact/' },
 ] as const;
 
+function relativeLuminance(color: string) {
+  const channels = color
+    .match(/[\d.]+/g)
+    ?.slice(0, 3)
+    .map(Number)
+    .map((channel) => channel / 255)
+    .map((channel) =>
+      channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4,
+    );
+
+  if (!channels || channels.length !== 3) {
+    throw new Error(`Unsupported CSS color: ${color}`);
+  }
+
+  return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+}
+
+function contrastRatio(firstColor: string, secondColor: string) {
+  const first = relativeLuminance(firstColor);
+  const second = relativeLuminance(secondColor);
+
+  return (Math.max(first, second) + 0.05) / (Math.min(first, second) + 0.05);
+}
+
 for (const route of routes) {
   test(`${route.path} renders the final Spanish site shell`, async ({
     page,
@@ -210,6 +234,47 @@ test('desktop navigation exposes the approved five destinations', async ({
       navigation.getByRole('link', { name: destination.name }),
     ).toHaveAttribute('href', destination.path);
   }
+});
+
+test('header identifies the current destination and keeps its icons decorative', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto('/menu/');
+
+  const navigation = page.locator('.desktop-navigation');
+  await expect(
+    navigation.getByRole('link', { name: 'Menú', exact: true }),
+  ).toHaveAttribute('aria-current', 'page');
+  await expect(
+    navigation.getByRole('link', { name: 'Inicio', exact: true }),
+  ).not.toHaveAttribute('aria-current');
+
+  const navigationIcons = navigation.locator('.site-nav__icon');
+  await expect(navigationIcons).toHaveCount(5);
+  for (const icon of await navigationIcons.all()) {
+    await expect(icon).toHaveAttribute('aria-hidden', 'true');
+  }
+});
+
+test('header order action meets WCAG AA text contrast', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto('/');
+
+  const orderAction = page
+    .locator('.desktop-navigation')
+    .getByRole('link', { name: 'Pedido', exact: true });
+  const colors = await orderAction.evaluate((element) => {
+    const style = getComputedStyle(element);
+    return {
+      background: style.backgroundColor,
+      foreground: style.color,
+    };
+  });
+
+  expect(
+    contrastRatio(colors.foreground, colors.background),
+  ).toBeGreaterThanOrEqual(4.5);
 });
 
 test('mobile menu exposes the approved five destinations', async ({ page }) => {
