@@ -165,32 +165,25 @@ test('shows all confirmed products and adds a selected quantity', async ({
 }) => {
   await page.goto('/menu/');
   await expect(
-    page.getByRole('heading', { name: 'Nuestro menú' }),
-  ).toBeVisible();
-  await expect(page.getByTestId('product-card')).toHaveCount(8);
-  await expect(
-    page.getByRole('heading', { level: 2, name: 'Pretzels' }),
+    page.getByRole('heading', { name: 'Nuestros productos' }),
   ).toBeVisible();
   await expect(
-    page.getByRole('heading', { level: 2, name: 'Bagels' }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole('heading', { level: 2, name: 'Burger buns' }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole('heading', { level: 2, name: 'Nuditos' }),
-  ).toBeVisible();
+    page.getByRole('heading', { level: 2, name: 'Productos disponibles' }),
+  ).toBeAttached();
+  await expect(page.getByTestId('product-card')).toHaveCount(10);
   await expect(
     page.getByText('Cantidad por confirmar', { exact: true }),
   ).toHaveCount(4);
-  await expect(page.getByText('Bolsa de 5', { exact: true })).toHaveCount(3);
+  await expect(page.getByText('Bolsa de 5', { exact: true })).toHaveCount(5);
   await expect(page.getByText('Bolsa de 15', { exact: true })).toHaveCount(1);
 
   const expectedPrices = [
     'Q60',
     'Q75',
     'Q75',
+    'Q75',
     'Q60',
+    'Q75',
     'Q75',
     'Q75',
     'Q55',
@@ -217,6 +210,119 @@ test('shows all confirmed products and adds a selected quantity', async ({
   ).toBeVisible();
 });
 
+test('filters the product grid with clear pressed state and keyboard access', async ({
+  page,
+}) => {
+  await page.goto('/menu/');
+
+  const filters = page.getByRole('group', { name: 'Filtrar productos' });
+  const allFilter = filters.getByRole('button', { name: 'Todos' });
+  const pretzelFilter = filters.getByRole('button', { name: 'Pretzels' });
+  const bagelFilter = filters.getByRole('button', { name: 'Bagels' });
+  const breadFilter = filters.getByRole('button', { name: 'Panes' });
+
+  await expect(allFilter).toHaveAttribute('aria-pressed', 'true');
+  await pretzelFilter.focus();
+  await page.keyboard.press('Enter');
+  await expect(pretzelFilter).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByTestId('product-card')).toHaveCount(4);
+  await expect(page.locator('.menu-results')).toHaveText(
+    'Pretzels: 4 productos',
+  );
+
+  await bagelFilter.click();
+  await expect(page.getByTestId('product-card')).toHaveCount(4);
+  await expect(page.locator('.menu-results')).toHaveText('Bagels: 4 productos');
+
+  await breadFilter.click();
+  await expect(page.getByTestId('product-card')).toHaveCount(2);
+  await expect(
+    page.getByRole('heading', { level: 3, name: 'Burger buns' }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('heading', { level: 3, name: 'Nuditos' }),
+  ).toBeVisible();
+
+  await allFilter.click();
+  await expect(page.getByTestId('product-card')).toHaveCount(10);
+  await expect(allFilter).toHaveAttribute('aria-pressed', 'true');
+});
+
+test('uses a four-card product row on wide screens', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto('/menu/');
+
+  const cards = page.getByTestId('product-card');
+  const firstRow = await Promise.all(
+    [0, 1, 2, 3].map((index) => cards.nth(index).boundingBox()),
+  );
+
+  for (const box of firstRow) {
+    expect(box).not.toBeNull();
+    expect(Math.abs((box?.y ?? 0) - (firstRow[0]?.y ?? 0))).toBeLessThanOrEqual(
+      1,
+    );
+  }
+});
+
+test('uses the supplied product photographs in the menu and cart', async ({
+  page,
+}) => {
+  await page.goto('/menu/');
+
+  const productPhotos = page.locator('.product-card__photo');
+  await expect(productPhotos).toHaveCount(9);
+  await expect(productPhotos.nth(0)).toHaveAttribute('loading', 'eager');
+  await expect(productPhotos.nth(1)).toHaveAttribute('loading', 'eager');
+  await expect(productPhotos.nth(2)).toHaveAttribute('loading', 'lazy');
+  await expect(
+    page.getByRole('img', { name: 'Originales de Pretzels' }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('img', { name: 'Tomate y albahaca de Bagels' }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('img', {
+      name: 'Nuditos: ilustración de categoría, no fotografía de producto',
+    }),
+  ).toBeVisible();
+
+  await page
+    .getByRole('button', { name: 'Agregar Originales de Pretzels' })
+    .click();
+  await page
+    .getByRole('button', { name: 'Agregar Tomate y albahaca de Bagels' })
+    .click();
+  await page.getByRole('link', { name: 'Carrito, 2 productos' }).click();
+
+  const cartPhotos = page.locator('.cart-line__photo');
+  await expect(cartPhotos).toHaveCount(2);
+  await expect(cartPhotos.nth(0)).toHaveAttribute('alt', '');
+  await expect(cartPhotos.nth(1)).toHaveAttribute('alt', '');
+  await expect(cartPhotos.nth(0)).toHaveAttribute('loading', 'eager');
+  await expect(cartPhotos.nth(1)).toHaveAttribute('loading', 'eager');
+  await expect
+    .poll(() =>
+      page
+        .locator('.cart-line__photo')
+        .evaluateAll((images: HTMLImageElement[]) =>
+          images.every((image) => image.naturalWidth > 0),
+        ),
+    )
+    .toBe(true);
+
+  await page.goto('/menu/');
+  await page
+    .getByRole('button', { name: 'Agregar Nuditos de Nuditos' })
+    .click();
+  await page.getByRole('link', { name: 'Carrito, 3 productos' }).click();
+  await expect(
+    page.getByRole('img', {
+      name: 'Nuditos: ilustración de categoría, no fotografía de producto',
+    }),
+  ).toHaveCount(0);
+});
+
 test('small caramel labels retain readable contrast on cream surfaces', async ({
   page,
 }) => {
@@ -229,6 +335,13 @@ test('small caramel labels retain readable contrast on cream surfaces', async ({
       productCard.locator('.product-card__category'),
       productCard,
     ),
+  ).toBeGreaterThanOrEqual(4.5);
+
+  const activeFilter = page
+    .getByRole('group', { name: 'Filtrar productos' })
+    .getByRole('button', { name: 'Todos' });
+  expect(
+    await getContrastRatio(activeFilter, activeFilter),
   ).toBeGreaterThanOrEqual(4.5);
 
   await page.evaluate(() => {
@@ -301,16 +414,16 @@ test('reports only the effective addition and disables adding at 99', async ({
   ).toBeVisible();
 });
 
-test('all eight menu variants can be added with a keyboard', async ({
-  page,
-}) => {
+test('all ten menu variants can be added with a keyboard', async ({ page }) => {
   const addActions = [
     'Agregar Originales de Pretzels',
     'Agregar Queso y jalapeño de Pretzels',
     'Agregar Queso y pepperoni de Pretzels',
+    'Agregar Tomate y albahaca de Pretzels',
     'Agregar Originales de Bagels',
     'Agregar Queso y jalapeño de Bagels',
     'Agregar Queso y pepperoni de Bagels',
+    'Agregar Tomate y albahaca de Bagels',
     'Agregar Burger buns de Burger buns',
     'Agregar Nuditos de Nuditos',
   ] as const;
@@ -328,7 +441,7 @@ test('all eight menu variants can be added with a keyboard', async ({
   }
 
   await expect(
-    page.getByRole('link', { name: 'Carrito, 8 productos' }),
+    page.getByRole('link', { name: 'Carrito, 10 productos' }),
   ).toBeVisible();
 });
 
@@ -338,7 +451,7 @@ test('menu controls remain usable without horizontal overflow on mobile', async 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/menu/');
 
-  await expect(page.getByTestId('product-card')).toHaveCount(8);
+  await expect(page.getByTestId('product-card')).toHaveCount(10);
   expect(
     await page.evaluate(
       () =>
@@ -352,6 +465,16 @@ test('menu controls remain usable without horizontal overflow on mobile', async 
     .locator('input, button')
     .all()) {
     const box = await control.boundingBox();
+
+    expect(box).not.toBeNull();
+    expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
+  }
+
+  for (const filter of await page
+    .getByRole('group', { name: 'Filtrar productos' })
+    .getByRole('button')
+    .all()) {
+    const box = await filter.boundingBox();
 
     expect(box).not.toBeNull();
     expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);

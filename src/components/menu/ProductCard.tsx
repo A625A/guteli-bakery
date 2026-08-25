@@ -10,6 +10,7 @@ import { formatGTQ } from '@/lib/money';
 
 type ProductCardProps = {
   product: MenuProduct;
+  eager?: boolean;
 };
 
 type Announcement = {
@@ -29,7 +30,7 @@ function getAddedMessage(product: MenuProduct, quantity: number): string {
   return `${quantity} ${unit} al carrito: ${product.name} de ${product.categoryLabel}.`;
 }
 
-export function ProductCard({ product }: ProductCardProps) {
+export function ProductCard({ product, eager = false }: ProductCardProps) {
   const { addItem, hydrated, items } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [announcement, setAnnouncement] = useState<Announcement | null>(null);
@@ -67,10 +68,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
   return (
     <article className="product-card" data-testid="product-card">
-      <ProductArtwork
-        category={product.category}
-        label={product.categoryLabel}
-      />
+      <ProductArtwork product={product} eager={eager} />
       <div className="product-card__body">
         <p className="product-card__category">{product.categoryLabel}</p>
         <h3>{product.name}</h3>
@@ -81,7 +79,7 @@ export function ProductCard({ product }: ProductCardProps) {
           {formatGTQ(product.price)}
         </strong>
         <div className="product-card__actions">
-          <label htmlFor={inputId}>
+          <label className="visually-hidden" htmlFor={inputId}>
             Cantidad de {product.name}, {product.categoryLabel}
           </label>
           <input
@@ -99,10 +97,13 @@ export function ProductCard({ product }: ProductCardProps) {
             type="button"
             onClick={addToCart}
             disabled={!hydrated || isAtCapacity}
+            aria-label={
+              isAtCapacity
+                ? `Máximo de 99 alcanzado para ${product.name} de ${product.categoryLabel}`
+                : `Agregar ${product.name} de ${product.categoryLabel}`
+            }
           >
-            {isAtCapacity
-              ? `Máximo de 99 alcanzado para ${product.name} de ${product.categoryLabel}`
-              : `Agregar ${product.name} de ${product.categoryLabel}`}
+            {isAtCapacity ? 'Máximo alcanzado' : '+ Agregar'}
           </button>
         </div>
         {isAtCapacity ? (

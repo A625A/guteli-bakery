@@ -2,9 +2,11 @@ export const menuProductIds = [
   'pretzel-original',
   'pretzel-jalapeno',
   'pretzel-pepperoni',
+  'pretzel-tomato-basil',
   'bagel-original',
   'bagel-jalapeno',
   'bagel-pepperoni',
+  'bagel-tomato-basil',
   'burger-buns',
   'nuditos',
 ] as const;
@@ -18,6 +20,7 @@ export type MenuProduct = {
   name: string;
   price: number;
   saleUnit: string | null;
+  image: string | null;
 };
 
 export const menuCategories = [
@@ -35,6 +38,7 @@ export const menuProducts: readonly MenuProduct[] = [
     name: 'Originales',
     price: 60,
     saleUnit: 'Bolsa de 5',
+    image: '/images/products/pretzel-original.webp',
   },
   {
     id: 'pretzel-jalapeno',
@@ -43,6 +47,7 @@ export const menuProducts: readonly MenuProduct[] = [
     name: 'Queso y jalapeño',
     price: 75,
     saleUnit: 'Bolsa de 5',
+    image: '/images/products/pretzel-jalapeno.webp',
   },
   {
     id: 'pretzel-pepperoni',
@@ -51,6 +56,16 @@ export const menuProducts: readonly MenuProduct[] = [
     name: 'Queso y pepperoni',
     price: 75,
     saleUnit: 'Bolsa de 5',
+    image: '/images/products/pretzel-pepperoni.webp',
+  },
+  {
+    id: 'pretzel-tomato-basil',
+    category: 'pretzels',
+    categoryLabel: 'Pretzels',
+    name: 'Tomate y albahaca',
+    price: 75,
+    saleUnit: 'Bolsa de 5',
+    image: '/images/products/pretzel-tomate-albahaca.webp',
   },
   {
     id: 'bagel-original',
@@ -59,6 +74,7 @@ export const menuProducts: readonly MenuProduct[] = [
     name: 'Originales',
     price: 60,
     saleUnit: null,
+    image: '/images/products/bagel-original.webp',
   },
   {
     id: 'bagel-jalapeno',
@@ -67,6 +83,7 @@ export const menuProducts: readonly MenuProduct[] = [
     name: 'Queso y jalapeño',
     price: 75,
     saleUnit: null,
+    image: '/images/products/bagel-jalapeno.webp',
   },
   {
     id: 'bagel-pepperoni',
@@ -75,6 +92,16 @@ export const menuProducts: readonly MenuProduct[] = [
     name: 'Queso y pepperoni',
     price: 75,
     saleUnit: null,
+    image: '/images/products/bagel-pepperoni.webp',
+  },
+  {
+    id: 'bagel-tomato-basil',
+    category: 'bagels',
+    categoryLabel: 'Bagels',
+    name: 'Tomate y albahaca',
+    price: 75,
+    saleUnit: 'Bolsa de 5',
+    image: '/images/products/bagel-tomate-albahaca.webp',
   },
   {
     id: 'burger-buns',
@@ -83,6 +110,7 @@ export const menuProducts: readonly MenuProduct[] = [
     name: 'Burger buns',
     price: 55,
     saleUnit: null,
+    image: '/images/products/pan-hamburguesa.webp',
   },
   {
     id: 'nuditos',
@@ -91,6 +119,7 @@ export const menuProducts: readonly MenuProduct[] = [
     name: 'Nuditos',
     price: 60,
     saleUnit: 'Bolsa de 15',
+    image: null,
   },
 ];
 

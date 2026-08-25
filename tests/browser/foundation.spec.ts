@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 const routes = [
   { path: '/', heading: 'Pretzels, bagels y panes por encargo' },
-  { path: '/menu/', heading: 'Nuestro menú' },
+  { path: '/menu/', heading: 'Nuestros productos' },
   { path: '/cart/', heading: 'Carrito' },
   { path: '/order/', heading: 'Pedido' },
   { path: '/contact/', heading: 'Contacto' },
@@ -129,15 +129,16 @@ test('homepage uses the approved accessible banner treatment', async ({
   );
 });
 
-test('menu exposes graphic media slots without product photography', async ({
+test('menu uses approved product photography with one honest fallback', async ({
   page,
 }) => {
   await page.goto('/menu/');
 
-  await expect(page.getByTestId('product-card')).toHaveCount(8);
-  await expect(page.locator('.product-card__media')).toHaveCount(8);
-  await expect(page.locator('.product-card img')).toHaveCount(0);
-  await expect(page.locator('.product-card__art-note').first()).toHaveText(
+  await expect(page.getByTestId('product-card')).toHaveCount(10);
+  await expect(page.locator('.product-card__media')).toHaveCount(10);
+  await expect(page.locator('.product-card img')).toHaveCount(9);
+  await expect(page.locator('.product-card__art-note')).toHaveCount(1);
+  await expect(page.locator('.product-card__art-note')).toHaveText(
     'Ilustración de categoría',
   );
 });
@@ -177,6 +178,10 @@ test('reduced motion disables smooth scrolling and shortens link transitions', a
 }) => {
   await page.goto('/');
   const action = page.getByRole('link', { name: 'Ver el menú' });
+  await expect(page.locator('html')).toHaveAttribute(
+    'data-scroll-behavior',
+    'smooth',
+  );
   await expect(action).toHaveCSS('transition-duration', '0.16s, 0.16s, 0.16s');
 
   await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -428,6 +433,45 @@ test('cart badge restores a safe saved quantity after hydration', async ({
     page.getByRole('link', { name: 'Carrito, 2 productos' }),
   ).toBeVisible();
 });
+
+for (const width of [768, 900]) {
+  test(`populated cart rows stay inside their panel at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.addInitScript(() => {
+      window.localStorage.setItem(
+        'guteli-cart-v1',
+        '[{"productId":"pretzel-original","quantity":1},{"productId":"bagel-tomato-basil","quantity":1}]',
+      );
+    });
+    await page.goto('/cart/');
+
+    const cartLine = page.getByTestId('cart-line-pretzel-original');
+    const lineBox = await cartLine.boundingBox();
+    const totalsBox = await page.locator('.cart-totals').boundingBox();
+    expect(lineBox).not.toBeNull();
+    expect(totalsBox).not.toBeNull();
+    expect((lineBox?.x ?? 0) + (lineBox?.width ?? 0)).toBeLessThanOrEqual(
+      (totalsBox?.x ?? 0) - 1,
+    );
+
+    for (const part of [
+      '.cart-line__media',
+      '.cart-line__identity',
+      '.cart-line__quantity',
+      '.cart-line__total',
+      '.cart-line__remove',
+    ]) {
+      const partBox = await cartLine.locator(part).boundingBox();
+      expect(partBox).not.toBeNull();
+      expect(partBox?.x ?? 0).toBeGreaterThanOrEqual(lineBox?.x ?? 0);
+      expect((partBox?.x ?? 0) + (partBox?.width ?? 0)).toBeLessThanOrEqual(
+        (lineBox?.x ?? 0) + (lineBox?.width ?? 0) + 1,
+      );
+    }
+  });
+}
 
 test('the missing route keeps the final shell and a focusable main target', async ({
   page,

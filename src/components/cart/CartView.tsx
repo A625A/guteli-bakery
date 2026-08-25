@@ -4,6 +4,7 @@ import Link from 'next/link';
 import type { ChangeEvent } from 'react';
 
 import { useCart } from '@/components/cart/CartProvider';
+import { ProductArtwork } from '@/components/menu/ProductArtwork';
 import { operationalCopy } from '@/content/business';
 import { formatGTQ } from '@/lib/money';
 
@@ -67,6 +68,7 @@ export function CartView() {
                     data-testid={`cart-line-${line.productId}`}
                     key={line.productId}
                   >
+                    <ProductArtwork product={line.product} variant="cart" />
                     <div className="cart-line__identity">
                       <p>{line.product.categoryLabel}</p>
                       <h3>{line.product.name}</h3>
