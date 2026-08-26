@@ -140,9 +140,6 @@ test.describe.serial('Milestone 3 evidence capture', () => {
     await buildTwoItemCart(page, false);
     await capture(page, screenshots.desktop.cart);
 
-    await page
-      .getByRole('link', { name: 'Completar datos del pedido' })
-      .click();
     await fillPickupRequest(page, false);
     await page.getByRole('button', { name: 'Revisar solicitud' }).click();
 
@@ -201,9 +198,6 @@ test.describe.serial('Milestone 3 evidence capture', () => {
     await buildTwoItemCart(page, true);
     await capture(page, screenshots.mobile.cart);
 
-    await page
-      .getByRole('link', { name: 'Completar datos del pedido' })
-      .click();
     await fillPickupRequest(page);
     await page.getByRole('button', { name: 'Revisar solicitud' }).click();
     await expect(

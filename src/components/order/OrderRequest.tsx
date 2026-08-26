@@ -33,7 +33,13 @@ const fieldLabels: Record<keyof OrderFormValues, string> = {
   notes: 'Notas opcionales',
 };
 
-export function OrderRequest({ handoff }: { handoff: WhatsAppHandoff }) {
+export function OrderRequest({
+  handoff,
+  embedded = false,
+}: {
+  handoff: WhatsAppHandoff;
+  embedded?: boolean;
+}) {
   const { hydrated, lines } = useCart();
   const [values, setValues] = useState<OrderFormValues>(initialValues);
   const [errors, setErrors] = useState<OrderErrors>({});
@@ -109,11 +115,24 @@ export function OrderRequest({ handoff }: { handoff: WhatsAppHandoff }) {
     }
   }
 
+  const PageContainer = embedded ? 'section' : 'main';
+
   return (
-    <main id="main-content" className="order-page" tabIndex={-1}>
+    <PageContainer
+      id={embedded ? 'cart-checkout' : 'main-content'}
+      className={embedded ? 'cart-checkout' : 'order-page'}
+      tabIndex={embedded ? undefined : -1}
+      aria-labelledby={embedded ? 'cart-checkout-title' : undefined}
+    >
       <header className="request-page__intro">
-        <p className="eyebrow">Solicitud sin pago en línea</p>
-        <h1>Pedido</h1>
+        <p className="eyebrow">
+          {embedded ? 'Datos y confirmación' : 'Solicitud sin pago en línea'}
+        </p>
+        {embedded ? (
+          <h2 id="cart-checkout-title">Completa tu pedido</h2>
+        ) : (
+          <h1>Pedido</h1>
+        )}
         <p>
           Completa tus datos, revisa el resumen y decide cuándo abrir WhatsApp.
           Nada se envía al revisar la solicitud.
@@ -339,7 +358,7 @@ export function OrderRequest({ handoff }: { handoff: WhatsAppHandoff }) {
                     target="_blank"
                     rel="noreferrer"
                   >
-                    Abrir WhatsApp con mi solicitud
+                    Enviar pedido por WhatsApp
                   </a>
                 ) : (
                   <p className="order-summary__handoff-note">
@@ -358,6 +377,6 @@ export function OrderRequest({ handoff }: { handoff: WhatsAppHandoff }) {
           ) : null}
         </div>
       )}
-    </main>
+    </PageContainer>
   );
 }

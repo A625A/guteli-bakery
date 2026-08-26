@@ -22,7 +22,7 @@ test('homepage uses the approved banner-led structure', async ({ page }) => {
   );
   await expect(
     page.getByRole('link', { name: 'Preparar mi pedido' }),
-  ).toHaveAttribute('href', '/order/');
+  ).toHaveAttribute('href', '/cart/');
 });
 
 for (const viewport of [

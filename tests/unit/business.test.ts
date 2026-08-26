@@ -19,7 +19,6 @@ describe('site foundation contract', () => {
       { href: '/', label: 'Inicio' },
       { href: '/menu/', label: 'Menú' },
       { href: '/cart/', label: 'Carrito' },
-      { href: '/order/', label: 'Pedido' },
       { href: '/contact/', label: 'Contacto' },
     ]);
     expect(new Set(primaryNavigation.map(({ href }) => href)).size).toBe(

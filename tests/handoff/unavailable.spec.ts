@@ -7,7 +7,7 @@ async function prepareOrder(page: Page) {
       '[{"productId":"pretzel-original","quantity":1}]',
     );
   });
-  await page.goto('/order/');
+  await page.goto('/cart/');
   await page.getByLabel('Nombre completo').fill('Ana López');
   await page.getByLabel('Teléfono').fill('5555 5555');
   const date = page.getByLabel('Fecha solicitada');

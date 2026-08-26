@@ -8,7 +8,7 @@ import { CartBadge } from '@/components/cart/CartBadge';
 import { BrandMark } from '@/components/shared/BrandMark';
 import { primaryNavigation } from '@/content/business';
 
-type NavigationIconName = 'home' | 'menu' | 'cart' | 'order' | 'contact';
+type NavigationIconName = 'home' | 'menu' | 'cart' | 'contact';
 
 const navigationIcons: Record<
   (typeof primaryNavigation)[number]['href'],
@@ -17,7 +17,6 @@ const navigationIcons: Record<
   '/': 'home',
   '/menu/': 'menu',
   '/cart/': 'cart',
-  '/order/': 'order',
   '/contact/': 'contact',
 };
 
@@ -69,16 +68,6 @@ function NavigationIcon({ name }: { name: NavigationIconName }) {
     );
   }
 
-  if (name === 'order') {
-    return (
-      <svg {...commonProps}>
-        <path d="M5 23h22M7 20h18c0-6-3.8-10-9-10S7 14 7 20Z" />
-        <path d="M16 10V7" />
-        <path className="site-nav__icon-accent" d="M13.5 6.5h5" />
-      </svg>
-    );
-  }
-
   return (
     <svg {...commonProps}>
       <path d="M6 24.5 7.6 20A10 10 0 1 1 12 24.3L6 24.5Z" />
@@ -109,7 +98,7 @@ function NavigationLinks() {
               <CartBadge icon={icon} isCurrent={isCurrent} />
             ) : (
               <Link
-                className={`site-nav__link${href === '/order/' ? ' site-nav__link--order' : ''}`}
+                className="site-nav__link"
                 href={href}
                 aria-current={isCurrent ? 'page' : undefined}
               >

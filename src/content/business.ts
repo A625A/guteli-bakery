@@ -18,6 +18,5 @@ export const primaryNavigation = [
   { href: '/', label: 'Inicio' },
   { href: '/menu/', label: 'Menú' },
   { href: '/cart/', label: 'Carrito' },
-  { href: '/order/', label: 'Pedido' },
   { href: '/contact/', label: 'Contacto' },
 ] as const;

@@ -83,7 +83,7 @@ export default function HomePage() {
           <Link className="button-link button-link--primary" href="/menu/">
             Ver el menú
           </Link>
-          <Link className="button-link button-link--secondary" href="/order/">
+          <Link className="button-link button-link--secondary" href="/cart/">
             Preparar mi pedido
           </Link>
         </div>

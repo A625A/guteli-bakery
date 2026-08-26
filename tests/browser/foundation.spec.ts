@@ -4,7 +4,6 @@ const routes = [
   { path: '/', heading: 'Pretzels, bagels y panes por encargo' },
   { path: '/menu/', heading: 'Nuestros productos' },
   { path: '/cart/', heading: 'Carrito' },
-  { path: '/order/', heading: 'Pedido' },
   { path: '/contact/', heading: 'Contacto' },
 ] as const;
 
@@ -12,7 +11,6 @@ const navigationDestinations = [
   { name: 'Inicio', path: '/' },
   { name: 'Menú', path: '/menu/' },
   { name: 'Carrito, 0 productos', path: '/cart/' },
-  { name: 'Pedido', path: '/order/' },
   { name: 'Contacto', path: '/contact/' },
 ] as const;
 
@@ -20,33 +18,25 @@ const footerNavigationDestinations = [
   { name: 'Inicio', path: '/' },
   { name: 'Menú', path: '/menu/' },
   { name: 'Carrito', path: '/cart/' },
-  { name: 'Pedido', path: '/order/' },
   { name: 'Contacto', path: '/contact/' },
 ] as const;
 
-function relativeLuminance(color: string) {
-  const channels = color
-    .match(/[\d.]+/g)
-    ?.slice(0, 3)
-    .map(Number)
-    .map((channel) => channel / 255)
-    .map((channel) =>
-      channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4,
-    );
+test('uses Carrito as the only checkout destination', async ({ page }) => {
+  await page.goto('/');
 
-  if (!channels || channels.length !== 3) {
-    throw new Error(`Unsupported CSS color: ${color}`);
-  }
+  await expect(
+    page.getByRole('link', { name: 'Pedido', exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole('link', { name: 'Preparar mi pedido' }),
+  ).toHaveAttribute('href', '/cart/');
 
-  return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
-}
-
-function contrastRatio(firstColor: string, secondColor: string) {
-  const first = relativeLuminance(firstColor);
-  const second = relativeLuminance(secondColor);
-
-  return (Math.max(first, second) + 0.05) / (Math.min(first, second) + 0.05);
-}
+  await page.goto('/order/');
+  await expect(page).toHaveURL(/\/cart\/$/);
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Carrito' }),
+  ).toBeVisible();
+});
 
 for (const route of routes) {
   test(`${route.path} renders the final Spanish site shell`, async ({
@@ -225,7 +215,7 @@ for (const viewport of viewports) {
   });
 }
 
-test('desktop navigation exposes the approved five destinations', async ({
+test('desktop navigation exposes the approved four destinations', async ({
   page,
 }) => {
   await page.goto('/');
@@ -256,7 +246,7 @@ test('header identifies the current destination and keeps its icons decorative',
   ).not.toHaveAttribute('aria-current');
 
   const navigationIcons = navigation.locator('.site-nav__icon');
-  await expect(navigationIcons).toHaveCount(5);
+  await expect(navigationIcons).toHaveCount(4);
   for (const icon of await navigationIcons.all()) {
     await expect(icon).toHaveAttribute('aria-hidden', 'true');
   }
@@ -269,46 +259,7 @@ test('desktop header omits the hanging decorative seal', async ({ page }) => {
   await expect(page.locator('.site-header__seal')).toHaveCount(0);
 });
 
-test('current order icon remains visible against its action background', async ({
-  page,
-}) => {
-  await page.setViewportSize({ width: 1024, height: 700 });
-  await page.goto('/order/');
-
-  const orderAction = page
-    .locator('.desktop-navigation')
-    .getByRole('link', { name: 'Pedido', exact: true });
-  const colors = await orderAction.evaluate((element) => ({
-    background: getComputedStyle(element).backgroundColor,
-    icon: getComputedStyle(element.querySelector('.site-nav__icon')!).color,
-  }));
-
-  expect(contrastRatio(colors.icon, colors.background)).toBeGreaterThanOrEqual(
-    3,
-  );
-});
-
-test('header order action meets WCAG AA text contrast', async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.goto('/');
-
-  const orderAction = page
-    .locator('.desktop-navigation')
-    .getByRole('link', { name: 'Pedido', exact: true });
-  const colors = await orderAction.evaluate((element) => {
-    const style = getComputedStyle(element);
-    return {
-      background: style.backgroundColor,
-      foreground: style.color,
-    };
-  });
-
-  expect(
-    contrastRatio(colors.foreground, colors.background),
-  ).toBeGreaterThanOrEqual(4.5);
-});
-
-test('mobile menu exposes the approved five destinations', async ({ page }) => {
+test('mobile menu exposes the approved four destinations', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
 

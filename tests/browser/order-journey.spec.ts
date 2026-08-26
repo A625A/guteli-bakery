@@ -6,7 +6,7 @@ async function openOrderWithSavedCart(page: Page) {
   await page.addInitScript((cart) => {
     window.localStorage.setItem('guteli-cart-v1', cart);
   }, savedOriginalPretzels);
-  await page.goto('/order/');
+  await page.goto('/cart/');
 }
 
 async function completeRequiredOrderFields(
@@ -42,7 +42,9 @@ test('completes a delivery request without sending it', async ({
     page.getByTestId('cart-line-pretzel-original').getByText('Q120'),
   ).toBeVisible();
   await expect(page.getByText('Subtotal estimado: Q120')).toBeVisible();
-  await page.getByRole('link', { name: 'Completar datos del pedido' }).click();
+  await expect(
+    page.getByRole('button', { name: 'Pagar en línea — Próximamente' }),
+  ).toBeDisabled();
 
   await page.getByRole('button', { name: 'Revisar solicitud' }).click();
   const errorSummary = page.getByRole('main').getByRole('alert');
@@ -53,7 +55,7 @@ test('completes a delivery request without sending it', async ({
   await page.getByLabel('Notas opcionales').fill('Tocar el timbre');
   await page.getByRole('button', { name: 'Revisar solicitud' }).click();
 
-  await expect(page).toHaveURL(/\/order\/$/);
+  await expect(page).toHaveURL(/\/cart\/$/);
   await expect(
     page.getByRole('heading', { name: 'Tu solicitud está lista para revisar' }),
   ).toBeVisible();
@@ -80,7 +82,7 @@ test('completes a delivery request without sending it', async ({
     ),
   ).toBeVisible();
   await expect(
-    page.getByRole('link', { name: 'Abrir WhatsApp con mi solicitud' }),
+    page.getByRole('link', { name: 'Enviar pedido por WhatsApp' }),
   ).toHaveCount(0);
   await expect(page.locator('a[href*="wa.me"]')).toHaveCount(0);
 
@@ -105,13 +107,13 @@ test('offers a menu recovery path when the cart is empty', async ({ page }) => {
   ).toHaveAttribute('href', '/menu/');
 
   await page.goto('/order/');
+  await expect(page).toHaveURL(/\/cart\/$/);
   await expect(
-    page.getByRole('heading', { name: 'Agrega productos antes de continuar' }),
+    page.getByRole('heading', { name: 'Tu carrito está vacío' }),
   ).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Ir al menú' })).toHaveAttribute(
-    'href',
-    '/menu/',
-  );
+  await expect(
+    page.getByRole('link', { name: 'Explorar el menú' }),
+  ).toHaveAttribute('href', '/menu/');
   await expect(page.getByLabel('Nombre completo')).toHaveCount(0);
 });
 
@@ -446,7 +448,7 @@ test('keeps the readable summary available when clipboard copy is rejected', asy
   await expect(summary).toBeVisible();
   await expect(summary).toHaveValue(summaryText);
   await expect(
-    page.getByRole('link', { name: 'Abrir WhatsApp con mi solicitud' }),
+    page.getByRole('link', { name: 'Enviar pedido por WhatsApp' }),
   ).toHaveCount(0);
   await expect(
     page.getByText(

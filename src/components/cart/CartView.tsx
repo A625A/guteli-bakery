@@ -5,10 +5,12 @@ import type { ChangeEvent } from 'react';
 
 import { useCart } from '@/components/cart/CartProvider';
 import { ProductArtwork } from '@/components/menu/ProductArtwork';
+import { OrderRequest } from '@/components/order/OrderRequest';
+import type { WhatsAppHandoff } from '@/config/public-site';
 import { operationalCopy } from '@/content/business';
 import { formatGTQ } from '@/lib/money';
 
-export function CartView() {
+export function CartView({ handoff }: { handoff: WhatsAppHandoff }) {
   const { hydrated, lines, subtotal, removeItem, updateQuantity } = useCart();
 
   function changeQuantity(
@@ -53,77 +55,84 @@ export function CartView() {
           </div>
         </section>
       ) : (
-        <div className="cart-layout">
-          <section aria-labelledby="cart-lines-title">
-            <h2 className="request-section-title" id="cart-lines-title">
-              Productos seleccionados
-            </h2>
-            <ul className="cart-lines">
-              {lines.map((line) => {
-                const inputId = `cart-quantity-${line.productId}`;
+        <>
+          <div className="cart-layout">
+            <section aria-labelledby="cart-lines-title">
+              <h2 className="request-section-title" id="cart-lines-title">
+                Productos seleccionados
+              </h2>
+              <ul className="cart-lines">
+                {lines.map((line) => {
+                  const inputId = `cart-quantity-${line.productId}`;
 
-                return (
-                  <li
-                    className="cart-line"
-                    data-testid={`cart-line-${line.productId}`}
-                    key={line.productId}
-                  >
-                    <ProductArtwork product={line.product} variant="cart" />
-                    <div className="cart-line__identity">
-                      <p>{line.product.categoryLabel}</p>
-                      <h3>{line.product.name}</h3>
-                      <span>
-                        {line.product.saleUnit ??
-                          operationalCopy.quantityUnknown}
-                      </span>
-                    </div>
-                    <div className="cart-line__quantity">
-                      <label htmlFor={inputId}>
-                        Cantidad de {line.product.name},{' '}
-                        {line.product.categoryLabel} en el carrito
-                      </label>
-                      <input
-                        id={inputId}
-                        type="number"
-                        min="1"
-                        max="99"
-                        inputMode="numeric"
-                        value={line.quantity}
-                        onChange={(event) =>
-                          changeQuantity(line.productId, event)
-                        }
-                      />
-                    </div>
-                    <p className="cart-line__total">
-                      <span>Total de línea</span>
-                      <strong>{formatGTQ(line.lineTotal)}</strong>
-                    </p>
-                    <button
-                      className="cart-line__remove"
-                      type="button"
-                      onClick={() => removeItem(line.productId)}
+                  return (
+                    <li
+                      className="cart-line"
+                      data-testid={`cart-line-${line.productId}`}
+                      key={line.productId}
                     >
-                      Quitar {line.product.name} de {line.product.categoryLabel}
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
+                      <ProductArtwork product={line.product} variant="cart" />
+                      <div className="cart-line__identity">
+                        <p>{line.product.categoryLabel}</p>
+                        <h3>{line.product.name}</h3>
+                        <span>
+                          {line.product.saleUnit ??
+                            operationalCopy.quantityUnknown}
+                        </span>
+                      </div>
+                      <div className="cart-line__quantity">
+                        <label htmlFor={inputId}>
+                          Cantidad de {line.product.name},{' '}
+                          {line.product.categoryLabel} en el carrito
+                        </label>
+                        <input
+                          id={inputId}
+                          type="number"
+                          min="1"
+                          max="99"
+                          inputMode="numeric"
+                          value={line.quantity}
+                          onChange={(event) =>
+                            changeQuantity(line.productId, event)
+                          }
+                        />
+                      </div>
+                      <p className="cart-line__total">
+                        <span>Total de línea</span>
+                        <strong>{formatGTQ(line.lineTotal)}</strong>
+                      </p>
+                      <button
+                        className="cart-line__remove"
+                        type="button"
+                        onClick={() => removeItem(line.productId)}
+                      >
+                        Quitar {line.product.name} de{' '}
+                        {line.product.categoryLabel}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
 
-          <aside className="cart-totals" aria-labelledby="cart-total-title">
-            <p className="eyebrow">Estimación</p>
-            <h2 id="cart-total-title">Resumen del carrito</h2>
-            <p className="cart-totals__subtotal">
-              Subtotal estimado: {formatGTQ(subtotal)}
-            </p>
-            <p>{operationalCopy.confirmation}.</p>
-            <p>{operationalCopy.deliveryCost}.</p>
-            <Link className="button-link button-link--primary" href="/order/">
-              Completar datos del pedido
-            </Link>
-          </aside>
-        </div>
+            <aside className="cart-totals" aria-labelledby="cart-total-title">
+              <p className="eyebrow">Estimación</p>
+              <h2 id="cart-total-title">Resumen del carrito</h2>
+              <p className="cart-totals__subtotal">
+                Subtotal estimado: {formatGTQ(subtotal)}
+              </p>
+              <p>{operationalCopy.confirmation}.</p>
+              <p>{operationalCopy.deliveryCost}.</p>
+              <button className="cart-totals__payment" type="button" disabled>
+                Pagar en línea — Próximamente
+              </button>
+              <a className="cart-totals__continue" href="#cart-checkout">
+                Continuar con mi pedido
+              </a>
+            </aside>
+          </div>
+          <OrderRequest handoff={handoff} embedded />
+        </>
       )}
     </main>
   );

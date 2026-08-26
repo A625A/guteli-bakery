@@ -79,7 +79,7 @@ test('homepage presents the banner-led factual ordering path', async ({
   );
   await expect(
     page.getByRole('link', { name: 'Preparar mi pedido' }),
-  ).toHaveAttribute('href', '/order/');
+  ).toHaveAttribute('href', '/cart/');
 
   await expect(
     page.getByRole('region', { name: 'Precios del menú' }),
