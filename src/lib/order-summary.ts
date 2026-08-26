@@ -16,18 +16,20 @@ export function buildOrderSummary(
   const summary = [
     `Solicitud de pedido — ${siteConfig.name}`,
     '',
-    `Nombre: ${values.name.trim()}`,
-    `Teléfono: ${values.phone.trim()}`,
+    `Nombre: ${normalizeSummaryField(values.name)}`,
+    `Teléfono: ${normalizeSummaryField(values.phone)}`,
     `Modalidad: ${fulfillmentLabels[values.fulfillment]}`,
     `Fecha solicitada: ${values.requestedDate.trim()}`,
   ];
 
   if (values.fulfillment === 'delivery') {
-    summary.push(`Ubicación de entrega: ${values.location.trim()}`);
+    summary.push(
+      `Ubicación de entrega: ${normalizeSummaryField(values.location)}`,
+    );
   }
 
   if (values.notes.trim()) {
-    summary.push(`Notas: ${values.notes.trim()}`);
+    summary.push(`Notas: ${normalizeSummaryField(values.notes)}`);
   }
 
   summary.push('', 'Productos:');
@@ -47,4 +49,11 @@ export function buildOrderSummary(
   );
 
   return summary.join('\n');
+}
+
+function normalizeSummaryField(value: string): string {
+  return value
+    .replace(/[\u0000-\u001f\u007f-\u009f]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
