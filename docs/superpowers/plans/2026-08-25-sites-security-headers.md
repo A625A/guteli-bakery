@@ -84,3 +84,5 @@ Create `public/_headers` with the exact Worker policy under `/*`, then rerun the
 - [ ] **Step 3: Verify build output and production**
 
 Run the complete verification suite, confirm `out/_headers` matches `public/_headers`, publish the exact validated commit, deploy privately, and verify the expected security headers on the production URL.
+
+Production verification on Sites version 7 found that the platform packaged but did not apply `dist/client/_headers` to static responses. The Worker policy is active only for requests that reach the Worker. Completing this step is `REQUIERE CONFIGURACIÓN EXTERNA`: enable `assets.run_worker_first` in the Sites deployment layer or attach the equivalent response-header policy to a user-controlled Cloudflare custom domain.

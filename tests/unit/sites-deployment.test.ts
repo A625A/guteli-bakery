@@ -91,7 +91,7 @@ describe('Sites deployment contract', () => {
     expect(response.headers.get('x-xss-protection')).toBe('0');
   });
 
-  it('applies the same security policy to static asset responses', async () => {
+  it('defines the same security policy for static asset responses', async () => {
     const source = await readFile('public/_headers', 'utf8').catch(() => '');
     const [pathPattern, ...headerLines] = source.trim().split('\n');
     const headers = Object.fromEntries(

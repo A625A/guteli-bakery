@@ -23,3 +23,7 @@ The exported Next.js pages contain framework-generated inline scripts and image 
 ## Verification
 
 The unit contract must prove that the Worker adds all headers while preserving the upstream response status, status text, body, content type, and cache control, and that `public/_headers` carries the identical policy for static assets. The deployment build must copy `_headers` to `out/`, and the production response must expose the expected headers. The full formatter, linter, type checker, unit suite, production builds, browser flows, handoff tests, and dependency audit must pass before publication.
+
+## Production limitation
+
+`REQUIERE CONFIGURACIÓN EXTERNA`: Sites version 7 packaged `dist/client/_headers`, but the live static asset response did not apply it. A request that reached the Worker returned the exact seven-header policy, while `/` continued to bypass the Worker without those headers. The static rule remains in the artifact as defense in depth, but it must not be treated as an active production control until the Sites deployment layer either processes `_headers` or supports Cloudflare's `assets.run_worker_first` setting. An equivalent response-header rule on a user-controlled Cloudflare custom domain is the external fallback.
