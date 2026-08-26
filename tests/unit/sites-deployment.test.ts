@@ -91,6 +91,34 @@ describe('Sites deployment contract', () => {
     expect(response.headers.get('x-xss-protection')).toBe('0');
   });
 
+  it('applies the same security policy to static asset responses', async () => {
+    const source = await readFile('public/_headers', 'utf8').catch(() => '');
+    const [pathPattern, ...headerLines] = source.trim().split('\n');
+    const headers = Object.fromEntries(
+      headerLines.map((line) => {
+        const separator = line.indexOf(':');
+
+        return [
+          line.slice(0, separator).trim().toLowerCase(),
+          line.slice(separator + 1).trim(),
+        ];
+      }),
+    );
+
+    expect(pathPattern).toBe('/*');
+    expect(headers).toEqual({
+      'content-security-policy':
+        "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; frame-src 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; upgrade-insecure-requests",
+      'permissions-policy':
+        'camera=(), geolocation=(), microphone=(), payment=(), usb=()',
+      'referrer-policy': 'strict-origin-when-cross-origin',
+      'strict-transport-security': 'max-age=31536000',
+      'x-content-type-options': 'nosniff',
+      'x-frame-options': 'DENY',
+      'x-xss-protection': '0',
+    });
+  });
+
   it('provides the deployment build that packages the static export', async () => {
     const packageJson = JSON.parse(await readFile('package.json', 'utf8')) as {
       scripts?: Record<string, string>;

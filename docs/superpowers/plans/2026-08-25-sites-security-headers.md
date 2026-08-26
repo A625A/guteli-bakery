@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Add compatible security response headers to the Sites Worker without altering application behavior.
+**Goal:** Add compatible security response headers to every Sites response without altering application behavior.
 
-**Architecture:** Fetch the static asset once, construct a new response with the original stream and metadata, then set a fixed, audited set of response headers. Keep the policy in the Worker boundary so it applies uniformly to HTML and static assets deployed through Sites.
+**Architecture:** Apply the policy in `public/_headers` for Cloudflare static assets and in the Worker for responses that execute `hosting/sites-worker.ts`. The Worker fetches the asset once, constructs a new response with the original stream and metadata, then sets the same fixed, audited headers.
 
 **Tech Stack:** TypeScript, Cloudflare-compatible Fetch API, Vitest, Next.js static export
 
@@ -59,3 +59,28 @@ Run `npm audit --audit-level=high`, `npm run format:check`, `npm run lint`, `npm
 - [x] **Step 6: Publish the verified scope**
 
 Stage only `package.json`, `package-lock.json`, `AGENTS.md`, `CLAUDE.md`, this spec and plan, `hosting/sites-worker.ts`, and `tests/unit/sites-deployment.test.ts`. Commit under the configured Andrew identity, push `main` to `origin`, and verify the remote SHA with `git ls-remote origin refs/heads/main`.
+
+### Task 2: Cover static asset responses
+
+**Files:**
+
+- Create: `public/_headers`
+- Modify: `tests/unit/sites-deployment.test.ts`
+- Modify: `docs/superpowers/specs/2026-08-25-sites-security-headers-design.md`
+
+**Interfaces:**
+
+- Consumes: Cloudflare Workers Static Assets `_headers` rules
+- Produces: the same security policy on existing static files that bypass the Worker fetch handler
+
+- [x] **Step 1: Write and run a failing static-header contract**
+
+Parse `public/_headers` as a `/*` rule and assert the exact CSP, HSTS, nosniff, referrer, permissions, frame, and legacy XSS-filter values. Run `npm test -- tests/unit/sites-deployment.test.ts` and verify failure because the file is absent.
+
+- [x] **Step 2: Add the static asset rule and verify GREEN**
+
+Create `public/_headers` with the exact Worker policy under `/*`, then rerun the focused test and require all five Sites deployment contract tests to pass.
+
+- [ ] **Step 3: Verify build output and production**
+
+Run the complete verification suite, confirm `out/_headers` matches `public/_headers`, publish the exact validated commit, deploy privately, and verify the expected security headers on the production URL.
