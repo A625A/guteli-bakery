@@ -31,7 +31,7 @@ export function ProductArtwork({
           src={product.image}
           alt={variant === 'cart' ? '' : label}
           fill
-          loading={variant === 'cart' || eager ? 'eager' : 'lazy'}
+          loading={eager ? 'eager' : 'lazy'}
           sizes={
             variant === 'card'
               ? '(min-width: 1088px) 31vw, (min-width: 768px) 44vw, 100vw'

@@ -274,7 +274,9 @@ test('uses the supplied product photographs in the menu and cart', async ({
   await expect(productPhotos).toHaveCount(9);
   await expect(productPhotos.nth(0)).toHaveAttribute('loading', 'eager');
   await expect(productPhotos.nth(1)).toHaveAttribute('loading', 'eager');
-  await expect(productPhotos.nth(2)).toHaveAttribute('loading', 'lazy');
+  await expect(productPhotos.nth(2)).toHaveAttribute('loading', 'eager');
+  await expect(productPhotos.nth(3)).toHaveAttribute('loading', 'eager');
+  await expect(productPhotos.nth(4)).toHaveAttribute('loading', 'lazy');
   await expect(
     page.getByRole('img', { name: 'Originales de Pretzels' }),
   ).toBeVisible();
@@ -321,6 +323,28 @@ test('uses the supplied product photographs in the menu and cart', async ({
       name: 'Nuditos: ilustración de categoría, no fotografía de producto',
     }),
   ).toHaveCount(0);
+});
+
+test('prioritizes only the first two product photos in a populated cart', async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem(
+      'guteli-cart-v1',
+      JSON.stringify([
+        { productId: 'pretzel-original', quantity: 1 },
+        { productId: 'pretzel-jalapeno', quantity: 1 },
+        { productId: 'bagel-original', quantity: 1 },
+      ]),
+    );
+  });
+  await page.goto('/cart/');
+
+  const cartPhotos = page.locator('.cart-line__photo');
+  await expect(cartPhotos).toHaveCount(3);
+  await expect(cartPhotos.nth(0)).toHaveAttribute('loading', 'eager');
+  await expect(cartPhotos.nth(1)).toHaveAttribute('loading', 'eager');
+  await expect(cartPhotos.nth(2)).toHaveAttribute('loading', 'lazy');
 });
 
 test('small caramel labels retain readable contrast on cream surfaces', async ({

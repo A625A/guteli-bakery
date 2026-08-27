@@ -66,7 +66,7 @@ export function MenuCatalog() {
           {visibleProducts.map((product, productIndex) => (
             <ProductCard
               product={product}
-              eager={productIndex < 2}
+              eager={productIndex < 4}
               key={product.id}
             />
           ))}

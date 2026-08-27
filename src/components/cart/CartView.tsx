@@ -62,7 +62,7 @@ export function CartView({ handoff }: { handoff: WhatsAppHandoff }) {
                 Productos seleccionados
               </h2>
               <ul className="cart-lines">
-                {lines.map((line) => {
+                {lines.map((line, lineIndex) => {
                   const inputId = `cart-quantity-${line.productId}`;
 
                   return (
@@ -71,7 +71,11 @@ export function CartView({ handoff }: { handoff: WhatsAppHandoff }) {
                       data-testid={`cart-line-${line.productId}`}
                       key={line.productId}
                     >
-                      <ProductArtwork product={line.product} variant="cart" />
+                      <ProductArtwork
+                        product={line.product}
+                        variant="cart"
+                        eager={lineIndex < 2}
+                      />
                       <div className="cart-line__identity">
                         <p>{line.product.categoryLabel}</p>
                         <h3>{line.product.name}</h3>
