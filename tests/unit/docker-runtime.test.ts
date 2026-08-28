@@ -1,8 +1,8 @@
-import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+import { parse } from 'yaml';
 
 const repoRoot = path.resolve(import.meta.dirname, '..', '..');
 const composePath = path.join(repoRoot, 'compose.yaml');
@@ -11,64 +11,20 @@ const readmePath = path.join(repoRoot, 'README.md');
 const dockerfilePath = path.join(repoRoot, 'Dockerfile');
 const entrypointPath = path.join(repoRoot, 'scripts', 'docker-entrypoint.sh');
 
-type ComposePort = {
-  host_ip?: string;
-  published?: string;
-  target?: number;
-};
-
-type ComposeVolume = {
-  source?: string;
-  target?: string;
-};
-
 type ComposeService = {
+  environment?: Record<string, string>;
   healthcheck?: {
     test?: string[] | string;
   };
   image?: string;
-  ports?: ComposePort[];
-  volumes?: ComposeVolume[];
+  ports?: string[];
+  volumes?: string[];
 };
-
-function resolveComposeInvocation() {
-  try {
-    execFileSync('docker', ['compose', 'version'], {
-      cwd: repoRoot,
-      encoding: 'utf8',
-      stdio: 'pipe',
-    });
-
-    return { command: 'docker', args: ['compose'] };
-  } catch {}
-
-  try {
-    execFileSync('docker-compose', ['version'], {
-      cwd: repoRoot,
-      encoding: 'utf8',
-      stdio: 'pipe',
-    });
-
-    return { command: 'docker-compose', args: [] as string[] };
-  } catch {}
-
-  throw new Error('Docker Compose CLI is required for docker runtime tests.');
-}
 
 function loadComposeConfig() {
   expect(existsSync(composePath)).toBe(true);
-  const composeCli = resolveComposeInvocation();
 
-  const output = execFileSync(
-    composeCli.command,
-    [...composeCli.args, '-f', composePath, 'config', '--format', 'json'],
-    {
-      cwd: repoRoot,
-      encoding: 'utf8',
-    },
-  );
-
-  return JSON.parse(output) as {
+  return parse(readFileSync(composePath, 'utf8')) as {
     services: Record<string, ComposeService>;
     volumes: Record<string, object>;
   };
@@ -114,25 +70,19 @@ describe('compose runtime contract', () => {
     const composeSource = readFileSync(composePath, 'utf8');
 
     expect(compose.services.database.image).toBe('postgres:17');
+    expect(compose.services.database.environment?.POSTGRES_DB).toBe(
+      '${GUTELI_DATABASE_NAME:-guteli}',
+    );
     expect(compose.services.database.ports).toEqual([
-      expect.objectContaining({
-        host_ip: '127.0.0.1',
-        published: '5432',
-        target: 5432,
-      }),
+      '127.0.0.1:${GUTELI_DATABASE_PORT:-5432}:5432',
     ]);
     expect(compose.services.database.volumes).toEqual([
-      expect.objectContaining({
-        source: 'db_data',
-        target: '/var/lib/postgresql/data',
-      }),
+      'db_data:/var/lib/postgresql/data',
     ]);
-    expect(compose.services.app.volumes).toEqual([
-      expect.objectContaining({
-        source: 'uploads_data',
-        target: '/app/uploads',
-      }),
-    ]);
+    expect(compose.services.app.environment?.DATABASE_URL).toBe(
+      'postgresql://guteli:guteli@database:5432/${GUTELI_DATABASE_NAME:-guteli}',
+    );
+    expect(compose.services.app.volumes).toEqual(['uploads_data:/app/uploads']);
     expect(dockerfile).toMatch(/^USER nextjs$/m);
     expect(dockerfile).toMatch(
       /^ENTRYPOINT \["\/app\/scripts\/docker-entrypoint\.sh"\]$/m,
@@ -159,6 +109,8 @@ describe('compose runtime contract', () => {
     expect(readme).not.toMatch(/DOCKER_CONFIG=.*\.superpowers/);
     expect(readme).not.toMatch(/DOCKER_HOST=.*(?:\.colima|docker\.sock)/);
     expect(readme).toContain('colima status');
+    expect(readme).toMatch(/^docker compose config$/m);
+    expect(readme).toContain('does not require Docker');
   });
 
   it('documents explicit migration prerequisites and production secret injection', () => {
@@ -175,8 +127,10 @@ describe('compose runtime contract', () => {
     );
     expect(readme).toContain('DATABASE_URL from its secret environment');
     expect(readme).toContain(
-      'DATABASE_URL="${DATABASE_URL:?set DATABASE_URL before running migrations}"',
+      'DATABASE_URL="${MIGRATION_DATABASE_URL:?set a database-host migration URL before running migrations}"',
     );
+    expect(readme).toContain('@database:5432/<database>');
+    expect(readme).toContain('never `localhost`');
     expect(readme).not.toContain(
       '-e DATABASE_URL=postgresql://guteli:guteli@database:5432/guteli',
     );

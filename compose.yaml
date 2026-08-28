@@ -8,7 +8,7 @@ services:
       database:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgresql://guteli:guteli@database:5432/guteli
+      DATABASE_URL: postgresql://guteli:guteli@database:5432/${GUTELI_DATABASE_NAME:-guteli}
       HOSTNAME: 0.0.0.0
       NEXT_PUBLIC_DEMO_MODE: 'true'
       NODE_ENV: production
@@ -34,7 +34,7 @@ services:
   database:
     image: postgres:17
     environment:
-      POSTGRES_DB: guteli
+      POSTGRES_DB: ${GUTELI_DATABASE_NAME:-guteli}
       POSTGRES_PASSWORD: guteli
       POSTGRES_USER: guteli
     healthcheck:
@@ -45,7 +45,7 @@ services:
       retries: 10
       start_period: 5s
     ports:
-      - '127.0.0.1:5432:5432'
+      - '127.0.0.1:${GUTELI_DATABASE_PORT:-5432}:5432'
     volumes:
       - db_data:/var/lib/postgresql/data
 

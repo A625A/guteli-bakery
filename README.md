@@ -23,22 +23,51 @@ npm run lint
 npm run typecheck
 npm test
 npm run test:e2e:install
-npm run test:e2e
 npm run build
 npm run start
 ```
 
 `npm run start` runs the built Next.js server from `.next/standalone` behavior at `http://127.0.0.1:3000`; run `npm run build` first.
 
+Database integration and browser tests never use `DATABASE_URL`. They require an explicit `DATABASE_URL_TEST` and run against the isolated `guteli_test` database described below.
+
+## Isolated integration and E2E database
+
+The test database uses the same committed `database` Compose service in a separate `guteli-test` Compose project. It binds to `127.0.0.1:55433`, creates only `guteli_test`, and stores data in a project-scoped test volume. The development `guteli` database and its volume are not reused.
+
+Start from a clean isolated database, export the required test URL, apply the current migrations, and run the database-backed suites with:
+
+```bash
+npm run test:db:down
+npm run test:db:up
+export DATABASE_URL_TEST=postgresql://guteli:guteli@127.0.0.1:55433/guteli_test
+DATABASE_URL="$DATABASE_URL_TEST" npm run db:migrate
+npm run test:integration
+npm run test:e2e
+```
+
+Plan 01 has no SQL migration, so the migration command is currently a no-op; Plan 02 can apply its first migration to this clean database without adding another service. `npm run test:e2e` maps `DATABASE_URL_TEST` into the Next.js web server as `DATABASE_URL` and refuses to reuse an already-running server.
+
+When finished, remove only the isolated test containers, network, and test volume:
+
+```bash
+npm run test:db:down
+```
+
+The teardown command is intentionally fixed to the `guteli-test` Compose project. It does not target the development `guteli` project or its persistent volume.
+
 ## Docker runtime
 
 Bring up the two-service local runtime with:
 
 ```bash
+docker compose config
 docker compose up --build -d
 curl --fail http://127.0.0.1:3000/health
 docker compose down
 ```
+
+`docker compose config` is the live operational validation gate and requires an installed Docker Compose CLI. The default `npm test` suite validates the committed Compose YAML directly and does not require Docker.
 
 The runtime exposes the app on `http://localhost:3000`, binds PostgreSQL only to `127.0.0.1:5432`, and preserves the named `db_data` and `uploads_data` volumes on ordinary `docker compose down`.
 
@@ -55,14 +84,15 @@ docker compose up -d database
 docker compose ps database
 docker compose exec -T database pg_isready -U guteli -d guteli
 docker build --target builder -t guteli-bakery-migrate .
+export MIGRATION_DATABASE_URL='postgresql://<user>:<password>@database:5432/<database>'
 docker run --rm \
   --network "$(docker inspect "$(docker compose ps -q database)" --format '{{range $name, $_ := .NetworkSettings.Networks}}{{println $name}}{{end}}' | head -n 1)" \
-  -e DATABASE_URL="${DATABASE_URL:?set DATABASE_URL before running migrations}" \
+  -e DATABASE_URL="${MIGRATION_DATABASE_URL:?set a database-host migration URL before running migrations}" \
   guteli-bakery-migrate \
   npm run db:migrate
 ```
 
-The first command creates the Compose network and starts PostgreSQL; `docker compose ps database` should report the container as healthy, and `pg_isready` must succeed before you run the builder-stage migration command. Production should run the equivalent one-off migration step separately from `docker compose up`; the app entrypoint never migrates or seeds implicitly, and the release environment injects DATABASE_URL from its secret environment instead of local credentials.
+The first command creates the Compose network and starts PostgreSQL; `docker compose ps database` should report the container as healthy, and `pg_isready` must succeed before you run the builder-stage migration command. Because the one-off migration container joins the Compose network, its URL must use the network-reachable `database` host, never `localhost`. Production should run the equivalent one-off migration step separately from `docker compose up`; the app entrypoint never migrates or seeds implicitly, and the release environment injects DATABASE_URL from its secret environment instead of local credentials.
 
 ## Approved MVP
 

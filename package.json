@@ -16,6 +16,8 @@
     "lint": "eslint . --max-warnings=0",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
+    "test:db:down": "node scripts/test-database.mjs down",
+    "test:db:up": "node scripts/test-database.mjs up",
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
@@ -51,6 +53,7 @@
     "typescript": "5.9.3",
     "typescript-eslint": "8.55.0",
     "vite": "6.4.3",
-    "vitest": "3.2.7"
+    "vitest": "3.2.7",
+    "yaml": "^2.9.0"
   }
 }
