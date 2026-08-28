@@ -80,6 +80,18 @@ for (const route of routes) {
   });
 }
 
+test('slashless storefront routes render directly without redirects', async ({
+  request,
+}) => {
+  for (const path of ['/menu', '/cart', '/contact']) {
+    const response = await request.get(path, { maxRedirects: 0 });
+
+    expect(response.status()).toBe(200);
+    expect(response.url()).toBe(`http://127.0.0.1:3000${path}`);
+    expect(response.headers().location).toBeUndefined();
+  }
+});
+
 test('default portfolio mode is identified and exposes no WhatsApp destination', async ({
   page,
 }) => {

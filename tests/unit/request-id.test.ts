@@ -6,15 +6,17 @@ describe('getRequestId', () => {
   it('keeps a valid UUID request ID header', async () => {
     const { getRequestId } = await import('@/server/observability/request-id');
 
-    expect(
-      getRequestId(new Headers({ 'x-request-id': validRequestId })),
-    ).toBe(validRequestId);
+    expect(getRequestId(new Headers({ 'x-request-id': validRequestId }))).toBe(
+      validRequestId,
+    );
   });
 
   it('replaces a malformed request ID header with a UUID', async () => {
     const { getRequestId } = await import('@/server/observability/request-id');
 
-    const requestId = getRequestId(new Headers({ 'x-request-id': 'not-a-uuid' }));
+    const requestId = getRequestId(
+      new Headers({ 'x-request-id': 'not-a-uuid' }),
+    );
 
     expect(requestId).not.toBe('not-a-uuid');
     expect(requestId).toMatch(

@@ -6,6 +6,8 @@ import { checkDatabaseConnection } from '@/server/db/health';
 
 describe('checkDatabaseConnection', () => {
   it('reports an available PostgreSQL database', async () => {
-    await expect(checkDatabaseConnection()).resolves.toEqual({ database: 'up' });
+    await expect(checkDatabaseConnection()).resolves.toEqual({
+      database: 'up',
+    });
   });
 });

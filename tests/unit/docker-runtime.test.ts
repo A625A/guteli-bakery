@@ -8,6 +8,28 @@ const repoRoot = path.resolve(import.meta.dirname, '..', '..');
 const composePath = path.join(repoRoot, 'compose.yaml');
 const dockerignorePath = path.join(repoRoot, '.dockerignore');
 const readmePath = path.join(repoRoot, 'README.md');
+const dockerfilePath = path.join(repoRoot, 'Dockerfile');
+const entrypointPath = path.join(repoRoot, 'scripts', 'docker-entrypoint.sh');
+
+type ComposePort = {
+  host_ip?: string;
+  published?: string;
+  target?: number;
+};
+
+type ComposeVolume = {
+  source?: string;
+  target?: string;
+};
+
+type ComposeService = {
+  healthcheck?: {
+    test?: string[] | string;
+  };
+  image?: string;
+  ports?: ComposePort[];
+  volumes?: ComposeVolume[];
+};
 
 function resolveComposeInvocation() {
   try {
@@ -47,14 +69,7 @@ function loadComposeConfig() {
   );
 
   return JSON.parse(output) as {
-    services: Record<
-      string,
-      {
-        healthcheck?: {
-          test?: string[] | string;
-        };
-      }
-    >;
+    services: Record<string, ComposeService>;
     volumes: Record<string, object>;
   };
 }
@@ -90,6 +105,42 @@ describe('compose runtime contract', () => {
       'db_data',
       'uploads_data',
     ]);
+  });
+
+  it('pins the runtime invariants and keeps migrations explicit', () => {
+    const compose = loadComposeConfig();
+    const dockerfile = readFileSync(dockerfilePath, 'utf8');
+    const entrypoint = readFileSync(entrypointPath, 'utf8');
+    const composeSource = readFileSync(composePath, 'utf8');
+
+    expect(compose.services.database.image).toBe('postgres:17');
+    expect(compose.services.database.ports).toEqual([
+      expect.objectContaining({
+        host_ip: '127.0.0.1',
+        published: '5432',
+        target: 5432,
+      }),
+    ]);
+    expect(compose.services.database.volumes).toEqual([
+      expect.objectContaining({
+        source: 'db_data',
+        target: '/var/lib/postgresql/data',
+      }),
+    ]);
+    expect(compose.services.app.volumes).toEqual([
+      expect.objectContaining({
+        source: 'uploads_data',
+        target: '/app/uploads',
+      }),
+    ]);
+    expect(dockerfile).toMatch(/^USER nextjs$/m);
+    expect(dockerfile).toMatch(
+      /^ENTRYPOINT \["\/app\/scripts\/docker-entrypoint\.sh"\]$/m,
+    );
+    expect(entrypoint).toContain('exec "$@"');
+    expect(`${composeSource}\n${dockerfile}\n${entrypoint}`).not.toMatch(
+      /(?:db:migrate|drizzle-kit migrate|npm run seed|seed data)/i,
+    );
   });
 
   it('keeps local env files out of the Docker build context', () => {

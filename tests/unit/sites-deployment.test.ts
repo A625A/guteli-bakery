@@ -125,7 +125,9 @@ describe('Sites deployment contract', () => {
       scripts?: Record<string, string>;
     };
 
-    expect(packageJson.scripts?.['build:sites']).toBe('node scripts/build-sites.mjs');
+    expect(packageJson.scripts?.['build:sites']).toBe(
+      'node scripts/build-sites.mjs',
+    );
 
     const result = spawnSync(process.execPath, ['scripts/build-sites.mjs'], {
       cwd: process.cwd(),
