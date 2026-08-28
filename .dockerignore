@@ -2,6 +2,9 @@
 .github
 .next
 .superpowers
+.env
+.env.*
+!.env.example
 artifacts
 node_modules
 products

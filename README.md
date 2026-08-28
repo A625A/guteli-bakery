@@ -35,29 +35,34 @@ npm run start
 Bring up the two-service local runtime with:
 
 ```bash
-DOCKER_CONFIG=.superpowers/sdd/2026-08-27-guteli-backend-01-foundation/docker-config DOCKER_HOST=unix://${HOME}/.colima/default/docker.sock docker compose up --build -d
+docker compose up --build -d
 curl --fail http://127.0.0.1:3000/health
-DOCKER_CONFIG=.superpowers/sdd/2026-08-27-guteli-backend-01-foundation/docker-config DOCKER_HOST=unix://${HOME}/.colima/default/docker.sock docker compose down
+docker compose down
 ```
 
-The runtime exposes the app on `http://localhost:3000`, binds PostgreSQL only to `127.0.0.1:5432`, and preserves the named `db_data` and `uploads_data` volumes on ordinary `docker compose down`. If your Colima socket path differs, replace `unix://${HOME}/.colima/default/docker.sock` with the socket reported by `colima status`.
+The runtime exposes the app on `http://localhost:3000`, binds PostgreSQL only to `127.0.0.1:5432`, and preserves the named `db_data` and `uploads_data` volumes on ordinary `docker compose down`.
+
+If your local Docker client uses a non-default socket or context, export that override before rerunning the same commands. For example, Colima users can confirm the socket with `colima status` and set `DOCKER_HOST` only as a troubleshooting override.
 
 ## Migrations
 
 This foundation plan does not create an empty migration. When Plan 02 adds non-empty SQL files under `drizzle/`, apply them explicitly as a separate step before promoting a release.
 
-The production runtime image intentionally stays lean and does not bundle Drizzle Kit. Use a dedicated builder-stage container for migrations instead of running them from the long-lived app container:
+The production runtime image intentionally stays lean and does not bundle Drizzle Kit. Start the database first, wait for it to become healthy, then use a dedicated builder-stage container for migrations instead of running them from the long-lived app container:
 
 ```bash
+docker compose up -d database
+docker compose ps database
+docker compose exec -T database pg_isready -U guteli -d guteli
 docker build --target builder -t guteli-bakery-migrate .
 docker run --rm \
-  --network backend-admin-orders_default \
-  -e DATABASE_URL=postgresql://guteli:guteli@database:5432/guteli \
+  --network "$(docker inspect "$(docker compose ps -q database)" --format '{{range $name, $_ := .NetworkSettings.Networks}}{{println $name}}{{end}}' | head -n 1)" \
+  -e DATABASE_URL="${DATABASE_URL:?set DATABASE_URL before running migrations}" \
   guteli-bakery-migrate \
   npm run db:migrate
 ```
 
-Replace `backend-admin-orders_default` if your Compose project name differs. Production should run the equivalent one-off migration step separately from `docker compose up`; the app entrypoint never migrates or seeds implicitly.
+The first command creates the Compose network and starts PostgreSQL; `docker compose ps database` should report the container as healthy, and `pg_isready` must succeed before you run the builder-stage migration command. Production should run the equivalent one-off migration step separately from `docker compose up`; the app entrypoint never migrates or seeds implicitly, and the release environment injects DATABASE_URL from its secret environment instead of local credentials.
 
 ## Approved MVP
 
