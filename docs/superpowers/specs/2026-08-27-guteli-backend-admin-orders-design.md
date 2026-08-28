@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-27
 
-**Status:** Formalization of the approved in-chat design; pending written-spec review
+**Status:** Approved by the owner on 2026-08-27
 
 **Scope:** Single-store backend, persistent catalog and orders, owner administration, image storage, owner WhatsApp notifications, Docker development, and provider-disabled payments
 
