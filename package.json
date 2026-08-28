@@ -23,7 +23,7 @@
     "test:e2e:unavailable": "playwright test --config=playwright.unavailable.config.ts",
     "test:e2e:install": "playwright install chromium",
     "build": "next build",
-    "build:sites": "npm run build && node scripts/build-sites.mjs",
+    "build:sites": "node scripts/build-sites.mjs",
     "start": "next start"
   },
   "dependencies": {

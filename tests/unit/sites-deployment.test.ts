@@ -1,3 +1,4 @@
+import { spawnSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 
 import { describe, expect, it } from 'vitest';
@@ -119,16 +120,22 @@ describe('Sites deployment contract', () => {
     });
   });
 
-  it('provides the deployment build that packages the static export', async () => {
+  it('retires build:sites so this branch cannot fake a static Sites package', async () => {
     const packageJson = JSON.parse(await readFile('package.json', 'utf8')) as {
       scripts?: Record<string, string>;
     };
 
-    expect(packageJson.scripts?.['build:sites']).toBe(
-      'npm run build && node scripts/build-sites.mjs',
+    expect(packageJson.scripts?.['build:sites']).toBe('node scripts/build-sites.mjs');
+
+    const result = spawnSync(process.execPath, ['scripts/build-sites.mjs'], {
+      cwd: process.cwd(),
+      encoding: 'utf8',
+    });
+
+    expect(result.status).toBe(1);
+    expect(result.stdout).toBe('');
+    expect(result.stderr.trim()).toBe(
+      'build:sites is retired on this dynamic-runtime branch because Next standalone output cannot be packaged as a static Sites deployment.',
     );
-    await expect(
-      readFile('scripts/build-sites.mjs', 'utf8'),
-    ).resolves.toContain("path.join(distributionDirectory, 'client')");
   });
 });
