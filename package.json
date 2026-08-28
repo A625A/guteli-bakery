@@ -24,7 +24,7 @@
     "test:e2e:install": "playwright install chromium",
     "build": "next build",
     "build:sites": "npm run build && node scripts/build-sites.mjs",
-    "start": "serve out -l 3000"
+    "start": "next start"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.2",
