@@ -1,0 +1,54 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://guteli:guteli@database:5432/guteli
+      HOSTNAME: 0.0.0.0
+      NEXT_PUBLIC_DEMO_MODE: 'true'
+      NODE_ENV: production
+      PORT: '3000'
+      UPLOADS_ROOT: /app/uploads
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3000/health').then((response)=>response.ok?response.json():Promise.reject(new Error('health status'))).then((body)=>{if(body.status==='ok'&&body.database==='up'){process.exit(0);}process.exit(1);}).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    ports:
+      - '3000:3000'
+    volumes:
+      - uploads_data:/app/uploads
+
+  database:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: guteli
+      POSTGRES_PASSWORD: guteli
+      POSTGRES_USER: guteli
+    healthcheck:
+      test:
+        ['CMD-SHELL', 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    ports:
+      - '127.0.0.1:5432:5432'
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+  db_data:
+  uploads_data:

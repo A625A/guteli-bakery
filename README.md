@@ -1,12 +1,12 @@
-# Güteli Bakery Frontend MVP
+# Güteli Bakery Full-Stack Foundation
 
-Spanish-first, mobile-first bakery catalog and order-request experience for Güteli Bakery in Guatemala.
+Spanish-first, mobile-first bakery catalog and order-request experience for Güteli Bakery in Guatemala, now prepared to run as a standalone Next.js server with PostgreSQL.
 
 ## Current status
 
-Milestone 1 frontend foundation is formally approved, merged into `main`, and verified from the main checkout. The static Spanish-first shell is available for `/`, `/menu/`, `/cart/`, `/order/`, and `/contact/`; later milestones will implement the customer experience behind those routes. Milestone 2 awaits explicit user approval.
+Milestone 1 storefront behavior remains intact, and the backend foundation now runs as a standalone Next.js 16 server with a PostgreSQL-backed `/health` route. This plan establishes runtime, health, and Docker foundations only; product/catalog/order migrations begin in Plan 02.
 
-The repository evidence was verified on 2026-07-19. No deployment occurred, and public deployment remains out of scope.
+The repository evidence for this runtime foundation was refreshed on 2026-08-28. Public deployment remains out of scope.
 
 ## Local requirements and commands
 
@@ -28,7 +28,36 @@ npm run build
 npm run start
 ```
 
-`npm run start` serves the previously built static `out/` directory at `http://127.0.0.1:3000`; run `npm run build` first. Browser verification requires a local process that can bind that loopback port.
+`npm run start` runs the built Next.js server from `.next/standalone` behavior at `http://127.0.0.1:3000`; run `npm run build` first.
+
+## Docker runtime
+
+Bring up the two-service local runtime with:
+
+```bash
+DOCKER_CONFIG=.superpowers/sdd/2026-08-27-guteli-backend-01-foundation/docker-config DOCKER_HOST=unix://${HOME}/.colima/default/docker.sock docker compose up --build -d
+curl --fail http://127.0.0.1:3000/health
+DOCKER_CONFIG=.superpowers/sdd/2026-08-27-guteli-backend-01-foundation/docker-config DOCKER_HOST=unix://${HOME}/.colima/default/docker.sock docker compose down
+```
+
+The runtime exposes the app on `http://localhost:3000`, binds PostgreSQL only to `127.0.0.1:5432`, and preserves the named `db_data` and `uploads_data` volumes on ordinary `docker compose down`. If your Colima socket path differs, replace `unix://${HOME}/.colima/default/docker.sock` with the socket reported by `colima status`.
+
+## Migrations
+
+This foundation plan does not create an empty migration. When Plan 02 adds non-empty SQL files under `drizzle/`, apply them explicitly as a separate step before promoting a release.
+
+The production runtime image intentionally stays lean and does not bundle Drizzle Kit. Use a dedicated builder-stage container for migrations instead of running them from the long-lived app container:
+
+```bash
+docker build --target builder -t guteli-bakery-migrate .
+docker run --rm \
+  --network backend-admin-orders_default \
+  -e DATABASE_URL=postgresql://guteli:guteli@database:5432/guteli \
+  guteli-bakery-migrate \
+  npm run db:migrate
+```
+
+Replace `backend-admin-orders_default` if your Compose project name differs. Production should run the equivalent one-off migration step separately from `docker compose up`; the app entrypoint never migrates or seeds implicitly.
 
 ## Approved MVP
 
@@ -39,7 +68,7 @@ npm run start
 - Spanish order summary, copy fallback, and WhatsApp click-to-chat handoff
 - Human confirmation and clear order-request disclaimers
 
-The MVP excludes databases, backend persistence, authentication, inventory, payment processing, a CMS, analytics accounts, a real WhatsApp API, and public deployment.
+The approved storefront still excludes public payment processing, a real WhatsApp API, and public deployment. Databases and server runtime now exist only as foundation infrastructure for later plans.
 
 ## Governance
 

@@ -1,0 +1,16 @@
+.git
+.github
+.next
+.superpowers
+artifacts
+node_modules
+products
+tests
+playwright-report
+test-results
+coverage
+dist
+out
+Dockerfile*
+compose*.yaml
+*.log
