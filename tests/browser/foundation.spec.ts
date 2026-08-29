@@ -1,5 +1,8 @@
 import { expect, test } from '@playwright/test';
 
+const pretzelOriginalId = '00000000-0000-4000-8000-000000000001';
+const bagelTomatoBasilId = '00000000-0000-4000-8000-000000000008';
+
 const routes = [
   { path: '/', heading: 'Pretzels, bagels y panes por encargo' },
   { path: '/menu/', heading: 'Nuestros productos' },
@@ -409,12 +412,12 @@ for (const path of ['/contact/', '/ruta-inexistente/']) {
 test('cart badge restores a safe saved quantity after hydration', async ({
   page,
 }) => {
-  await page.addInitScript(() => {
+  await page.addInitScript((productId) => {
     window.localStorage.setItem(
-      'guteli-cart-v1',
-      '[{"productId":"pretzel-original","quantity":2}]',
+      'guteli-cart-v2',
+      `[{"productId":"${productId}","quantity":2}]`,
     );
-  });
+  }, pretzelOriginalId);
 
   await page.goto('/');
 
@@ -428,15 +431,18 @@ for (const width of [768, 900]) {
     page,
   }) => {
     await page.setViewportSize({ width, height: 900 });
-    await page.addInitScript(() => {
-      window.localStorage.setItem(
-        'guteli-cart-v1',
-        '[{"productId":"pretzel-original","quantity":1},{"productId":"bagel-tomato-basil","quantity":1}]',
-      );
-    });
+    await page.addInitScript(
+      ({ pretzelOriginalId, bagelTomatoBasilId }) => {
+        window.localStorage.setItem(
+          'guteli-cart-v2',
+          `[{"productId":"${pretzelOriginalId}","quantity":1},{"productId":"${bagelTomatoBasilId}","quantity":1}]`,
+        );
+      },
+      { pretzelOriginalId, bagelTomatoBasilId },
+    );
     await page.goto('/cart/');
 
-    const cartLine = page.getByTestId('cart-line-pretzel-original');
+    const cartLine = page.getByTestId(`cart-line-${pretzelOriginalId}`);
     const lineBox = await cartLine.boundingBox();
     const totalsBox = await page.locator('.cart-totals').boundingBox();
     expect(lineBox).not.toBeNull();

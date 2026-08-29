@@ -1,4 +1,5 @@
 import { createObjectStorage } from '@/server/storage';
+import { cache } from 'react';
 
 import { findPublicProducts } from './repository';
 import type { ObjectStorage } from '@/server/storage';
@@ -32,3 +33,7 @@ export async function listPublicProducts(
 
   return { categories: [...categories.values()] };
 }
+
+// React's cache is request-scoped in the Next.js server render. This lets the
+// root layout and menu page share one catalog read without cross-request data.
+export const getPublicCatalog = cache(() => listPublicProducts());

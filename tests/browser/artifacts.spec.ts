@@ -99,8 +99,12 @@ async function buildTwoItemCart(page: Page, mobile: boolean) {
     );
   }
 
-  await expect(page.getByTestId('cart-line-pretzel-original')).toBeVisible();
-  await expect(page.getByTestId('cart-line-bagel-original')).toBeVisible();
+  await expect(
+    page.getByTestId('cart-line-00000000-0000-4000-8000-000000000001'),
+  ).toBeVisible();
+  await expect(
+    page.getByTestId('cart-line-00000000-0000-4000-8000-000000000005'),
+  ).toBeVisible();
 }
 
 async function fillPickupRequest(page: Page, includeName = true) {

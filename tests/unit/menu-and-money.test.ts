@@ -1,50 +1,75 @@
 import { describe, expect, it } from 'vitest';
 
 import { operationalCopy } from '@/content/business';
-import { getMenuProduct, menuCategories, menuProducts } from '@/content/menu';
 import { formatGTQ } from '@/lib/money';
+import type { PublicCategoryDto } from '@/server/products/types';
 
-describe('confirmed menu', () => {
-  it('contains the approved variants without invented quantities', () => {
+const catalog: PublicCategoryDto[] = [
+  {
+    id: '00000000-0000-4000-8000-000000000101',
+    slug: 'pretzels',
+    name: 'Pretzels',
+    products: [
+      {
+        id: '00000000-0000-4000-8000-000000000001',
+        slug: 'pretzel-original',
+        name: 'Originales',
+        category: {
+          id: '00000000-0000-4000-8000-000000000101',
+          slug: 'pretzels',
+          name: 'Pretzels',
+        },
+        priceMinor: 6000,
+        saleUnit: 'Bolsa de 5',
+        stockAvailable: true,
+        imageUrl: '/images/products/pretzel-original.webp',
+      },
+    ],
+  },
+  {
+    id: '00000000-0000-4000-8000-000000000104',
+    slug: 'nuditos',
+    name: 'Nuditos',
+    products: [
+      {
+        id: '00000000-0000-4000-8000-000000000010',
+        slug: 'nuditos',
+        name: 'Nuditos',
+        category: {
+          id: '00000000-0000-4000-8000-000000000104',
+          slug: 'nuditos',
+          name: 'Nuditos',
+        },
+        priceMinor: 6000,
+        saleUnit: 'Bolsa de 15',
+        stockAvailable: true,
+        imageUrl: null,
+      },
+    ],
+  },
+];
+
+describe('persistent menu', () => {
+  it('keeps public catalog prices in integer minor units', () => {
     expect(
-      menuProducts.map(({ id, price, saleUnit }) => ({ id, price, saleUnit })),
-    ).toEqual([
-      { id: 'pretzel-original', price: 60, saleUnit: 'Bolsa de 5' },
-      { id: 'pretzel-jalapeno', price: 75, saleUnit: 'Bolsa de 5' },
-      { id: 'pretzel-pepperoni', price: 75, saleUnit: 'Bolsa de 5' },
-      {
-        id: 'pretzel-tomato-basil',
-        price: 75,
-        saleUnit: 'Bolsa de 5',
-      },
-      { id: 'bagel-original', price: 60, saleUnit: null },
-      { id: 'bagel-jalapeno', price: 75, saleUnit: null },
-      { id: 'bagel-pepperoni', price: 75, saleUnit: null },
-      {
-        id: 'bagel-tomato-basil',
-        price: 75,
-        saleUnit: 'Bolsa de 5',
-      },
-      { id: 'burger-buns', price: 55, saleUnit: null },
-      { id: 'nuditos', price: 60, saleUnit: 'Bolsa de 15' },
-    ]);
+      catalog
+        .flatMap(({ products }) => products)
+        .map(({ priceMinor }) => priceMinor),
+    ).toEqual([6000, 6000]);
   });
 
-  it('formats whole quetzal prices for Guatemala', () => {
-    expect(formatGTQ(135)).toBe('Q135');
-  });
-
-  it('exposes the confirmed category order and product lookup', () => {
-    expect(menuCategories.map(({ id }) => id)).toEqual([
-      'pretzels',
-      'bagels',
-      'burger-buns',
-      'nuditos',
-    ]);
-    expect(getMenuProduct('pretzel-jalapeno')).toMatchObject({
-      name: 'Queso y jalapeño',
-      price: 75,
+  it('exposes category labels and stable database product identity', () => {
+    expect(catalog.map(({ slug }) => slug)).toEqual(['pretzels', 'nuditos']);
+    expect(catalog[0]?.products[0]).toMatchObject({
+      id: '00000000-0000-4000-8000-000000000001',
+      name: 'Originales',
+      category: { name: 'Pretzels' },
+      priceMinor: 6000,
     });
+  });
+
+  it('formats whole quetzal minor-unit prices for Guatemala', () => {
+    expect(formatGTQ(13500)).toBe('Q135');
   });
 
   it('uses the approved fallback and confirmation language', () => {

@@ -1,14 +1,14 @@
 import Image from 'next/image';
 
-import type { MenuProduct } from '@/content/menu';
+import type { PublicProductDto } from '@/server/products/types';
 
 type ProductArtworkProps = {
-  product: MenuProduct;
+  product: PublicProductDto;
   variant?: 'card' | 'cart';
   eager?: boolean;
 };
 
-const artworkMarks: Record<MenuProduct['category'], string> = {
+const artworkMarks: Record<string, string> = {
   pretzels: '∞',
   bagels: '○ ○',
   'burger-buns': '◒',
@@ -21,14 +21,16 @@ export function ProductArtwork({
   eager = false,
 }: ProductArtworkProps) {
   const baseClass = variant === 'card' ? 'product-card' : 'cart-line';
-  const label = `${product.name} de ${product.categoryLabel}`;
+  const categoryLabel = product.category.name;
+  const categorySlug = product.category.slug;
+  const label = `${product.name} de ${categoryLabel}`;
 
-  if (product.image) {
+  if (product.imageUrl) {
     return (
       <div className={`${baseClass}__media`}>
         <Image
           className={`${baseClass}__photo`}
-          src={product.image}
+          src={product.imageUrl}
           alt={variant === 'cart' ? '' : label}
           fill
           loading={eager ? 'eager' : 'lazy'}
@@ -44,17 +46,17 @@ export function ProductArtwork({
 
   return (
     <div
-      className={`${baseClass}__media ${baseClass}__media--${product.category}`}
+      className={`${baseClass}__media ${baseClass}__media--${categorySlug}`}
       role={variant === 'card' ? 'img' : undefined}
       aria-label={
         variant === 'card'
-          ? `${product.categoryLabel}: ilustración de categoría, no fotografía de producto`
+          ? `${categoryLabel}: ilustración de categoría, no fotografía de producto`
           : undefined
       }
       aria-hidden={variant === 'cart' ? true : undefined}
     >
       <span className={`${baseClass}__art-symbol`} aria-hidden="true">
-        {artworkMarks[product.category]}
+        {artworkMarks[categorySlug] ?? '✦'}
       </span>
       {variant === 'card' ? (
         <span className="product-card__art-note">Ilustración de categoría</span>

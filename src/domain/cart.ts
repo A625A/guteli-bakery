@@ -1,25 +1,27 @@
-import type { MenuProduct, MenuProductId } from '@/content/menu';
-import { menuProductIds, menuProducts } from '@/content/menu';
+import type { PublicProductDto } from '@/server/products/types';
 
-export type CartItem = { productId: MenuProductId; quantity: number };
+export type CartItem = Readonly<{ productId: string; quantity: number }>;
 
 export type CartLine = CartItem & {
-  product: MenuProduct;
+  product: PublicProductDto;
   lineTotal: number;
 };
+
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 const isQuantity = (value: unknown): value is number =>
   Number.isInteger(value) && Number(value) >= 1 && Number(value) <= 99;
 
-const isMenuProductId = (value: unknown): value is MenuProductId =>
-  typeof value === 'string' && menuProductIds.includes(value as MenuProductId);
+const isProductId = (value: unknown): value is string =>
+  typeof value === 'string' && UUID_PATTERN.test(value);
 
 export function addCartItem(
   cart: readonly CartItem[],
-  productId: MenuProductId,
+  productId: string,
   quantity: number,
 ): CartItem[] {
-  if (!isQuantity(quantity)) {
+  if (!isProductId(productId) || !isQuantity(quantity)) {
     return [...cart];
   }
 
@@ -38,10 +40,10 @@ export function addCartItem(
 
 export function updateCartItem(
   cart: readonly CartItem[],
-  productId: MenuProductId,
+  productId: string,
   quantity: number,
 ): CartItem[] {
-  if (!isQuantity(quantity)) {
+  if (!isProductId(productId) || !isQuantity(quantity)) {
     return [...cart];
   }
 
@@ -52,7 +54,7 @@ export function updateCartItem(
 
 export function removeCartItem(
   cart: readonly CartItem[],
-  productId: MenuProductId,
+  productId: string,
 ): CartItem[] {
   return cart.filter((item) => item.productId !== productId);
 }
@@ -70,12 +72,12 @@ export function parseStoredCart(value: string | null): CartItem[] {
     }
 
     const cart: CartItem[] = [];
-    const productIds = new Set<MenuProductId>();
+    const productIds = new Set<string>();
 
     for (const item of parsed) {
       if (
         !isStoredCartItem(item) ||
-        !isMenuProductId(item.productId) ||
+        !isProductId(item.productId) ||
         productIds.has(item.productId) ||
         !isQuantity(item.quantity)
       ) {
@@ -92,14 +94,17 @@ export function parseStoredCart(value: string | null): CartItem[] {
   }
 }
 
-export function getCartLines(cart: readonly CartItem[]): CartLine[] {
+export function getCartLines(
+  cart: readonly CartItem[],
+  products: readonly PublicProductDto[],
+): CartLine[] {
   return cart.flatMap((item) => {
-    const product = menuProducts.find(
-      (menuProduct) => menuProduct.id === item.productId,
+    const product = products.find(
+      (candidate) => candidate.id === item.productId,
     );
 
     return product
-      ? [{ ...item, product, lineTotal: product.price * item.quantity }]
+      ? [{ ...item, product, lineTotal: product.priceMinor * item.quantity }]
       : [];
   });
 }

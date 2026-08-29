@@ -6,7 +6,7 @@ const gtqFormatter = new Intl.NumberFormat('es-GT', {
 });
 
 export function formatGTQ(amount: number): string {
-  const digits = gtqFormatter.format(amount).replace(/\D/g, '');
+  const digits = gtqFormatter.format(amount / 100).replace(/\D/g, '');
 
   return `Q${digits}`;
 }

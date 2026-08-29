@@ -6,6 +6,51 @@ import { getMinimumOrderDate } from '@/lib/date';
 import { buildOrderSummary } from '@/lib/order-summary';
 import { buildWhatsAppUrl } from '@/lib/whatsapp';
 
+const orderProducts = [
+  {
+    id: '00000000-0000-4000-8000-000000000001',
+    slug: 'pretzel-original',
+    name: 'Originales',
+    category: {
+      id: '00000000-0000-4000-8000-000000000101',
+      slug: 'pretzels',
+      name: 'Pretzels',
+    },
+    priceMinor: 6000,
+    saleUnit: 'Bolsa de 5',
+    stockAvailable: true,
+    imageUrl: '/images/products/pretzel-original.webp',
+  },
+  {
+    id: '00000000-0000-4000-8000-000000000005',
+    slug: 'bagel-original',
+    name: 'Originales',
+    category: {
+      id: '00000000-0000-4000-8000-000000000102',
+      slug: 'bagels',
+      name: 'Bagels',
+    },
+    priceMinor: 6000,
+    saleUnit: null,
+    stockAvailable: true,
+    imageUrl: '/images/products/bagel-original.webp',
+  },
+  {
+    id: '00000000-0000-4000-8000-000000000010',
+    slug: 'nuditos',
+    name: 'Nuditos',
+    category: {
+      id: '00000000-0000-4000-8000-000000000104',
+      slug: 'nuditos',
+      name: 'Nuditos',
+    },
+    priceMinor: 6000,
+    saleUnit: 'Bolsa de 15',
+    stockAvailable: true,
+    imageUrl: null,
+  },
+] as const;
+
 describe('order request', () => {
   it('uses the Guatemala calendar before adding two days', () => {
     expect(getMinimumOrderDate(new Date('2026-07-21T05:30:00.000Z'), 2)).toBe(
@@ -128,9 +173,10 @@ describe('order request', () => {
   });
 
   it('builds a readable encoded user-controlled handoff', () => {
-    const lines = getCartLines([
-      { productId: 'pretzel-original', quantity: 2 },
-    ]);
+    const lines = getCartLines(
+      [{ productId: orderProducts[0].id, quantity: 2 }],
+      orderProducts,
+    );
     const summary = buildOrderSummary(lines, {
       name: 'Ana',
       phone: '5555 5555',
@@ -150,10 +196,13 @@ describe('order request', () => {
   });
 
   it('includes delivery details and safe unknown-quantity copy', () => {
-    const lines = getCartLines([
-      { productId: 'bagel-original', quantity: 2 },
-      { productId: 'nuditos', quantity: 1 },
-    ]);
+    const lines = getCartLines(
+      [
+        { productId: orderProducts[1].id, quantity: 2 },
+        { productId: orderProducts[2].id, quantity: 1 },
+      ],
+      orderProducts,
+    );
     const summary = buildOrderSummary(lines, {
       name: 'Ana',
       phone: '5555 5555',
@@ -171,9 +220,10 @@ describe('order request', () => {
   });
 
   it('normalizes whitespace before placing personal data in the handoff', () => {
-    const lines = getCartLines([
-      { productId: 'pretzel-original', quantity: 1 },
-    ]);
+    const lines = getCartLines(
+      [{ productId: orderProducts[0].id, quantity: 1 }],
+      orderProducts,
+    );
     const summary = buildOrderSummary(lines, {
       name: '  Ana   López  ',
       phone: '5555\t5555',

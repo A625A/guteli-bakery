@@ -77,7 +77,7 @@ export function CartView({ handoff }: { handoff: WhatsAppHandoff }) {
                         eager={lineIndex < 2}
                       />
                       <div className="cart-line__identity">
-                        <p>{line.product.categoryLabel}</p>
+                        <p>{line.product.category.name}</p>
                         <h3>{line.product.name}</h3>
                         <span>
                           {line.product.saleUnit ??
@@ -87,7 +87,7 @@ export function CartView({ handoff }: { handoff: WhatsAppHandoff }) {
                       <div className="cart-line__quantity">
                         <label htmlFor={inputId}>
                           Cantidad de {line.product.name},{' '}
-                          {line.product.categoryLabel} en el carrito
+                          {line.product.category.name} en el carrito
                         </label>
                         <input
                           id={inputId}
@@ -111,7 +111,7 @@ export function CartView({ handoff }: { handoff: WhatsAppHandoff }) {
                         onClick={() => removeItem(line.productId)}
                       >
                         Quitar {line.product.name} de{' '}
-                        {line.product.categoryLabel}
+                        {line.product.category.name}
                       </button>
                     </li>
                   );

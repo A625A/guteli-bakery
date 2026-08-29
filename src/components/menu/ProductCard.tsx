@@ -5,11 +5,11 @@ import { useState, type ChangeEvent } from 'react';
 import { useCart } from '@/components/cart/CartProvider';
 import { ProductArtwork } from '@/components/menu/ProductArtwork';
 import { operationalCopy } from '@/content/business';
-import type { MenuProduct } from '@/content/menu';
+import type { PublicProductDto } from '@/server/products/types';
 import { formatGTQ } from '@/lib/money';
 
 type ProductCardProps = {
-  product: MenuProduct;
+  product: PublicProductDto;
   eager?: boolean;
 };
 
@@ -18,7 +18,7 @@ type Announcement = {
   message: string;
 };
 
-function getAddedMessage(product: MenuProduct, quantity: number): string {
+function getAddedMessage(product: PublicProductDto, quantity: number): string {
   const unit = product.saleUnit?.toLocaleLowerCase('es-GT').startsWith('bolsa')
     ? quantity === 1
       ? 'bolsa agregada'
@@ -27,7 +27,7 @@ function getAddedMessage(product: MenuProduct, quantity: number): string {
       ? 'producto agregado'
       : 'productos agregados';
 
-  return `${quantity} ${unit} al carrito: ${product.name} de ${product.categoryLabel}.`;
+  return `${quantity} ${unit} al carrito: ${product.name} de ${product.category.name}.`;
 }
 
 export function ProductCard({ product, eager = false }: ProductCardProps) {
@@ -70,17 +70,17 @@ export function ProductCard({ product, eager = false }: ProductCardProps) {
     <article className="product-card" data-testid="product-card">
       <ProductArtwork product={product} eager={eager} />
       <div className="product-card__body">
-        <p className="product-card__category">{product.categoryLabel}</p>
+        <p className="product-card__category">{product.category.name}</p>
         <h3>{product.name}</h3>
         <p className="product-card__unit">
           {product.saleUnit ?? operationalCopy.quantityUnknown}
         </p>
         <strong className="product-card__price">
-          {formatGTQ(product.price)}
+          {formatGTQ(product.priceMinor)}
         </strong>
         <div className="product-card__actions">
           <label className="visually-hidden" htmlFor={inputId}>
-            Cantidad de {product.name}, {product.categoryLabel}
+            Cantidad de {product.name}, {product.category.name}
           </label>
           <input
             id={inputId}
@@ -99,8 +99,8 @@ export function ProductCard({ product, eager = false }: ProductCardProps) {
             disabled={!hydrated || isAtCapacity}
             aria-label={
               isAtCapacity
-                ? `Máximo de 99 alcanzado para ${product.name} de ${product.categoryLabel}`
-                : `Agregar ${product.name} de ${product.categoryLabel}`
+                ? `Máximo de 99 alcanzado para ${product.name} de ${product.category.name}`
+                : `Agregar ${product.name} de ${product.category.name}`
             }
           >
             {isAtCapacity ? 'Máximo alcanzado' : '+ Agregar'}

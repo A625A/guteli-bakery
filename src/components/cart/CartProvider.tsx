@@ -10,7 +10,6 @@ import {
   type ReactNode,
 } from 'react';
 
-import type { MenuProductId } from '@/content/menu';
 import {
   addCartItem,
   getCartCount,
@@ -22,8 +21,10 @@ import {
   type CartItem,
   type CartLine,
 } from '@/domain/cart';
+import type { PublicProductDto } from '@/server/products/types';
 
-const CART_STORAGE_KEY = 'guteli-cart-v1';
+export const CART_STORAGE_KEY = 'guteli-cart-v2';
+const LEGACY_CART_STORAGE_KEY = 'guteli-cart-v1';
 
 type CartState = {
   items: CartItem[];
@@ -32,9 +33,9 @@ type CartState = {
 
 type CartAction =
   | { type: 'hydrate'; items: CartItem[] }
-  | { type: 'add'; productId: MenuProductId; quantity: number }
-  | { type: 'update'; productId: MenuProductId; quantity: number }
-  | { type: 'remove'; productId: MenuProductId }
+  | { type: 'add'; productId: string; quantity: number }
+  | { type: 'update'; productId: string; quantity: number }
+  | { type: 'remove'; productId: string }
   | { type: 'clear' };
 
 type CartContextValue = {
@@ -43,9 +44,9 @@ type CartContextValue = {
   itemCount: number;
   subtotal: number;
   hydrated: boolean;
-  addItem: (productId: MenuProductId, quantity: number) => void;
-  updateQuantity: (productId: MenuProductId, quantity: number) => void;
-  removeItem: (productId: MenuProductId) => void;
+  addItem: (productId: string, quantity: number) => void;
+  updateQuantity: (productId: string, quantity: number) => void;
+  removeItem: (productId: string) => void;
   clearCart: () => void;
 };
 
@@ -77,7 +78,10 @@ function cartReducer(state: CartState, action: CartAction): CartState {
   }
 }
 
-export function CartProvider({ children }: Readonly<{ children: ReactNode }>) {
+export function CartProvider({
+  children,
+  products,
+}: Readonly<{ children: ReactNode; products: readonly PublicProductDto[] }>) {
   const [{ items, hydrated }, dispatch] = useReducer(cartReducer, initialState);
 
   useEffect(() => {
@@ -85,6 +89,7 @@ export function CartProvider({ children }: Readonly<{ children: ReactNode }>) {
 
     try {
       storedValue = window.localStorage.getItem(CART_STORAGE_KEY);
+      window.localStorage.removeItem(LEGACY_CART_STORAGE_KEY);
     } catch {
       // Storage can be unavailable; the in-memory cart remains usable.
     }
@@ -104,20 +109,17 @@ export function CartProvider({ children }: Readonly<{ children: ReactNode }>) {
     }
   }, [hydrated, items]);
 
-  const lines = useMemo(() => getCartLines(items), [items]);
+  const lines = useMemo(() => getCartLines(items, products), [items, products]);
   const itemCount = useMemo(() => getCartCount(items), [items]);
   const subtotal = useMemo(() => getCartSubtotal(lines), [lines]);
 
-  const addItem = useCallback((productId: MenuProductId, quantity: number) => {
+  const addItem = useCallback((productId: string, quantity: number) => {
     dispatch({ type: 'add', productId, quantity });
   }, []);
-  const updateQuantity = useCallback(
-    (productId: MenuProductId, quantity: number) => {
-      dispatch({ type: 'update', productId, quantity });
-    },
-    [],
-  );
-  const removeItem = useCallback((productId: MenuProductId) => {
+  const updateQuantity = useCallback((productId: string, quantity: number) => {
+    dispatch({ type: 'update', productId, quantity });
+  }, []);
+  const removeItem = useCallback((productId: string) => {
     dispatch({ type: 'remove', productId });
   }, []);
   const clearCart = useCallback(() => {

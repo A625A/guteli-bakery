@@ -1,12 +1,14 @@
 import { expect, test, type Page } from '@playwright/test';
 
+const pretzelOriginalId = '00000000-0000-4000-8000-000000000001';
+
 async function prepareOrder(page: Page) {
-  await page.addInitScript(() => {
+  await page.addInitScript((productId) => {
     window.localStorage.setItem(
-      'guteli-cart-v1',
-      '[{"productId":"pretzel-original","quantity":1}]',
+      'guteli-cart-v2',
+      `[{"productId":"${productId}","quantity":1}]`,
     );
-  });
+  }, pretzelOriginalId);
   await page.goto('/cart/');
   await page.getByLabel('Nombre completo').fill('Ana López');
   await page.getByLabel('Teléfono').fill('5555 5555');

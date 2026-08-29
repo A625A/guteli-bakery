@@ -1,5 +1,9 @@
 import { expect, test, type Locator } from '@playwright/test';
 
+const pretzelOriginalId = '00000000-0000-4000-8000-000000000001';
+const pretzelJalapenoId = '00000000-0000-4000-8000-000000000002';
+const bagelOriginalId = '00000000-0000-4000-8000-000000000005';
+
 function relativeLuminance(color: string) {
   const channels = color
     .match(/\d+(?:\.\d+)?/g)
@@ -328,16 +332,19 @@ test('uses the supplied product photographs in the menu and cart', async ({
 test('prioritizes only the first two product photos in a populated cart', async ({
   page,
 }) => {
-  await page.addInitScript(() => {
-    window.localStorage.setItem(
-      'guteli-cart-v1',
-      JSON.stringify([
-        { productId: 'pretzel-original', quantity: 1 },
-        { productId: 'pretzel-jalapeno', quantity: 1 },
-        { productId: 'bagel-original', quantity: 1 },
-      ]),
-    );
-  });
+  await page.addInitScript(
+    ({ pretzelOriginalId, pretzelJalapenoId, bagelOriginalId }) => {
+      window.localStorage.setItem(
+        'guteli-cart-v2',
+        JSON.stringify([
+          { productId: pretzelOriginalId, quantity: 1 },
+          { productId: pretzelJalapenoId, quantity: 1 },
+          { productId: bagelOriginalId, quantity: 1 },
+        ]),
+      );
+    },
+    { pretzelOriginalId, pretzelJalapenoId, bagelOriginalId },
+  );
   await page.goto('/cart/');
 
   const cartPhotos = page.locator('.cart-line__photo');
@@ -368,15 +375,15 @@ test('small caramel labels retain readable contrast on cream surfaces', async ({
     await getContrastRatio(activeFilter, activeFilter),
   ).toBeGreaterThanOrEqual(4.5);
 
-  await page.evaluate(() => {
+  await page.evaluate((productId) => {
     window.localStorage.setItem(
-      'guteli-cart-v1',
-      '[{"productId":"pretzel-original","quantity":1}]',
+      'guteli-cart-v2',
+      `[{"productId":"${productId}","quantity":1}]`,
     );
-  });
+  }, pretzelOriginalId);
   await page.goto('/cart/');
 
-  const cartLine = page.getByTestId('cart-line-pretzel-original');
+  const cartLine = page.getByTestId(`cart-line-${pretzelOriginalId}`);
   await expect(cartLine).toBeVisible();
   expect(
     await getContrastRatio(

@@ -36,7 +36,7 @@ export function buildOrderSummary(
 
   for (const line of cartLines) {
     summary.push(
-      `- ${line.quantity} × ${line.product.categoryLabel} — ${line.product.name}`,
+      `- ${line.quantity} × ${line.product.category.name} — ${line.product.name}`,
       `  Presentación: ${line.product.saleUnit ?? operationalCopy.quantityUnknown}`,
       `  Total de línea: ${formatGTQ(line.lineTotal)}`,
     );

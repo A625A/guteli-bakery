@@ -1,10 +1,11 @@
 import { expect, test, type Page } from '@playwright/test';
 
-const savedOriginalPretzels = '[{"productId":"pretzel-original","quantity":2}]';
+const pretzelOriginalId = '00000000-0000-4000-8000-000000000001';
+const savedOriginalPretzels = `[{"productId":"${pretzelOriginalId}","quantity":2}]`;
 
 async function openOrderWithSavedCart(page: Page) {
   await page.addInitScript((cart) => {
-    window.localStorage.setItem('guteli-cart-v1', cart);
+    window.localStorage.setItem('guteli-cart-v2', cart);
   }, savedOriginalPretzels);
   await page.goto('/cart/');
 }
@@ -39,7 +40,7 @@ test('completes a delivery request without sending it', async ({
     .getByLabel('Cantidad de Originales, Pretzels en el carrito')
     .fill('2');
   await expect(
-    page.getByTestId('cart-line-pretzel-original').getByText('Q120'),
+    page.getByTestId(`cart-line-${pretzelOriginalId}`).getByText('Q120'),
   ).toBeVisible();
   await expect(page.getByText('Subtotal estimado: Q120')).toBeVisible();
   await expect(
@@ -88,7 +89,7 @@ test('completes a delivery request without sending it', async ({
 
   const storage = await page.evaluate(() => ({ ...window.localStorage }));
   expect(storage).toEqual({
-    'guteli-cart-v1': '[{"productId":"pretzel-original","quantity":2}]',
+    'guteli-cart-v2': savedOriginalPretzels,
   });
   expect(JSON.stringify(storage)).not.toContain('Ana');
   expect(await page.getByLabel('Nombre completo').inputValue()).toBe(
@@ -151,7 +152,7 @@ test('recovers malformed saved cart data as an empty cart', async ({
   page,
 }) => {
   await page.addInitScript(() => {
-    window.localStorage.setItem('guteli-cart-v1', '{malformed');
+    window.localStorage.setItem('guteli-cart-v2', '{malformed');
   });
 
   await page.goto('/cart/');
@@ -161,9 +162,34 @@ test('recovers malformed saved cart data as an empty cart', async ({
   ).toBeVisible();
   await expect
     .poll(() =>
-      page.evaluate(() => window.localStorage.getItem('guteli-cart-v1')),
+      page.evaluate(() => window.localStorage.getItem('guteli-cart-v2')),
     )
     .toBe('[]');
+});
+
+test('expires legacy slug carts without guessing product identity', async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem(
+      'guteli-cart-v1',
+      '[{"productId":"pretzel-original","quantity":2}]',
+    );
+  });
+
+  await page.goto('/cart/');
+
+  await expect(
+    page.getByRole('heading', { name: 'Tu carrito está vacío' }),
+  ).toBeVisible();
+  await expect
+    .poll(() =>
+      page.evaluate(() => ({
+        legacy: window.localStorage.getItem('guteli-cart-v1'),
+        current: window.localStorage.getItem('guteli-cart-v2'),
+      })),
+    )
+    .toEqual({ legacy: null, current: '[]' });
 });
 
 test('shows pickup guidance and omits a delivery location from the summary', async ({
@@ -461,12 +487,12 @@ test('keeps the readable summary available when clipboard copy is rejected', asy
 test('describes the 99 cap as applying to each menu option', async ({
   page,
 }) => {
-  await page.addInitScript(() => {
+  await page.addInitScript((productId) => {
     window.localStorage.setItem(
-      'guteli-cart-v1',
-      '[{"productId":"pretzel-original","quantity":99}]',
+      'guteli-cart-v2',
+      `[{"productId":"${productId}","quantity":99}]`,
     );
-  });
+  }, pretzelOriginalId);
   await page.goto('/menu/');
 
   await expect(

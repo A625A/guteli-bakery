@@ -7,6 +7,7 @@ import { SiteFooter } from '@/components/shared/SiteFooter';
 import { SiteHeader } from '@/components/shared/SiteHeader';
 import { publicSiteConfig } from '@/config/public-site';
 import { siteConfig } from '@/content/business';
+import { getPublicCatalog } from '@/server/products/list-public-products';
 
 import '@/styles/tokens.css';
 import './globals.css';
@@ -20,9 +21,14 @@ export const metadata: Metadata = {
     'Pretzels, bagels y panes artesanales por encargo de Güteli Bakery.',
 };
 
-export default function RootLayout({
+export const dynamic = 'force-dynamic';
+
+export default async function RootLayout({
   children,
 }: Readonly<{ children: ReactNode }>) {
+  const catalog = await getPublicCatalog();
+  const products = catalog.categories.flatMap((category) => category.products);
+
   return (
     <html lang={siteConfig.locale} data-scroll-behavior="smooth">
       <body>
@@ -30,7 +36,7 @@ export default function RootLayout({
           Saltar al contenido
         </a>
         <DemoBanner enabled={publicSiteConfig.isDemoMode} />
-        <CartProvider>
+        <CartProvider products={products}>
           <SiteHeader />
           {children}
           <SiteFooter />

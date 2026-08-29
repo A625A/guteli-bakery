@@ -1,7 +1,12 @@
 import { MenuCatalog } from '@/components/menu/MenuCatalog';
 import { operationalCopy, siteConfig } from '@/content/business';
+import { getPublicCatalog } from '@/server/products/list-public-products';
 
-export default function MenuPage() {
+export const dynamic = 'force-dynamic';
+
+export default async function MenuPage() {
+  const catalog = await getPublicCatalog();
+
   return (
     <main id="main-content" className="menu-page" tabIndex={-1}>
       <header className="menu-page__intro">
@@ -20,7 +25,7 @@ export default function MenuPage() {
           </p>
         </div>
       </header>
-      <MenuCatalog />
+      <MenuCatalog categories={catalog.categories} />
     </main>
   );
 }
