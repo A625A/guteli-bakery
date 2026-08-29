@@ -16,6 +16,7 @@ import {
 } from './repository';
 import type { LockedProduct, PersistedOrder } from './repository';
 import { hashCreateOrderRequest } from './request-hash';
+import { consumeFixedWindowRateLimit } from '@/server/security/rate-limit';
 import type {
   CreateOrderInput,
   CreateOrderResult,
@@ -30,7 +31,8 @@ type OrderErrorCode =
   | 'IDEMPOTENCY_CONFLICT'
   | 'INTERNAL_ERROR'
   | 'PRODUCT_OUT_OF_STOCK'
-  | 'PRODUCT_UNAVAILABLE';
+  | 'PRODUCT_UNAVAILABLE'
+  | 'RATE_LIMITED';
 
 type PricedItem = Readonly<{
   product: LockedProduct;
@@ -54,11 +56,13 @@ type ResolvedDependencies = Readonly<{
 
 export class CreateOrderError extends Error {
   readonly code: OrderErrorCode;
+  readonly retryAfterSeconds: number | undefined;
 
-  constructor(code: OrderErrorCode) {
+  constructor(code: OrderErrorCode, retryAfterSeconds?: number) {
     super(code);
     this.name = 'CreateOrderError';
     this.code = code;
+    this.retryAfterSeconds = retryAfterSeconds;
   }
 }
 
@@ -383,6 +387,20 @@ async function createOrderInTransaction(
       orderProductIds(input.request),
     );
     const pricedOrder = priceOrder(input.request, lockedProducts);
+
+    if (input.successfulOrderRateLimitSubject) {
+      const rateLimit = await consumeFixedWindowRateLimit(transaction, {
+        policy: 'ORDER_SUCCESS_PHONE',
+        subject: input.successfulOrderRateLimitSubject,
+        limit: 5,
+        windowMs: 30 * 60 * 1000,
+        now: dependencies.now,
+      });
+      if (!rateLimit.allowed) {
+        throw new CreateOrderError('RATE_LIMITED', rateLimit.retryAfterSeconds);
+      }
+    }
+
     return persistOrder(transaction, input, dependencies, pricedOrder);
   });
 }

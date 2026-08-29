@@ -16,6 +16,7 @@ export type CreateOrderInput = Readonly<{
   idempotencySubject: string;
   requestId: string;
   receiptTokenSecret: string;
+  successfulOrderRateLimitSubject?: string;
   now: Date;
   database?: OrdersDatabase;
   createOrderId?: () => string;
