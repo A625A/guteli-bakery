@@ -1,5 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
-import { mkdtempSync } from 'node:fs';
+import { appendFileSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -10,12 +10,19 @@ const databaseUrlTest = requireTestDatabaseUrl(
   'E2E tests',
 );
 const uploadsRoot = mkdtempSync(join(tmpdir(), 'guteli-playwright-'));
+const uploadsStateFile =
+  process.env.GUTELI_PLAYWRIGHT_ROOT_STATE ??
+  join(tmpdir(), `guteli-playwright-roots-${process.pid}.txt`);
+process.env.GUTELI_PLAYWRIGHT_ROOT_STATE = uploadsStateFile;
+appendFileSync(uploadsStateFile, `${uploadsRoot}\n`, { mode: 0o600 });
 
 export default defineConfig({
   testDir: './tests/browser',
   fullyParallel: true,
   retries: process.env.CI ? 2 : 0,
   reporter: 'list',
+  metadata: { guteliUploadsRoot: uploadsRoot, uploadsStateFile },
+  globalTeardown: './playwright.global-teardown.mjs',
   use: {
     baseURL: 'http://127.0.0.1:3000',
     trace: 'on-first-retry',

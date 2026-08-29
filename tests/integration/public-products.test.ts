@@ -1,4 +1,7 @@
 import { mkdtemp, rm } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { open } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { eq } from 'drizzle-orm';
@@ -34,7 +37,7 @@ async function resetDatabase() {
 
 describe('public product repository', () => {
   beforeAll(async () => {
-    uploadsRoot = await mkdtemp('/tmp/guteli-public-products-');
+    uploadsRoot = await mkdtemp(join(tmpdir(), 'guteli-public-products-'));
     process.env.UPLOADS_ROOT = uploadsRoot;
     await resetDatabase();
     await seedCatalog(databaseUrl, new LocalObjectStorage(uploadsRoot));
@@ -220,5 +223,41 @@ describe('public product repository', () => {
     expect(firstImage?.imageUrl).toBe(
       '/api/media/catalog/v1/00000000-0000-4000-8000-000000000001.webp',
     );
+  });
+
+  it('rejects an oversized sparse media object before reading it fully', async () => {
+    const oversizedKey = 'catalog/v1/oversized.webp';
+    const [nuditos] = await db
+      .select({ id: products.id })
+      .from(products)
+      .where(eq(products.slug, 'nuditos'));
+    await db.insert(productImages).values({
+      productId: nuditos.id,
+      storageKey: oversizedKey,
+      mimeType: 'image/webp',
+      width: 1,
+      height: 1,
+      sortOrder: 0,
+    });
+    const physicalPath = join(
+      uploadsRoot,
+      createHash('sha256').update(oversizedKey).digest('hex'),
+    );
+    const file = await open(physicalPath, 'w');
+    await file.truncate(8 * 1024 * 1024 + 1);
+    await file.close();
+
+    const storage = new LocalObjectStorage(uploadsRoot);
+    await expect(storage.read(oversizedKey)).rejects.toThrow();
+    const response = await getMedia(
+      new Request('http://localhost/api/media/catalog/v1/oversized.webp'),
+      {
+        params: Promise.resolve({
+          key: ['catalog', 'v1', 'oversized.webp'],
+        }),
+      },
+    );
+    expect(response.status).toBe(500);
+    expect(await response.text()).not.toContain(uploadsRoot);
   });
 });

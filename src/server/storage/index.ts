@@ -10,4 +10,8 @@ export function createObjectStorage(
 }
 
 export { LocalObjectStorage } from './local-storage';
-export type { ObjectStorage, StoragePutMetadata } from './types';
+export {
+  MAX_OBJECT_BYTES,
+  type ObjectStorage,
+  type StoragePutMetadata,
+} from './types';

@@ -3,6 +3,7 @@ import { constants } from 'node:fs';
 import { mkdir, open, unlink, link, lstat } from 'node:fs/promises';
 import { isAbsolute, join, resolve } from 'node:path';
 
+import { MAX_OBJECT_BYTES } from './types';
 import type { ObjectStorage } from './types';
 
 function validateKey(key: string) {
@@ -101,7 +102,10 @@ export class LocalObjectStorage implements ObjectStorage {
     }
   }
 
-  async read(key: string): Promise<Buffer | null> {
+  async read(key: string, maxBytes = MAX_OBJECT_BYTES): Promise<Buffer | null> {
+    if (!Number.isSafeInteger(maxBytes) || maxBytes <= 0) {
+      throw new Error('Invalid storage read limit.');
+    }
     const target = this.leaf(key);
     try {
       const file = await open(
@@ -109,7 +113,24 @@ export class LocalObjectStorage implements ObjectStorage {
         constants.O_RDONLY | constants.O_NOFOLLOW,
       );
       try {
-        return await file.readFile();
+        const initialStats = await file.stat();
+        if (
+          !initialStats.isFile() ||
+          initialStats.size <= 0 ||
+          initialStats.size > maxBytes
+        ) {
+          throw new Error('Invalid storage object.');
+        }
+        const body = Buffer.allocUnsafe(initialStats.size);
+        const result = await file.read(body, 0, body.byteLength, 0);
+        const finalStats = await file.stat();
+        if (
+          result.bytesRead !== body.byteLength ||
+          finalStats.size !== initialStats.size
+        ) {
+          throw new Error('Invalid storage object.');
+        }
+        return body;
       } finally {
         await file.close();
       }

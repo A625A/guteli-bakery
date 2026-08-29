@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { getRequestId } from '@/server/observability/request-id';
 import { findPublicMedia } from '@/server/products/repository';
 import { createObjectStorage } from '@/server/storage';
+import { MAX_OBJECT_BYTES } from '@/server/storage/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -77,7 +78,10 @@ export async function GET(
     if (!metadata || !ALLOWED_MIME_TYPES.has(metadata.mimeType)) {
       return notFound(requestId);
     }
-    const bytes = await createObjectStorage().read(metadata.storageKey);
+    const bytes = await createObjectStorage().read(
+      metadata.storageKey,
+      MAX_OBJECT_BYTES,
+    );
     if (!bytes) return notFound(requestId);
     const headers = new Headers({
       'content-type': metadata.mimeType,
@@ -87,7 +91,12 @@ export async function GET(
       'x-content-type-options': 'nosniff',
       'x-request-id': requestId,
     });
-    return new Response(new Uint8Array(bytes), { status: 200, headers });
+    const body = new Uint8Array(
+      bytes.buffer as ArrayBuffer,
+      bytes.byteOffset,
+      bytes.byteLength,
+    );
+    return new Response(body, { status: 200, headers });
   } catch {
     return Response.json(
       {
