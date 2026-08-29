@@ -10,8 +10,9 @@ import {
 } from '@/server/orders/identifiers';
 
 describe('order identifiers', () => {
-  it('uses a documented 32-character human-safe alphabet', () => {
-    expect(PUBLIC_ORDER_ID_ALPHABET).toHaveLength(32);
+  it('uses a documented 31-character human-safe alphanumeric alphabet', () => {
+    expect(PUBLIC_ORDER_ID_ALPHABET).toHaveLength(31);
+    expect(PUBLIC_ORDER_ID_ALPHABET).toMatch(/^[2-9A-HJKMNP-Z]+$/);
     for (const ambiguousCharacter of ['0', '1', 'I', 'L', 'O']) {
       expect(PUBLIC_ORDER_ID_ALPHABET).not.toContain(ambiguousCharacter);
     }
@@ -23,6 +24,18 @@ describe('order identifiers', () => {
     expect(publicId).toMatch(
       new RegExp(`^GUT-26-[${PUBLIC_ORDER_ID_ALPHABET}]{8}$`),
     );
+  });
+
+  it('rejects entropy outside complete 31-symbol groups without bias', () => {
+    const source = () => Buffer.from([248, 0, 1, 2, 3, 4, 5, 6, 7]);
+    const createWithControlledEntropy = createPublicOrderId as (
+      now: Date,
+      randomByteSource: (size: number) => Uint8Array,
+    ) => string;
+
+    expect(
+      createWithControlledEntropy(new Date('2027-01-01T00:30:00.000Z'), source),
+    ).toBe('GUT-26-23456789');
   });
 
   it('creates a new high-entropy receipt token and hashes it one-way', () => {

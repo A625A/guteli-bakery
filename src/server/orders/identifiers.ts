@@ -2,21 +2,39 @@ import { createHash, randomBytes } from 'node:crypto';
 
 import { getGuatemalaDate } from '@/lib/date';
 
-// The final underscore keeps this alphabet at 32 characters while avoiding
-// the visually ambiguous 0, 1, I, L, and O characters.
-export const PUBLIC_ORDER_ID_ALPHABET = '23456789ABCDEFGHJKMNPQRSTUVWXYZ_';
+export const PUBLIC_ORDER_ID_ALPHABET = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
 
-function randomPublicIdCharacters(length: number) {
-  return Array.from(
-    randomBytes(length),
-    (byte) => PUBLIC_ORDER_ID_ALPHABET[byte & 31],
-  ).join('');
+type RandomByteSource = (size: number) => Uint8Array;
+const MAX_ACCEPTED_RANDOM_BYTE =
+  Math.floor(256 / PUBLIC_ORDER_ID_ALPHABET.length) *
+  PUBLIC_ORDER_ID_ALPHABET.length;
+
+function randomPublicIdCharacters(
+  length: number,
+  randomByteSource: RandomByteSource,
+) {
+  const characters: string[] = [];
+
+  while (characters.length < length) {
+    for (const byte of randomByteSource(length - characters.length)) {
+      if (byte >= MAX_ACCEPTED_RANDOM_BYTE) continue;
+      characters.push(
+        PUBLIC_ORDER_ID_ALPHABET[byte % PUBLIC_ORDER_ID_ALPHABET.length],
+      );
+      if (characters.length === length) break;
+    }
+  }
+
+  return characters.join('');
 }
 
-export function createPublicOrderId(now: Date = new Date()) {
+export function createPublicOrderId(
+  now: Date = new Date(),
+  randomByteSource: RandomByteSource = randomBytes,
+) {
   const year = getGuatemalaDate(now).slice(2, 4);
 
-  return `GUT-${year}-${randomPublicIdCharacters(8)}`;
+  return `GUT-${year}-${randomPublicIdCharacters(8, randomByteSource)}`;
 }
 
 export function createReceiptToken() {

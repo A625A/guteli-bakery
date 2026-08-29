@@ -80,7 +80,10 @@ const notesSchema = safeText(orderRequestFieldLimits.notes, (value) =>
 
 const orderItemSchema = z
   .object({
-    productId: z.string().uuid(),
+    productId: z
+      .string()
+      .uuid()
+      .transform((productId) => productId.toLowerCase()),
     quantity: z.number().int().min(1).max(99),
   })
   .strict();
@@ -97,6 +100,17 @@ export const createOrderRequestSchema = z
   })
   .strict()
   .superRefine((request, context) => {
+    if (
+      request.fulfillment === 'pickup' &&
+      Object.hasOwn(request, 'deliveryLocation')
+    ) {
+      context.addIssue({
+        code: 'custom',
+        path: ['deliveryLocation'],
+        message: 'Delivery location is not allowed for pickup orders.',
+      });
+    }
+
     if (
       request.fulfillment === 'delivery' &&
       (!request.deliveryLocation ||

@@ -2,7 +2,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createOrderRequestSchema } from '@/domain/order-contract';
 import { publicOrderErrorCodes } from '@/server/orders/errors';
-import { hashCreateOrderRequest } from '@/server/orders/request-hash';
+import {
+  canonicalizeCreateOrderRequest,
+  hashCreateOrderRequest,
+} from '@/server/orders/request-hash';
 
 const productId = '00000000-0000-4000-8000-000000000001';
 const secondProductId = '00000000-0000-4000-8000-000000000002';
@@ -139,6 +142,24 @@ describe('createOrderRequestSchema', () => {
     ).toBe(false);
   });
 
+  it('rejects every pickup delivery location at the deliveryLocation path', () => {
+    for (const deliveryLocation of [undefined, '', 'Zona 10']) {
+      const result = createOrderRequestSchema.safeParse({
+        ...validRequest(),
+        deliveryLocation,
+      });
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.issues).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ path: ['deliveryLocation'] }),
+          ]),
+        );
+      }
+    }
+  });
+
   it('rejects duplicate product IDs and malformed product IDs', () => {
     expect(
       createOrderRequestSchema.safeParse({
@@ -155,6 +176,31 @@ describe('createOrderRequestSchema', () => {
         items: [{ productId: 'not-a-uuid', quantity: 1 }],
       }).success,
     ).toBe(false);
+  });
+
+  it('normalizes product UUIDs before duplicate detection', () => {
+    const uppercaseProductId = productId.toUpperCase();
+    const parsed = createOrderRequestSchema.parse({
+      ...validRequest(),
+      items: [{ productId: uppercaseProductId, quantity: 1 }],
+    });
+    const duplicate = createOrderRequestSchema.safeParse({
+      ...validRequest(),
+      items: [
+        { productId, quantity: 1 },
+        { productId: uppercaseProductId, quantity: 1 },
+      ],
+    });
+
+    expect(parsed.items[0].productId).toBe(productId);
+    expect(duplicate.success).toBe(false);
+    if (!duplicate.success) {
+      expect(duplicate.error.issues).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ path: ['items', 1, 'productId'] }),
+        ]),
+      );
+    }
   });
 });
 
@@ -193,6 +239,21 @@ describe('canonical order request hashing', () => {
 
     expect(hashCreateOrderRequest(original)).not.toBe(
       hashCreateOrderRequest(changed),
+    );
+  });
+
+  it('sorts normalized UUIDs by code unit without host locale collation', () => {
+    const request = createOrderRequestSchema.parse({
+      ...validRequest(),
+      items: [
+        { productId: secondProductId, quantity: 1 },
+        { productId, quantity: 2 },
+      ],
+    });
+    vi.spyOn(String.prototype, 'localeCompare').mockReturnValue(-1);
+
+    expect(canonicalizeCreateOrderRequest(request)).toBe(
+      `{"customerName":"Ana López","phone":"+502 5555-5555","fulfillment":"pickup","requestedDate":"2026-08-31","deliveryLocation":null,"notes":null,"items":[{"productId":"${productId}","quantity":2},{"productId":"${secondProductId}","quantity":1}]}`,
     );
   });
 });
