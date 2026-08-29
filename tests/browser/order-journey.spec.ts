@@ -192,6 +192,32 @@ test('expires legacy slug carts without guessing product identity', async ({
     .toEqual({ legacy: null, current: '[]' });
 });
 
+test('prunes a stale UUID from the badge, storage, and order summary', async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem(
+      'guteli-cart-v2',
+      '[{"productId":"00000000-0000-4000-8000-000000000099","quantity":2}]',
+    );
+  });
+
+  await page.goto('/cart/');
+
+  await expect(
+    page.getByRole('heading', { name: 'Tu carrito está vacío' }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('link', { name: 'Carrito, 0 productos' }),
+  ).toBeVisible();
+  await expect
+    .poll(() =>
+      page.evaluate(() => window.localStorage.getItem('guteli-cart-v2')),
+    )
+    .toBe('[]');
+  await expect(page.getByText('Resumen de la solicitud')).toHaveCount(0);
+});
+
 test('shows pickup guidance and omits a delivery location from the summary', async ({
   page,
 }) => {

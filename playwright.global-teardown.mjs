@@ -1,5 +1,5 @@
 import { lstat, readFile, rm, unlink } from 'node:fs/promises';
-import { dirname, resolve } from 'node:path';
+import { basename, dirname, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 
 export default async function globalTeardown(config) {
@@ -8,7 +8,7 @@ export default async function globalTeardown(config) {
   const resolvedStateFile = resolve(uploadsStateFile);
   if (
     dirname(resolvedStateFile) !== resolve(tmpdir()) ||
-    !resolvedStateFile.split('/').pop()?.startsWith('guteli-playwright-roots-')
+    !basename(resolvedStateFile).startsWith('guteli-playwright-roots-')
   ) {
     return;
   }
@@ -21,7 +21,7 @@ export default async function globalTeardown(config) {
     const resolvedRoot = resolve(root);
     if (
       dirname(resolvedRoot) !== resolve(tmpdir()) ||
-      !resolvedRoot.split('/').pop()?.startsWith('guteli-playwright-')
+      !basename(resolvedRoot).startsWith('guteli-playwright-')
     ) {
       continue;
     }

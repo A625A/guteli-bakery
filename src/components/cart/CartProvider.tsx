@@ -15,6 +15,8 @@ import {
   getCartCount,
   getCartLines,
   getCartSubtotal,
+  getAvailableCartItems,
+  isAvailableProduct,
   parseStoredCart,
   removeCartItem,
   updateCartItem,
@@ -84,6 +86,11 @@ export function CartProvider({
 }: Readonly<{ children: ReactNode; products: readonly PublicProductDto[] }>) {
   const [{ items, hydrated }, dispatch] = useReducer(cartReducer, initialState);
 
+  const availableItems = useMemo(
+    () => getAvailableCartItems(items, products),
+    [items, products],
+  );
+
   useEffect(() => {
     let storedValue: string | null = null;
 
@@ -103,19 +110,33 @@ export function CartProvider({
     }
 
     try {
-      window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+      window.localStorage.setItem(
+        CART_STORAGE_KEY,
+        JSON.stringify(availableItems),
+      );
     } catch {
       // Keep cart actions working even when storage writes are blocked.
     }
-  }, [hydrated, items]);
+  }, [availableItems, hydrated]);
 
-  const lines = useMemo(() => getCartLines(items, products), [items, products]);
-  const itemCount = useMemo(() => getCartCount(items), [items]);
+  const lines = useMemo(
+    () => getCartLines(availableItems, products),
+    [availableItems, products],
+  );
+  const itemCount = useMemo(
+    () => getCartCount(availableItems),
+    [availableItems],
+  );
   const subtotal = useMemo(() => getCartSubtotal(lines), [lines]);
 
-  const addItem = useCallback((productId: string, quantity: number) => {
-    dispatch({ type: 'add', productId, quantity });
-  }, []);
+  const addItem = useCallback(
+    (productId: string, quantity: number) => {
+      if (isAvailableProduct(productId, products)) {
+        dispatch({ type: 'add', productId, quantity });
+      }
+    },
+    [products],
+  );
   const updateQuantity = useCallback((productId: string, quantity: number) => {
     dispatch({ type: 'update', productId, quantity });
   }, []);

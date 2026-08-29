@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   addCartItem,
+  getAvailableCartItems,
   getCartCount,
   getCartLines,
   getCartSubtotal,
@@ -150,5 +151,43 @@ describe('cart', () => {
 
     expect(lines).toHaveLength(1);
     expect(lines[0]?.productId).toBe(pretzelId);
+  });
+
+  it('drops products marked unavailable from lines and subtotal', () => {
+    const unavailableProducts = products.map((product) =>
+      product.id === pretzelId
+        ? { ...product, stockAvailable: false }
+        : product,
+    );
+    const cart = [
+      { productId: pretzelId, quantity: 2 },
+      { productId: nuditosId, quantity: 1 },
+    ];
+
+    const lines = getCartLines(cart, unavailableProducts);
+
+    expect(lines).toEqual([
+      expect.objectContaining({ productId: nuditosId, lineTotal: 6000 }),
+    ]);
+    expect(getCartSubtotal(lines)).toBe(6000);
+    expect(getAvailableCartItems(cart, unavailableProducts)).toEqual([
+      { productId: nuditosId, quantity: 1 },
+    ]);
+  });
+
+  it('rejects unknown and stock-unavailable IDs at the cart input boundary', () => {
+    const unavailableProducts = products.map((product) =>
+      product.id === pretzelId
+        ? { ...product, stockAvailable: false }
+        : product,
+    );
+
+    expect(addCartItem([], pretzelId, 1, unavailableProducts)).toEqual([]);
+    expect(
+      addCartItem([], '00000000-0000-4000-8000-000000000099', 1, products),
+    ).toEqual([]);
+    expect(addCartItem([], nuditosId, 1, products)).toEqual([
+      { productId: nuditosId, quantity: 1 },
+    ]);
   });
 });

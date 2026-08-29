@@ -20,8 +20,13 @@ export function addCartItem(
   cart: readonly CartItem[],
   productId: string,
   quantity: number,
+  products?: readonly PublicProductDto[],
 ): CartItem[] {
-  if (!isProductId(productId) || !isQuantity(quantity)) {
+  if (
+    !isProductId(productId) ||
+    !isQuantity(quantity) ||
+    (products && !isAvailableProduct(productId, products))
+  ) {
     return [...cart];
   }
 
@@ -103,10 +108,26 @@ export function getCartLines(
       (candidate) => candidate.id === item.productId,
     );
 
-    return product
+    return product?.stockAvailable
       ? [{ ...item, product, lineTotal: product.priceMinor * item.quantity }]
       : [];
   });
+}
+
+export function getAvailableCartItems(
+  cart: readonly CartItem[],
+  products: readonly PublicProductDto[],
+): CartItem[] {
+  return cart.filter((item) => isAvailableProduct(item.productId, products));
+}
+
+export function isAvailableProduct(
+  productId: string,
+  products: readonly PublicProductDto[],
+): boolean {
+  return products.some(
+    (product) => product.id === productId && product.stockAvailable,
+  );
 }
 
 export function getCartCount(cart: readonly CartItem[]): number {

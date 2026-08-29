@@ -1,15 +1,13 @@
 import { defineConfig, devices } from '@playwright/test';
-import { mkdtempSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-
+import { createHandoffEnvironment } from './playwright.handoff-environment';
 import { requireTestDatabaseUrl } from './src/test/database-url';
 
 const databaseUrlTest = requireTestDatabaseUrl(
   process.env.DATABASE_URL_TEST,
   'unavailable handoff tests',
 );
-const uploadsRoot = mkdtempSync(join(tmpdir(), 'guteli-handoff-unavailable-'));
+const { uploadsRoot, uploadsStateFile } =
+  createHandoffEnvironment('unavailable');
 
 export default defineConfig({
   testDir: './tests/handoff',
@@ -17,6 +15,8 @@ export default defineConfig({
   fullyParallel: true,
   retries: process.env.CI ? 2 : 0,
   reporter: 'list',
+  globalTeardown: './playwright.global-teardown.mjs',
+  metadata: { uploadsStateFile },
   use: {
     baseURL: 'http://127.0.0.1:3102',
     trace: 'on-first-retry',

@@ -1,5 +1,6 @@
 import { MenuCatalog } from '@/components/menu/MenuCatalog';
 import { operationalCopy, siteConfig } from '@/content/business';
+import { getMenuGuidance } from '@/domain/menu';
 import { getPublicCatalog } from '@/server/products/list-public-products';
 
 export const dynamic = 'force-dynamic';
@@ -18,7 +19,14 @@ export default async function MenuPage() {
           </p>
         </div>
         <div className="menu-page__guidance">
-          <p>Diez opciones preparadas para que armes tu solicitud con calma.</p>
+          <p>
+            {getMenuGuidance(
+              catalog.categories.reduce(
+                (count, category) => count + category.products.length,
+                0,
+              ),
+            )}
+          </p>
           <p>
             Pedidos con {siteConfig.advanceDays} días de anticipación.{' '}
             {operationalCopy.confirmation}.

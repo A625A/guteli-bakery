@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { operationalCopy } from '@/content/business';
+import { filterMenuProducts, getMenuGuidance } from '@/domain/menu';
 import { formatGTQ } from '@/lib/money';
 import type { PublicCategoryDto } from '@/server/products/types';
 
@@ -50,26 +51,53 @@ const catalog: PublicCategoryDto[] = [
 ];
 
 describe('persistent menu', () => {
-  it('keeps public catalog prices in integer minor units', () => {
+  it('filters known categories while preserving server order', () => {
+    const products = catalog.flatMap(({ products }) => products);
+
     expect(
-      catalog
-        .flatMap(({ products }) => products)
-        .map(({ priceMinor }) => priceMinor),
-    ).toEqual([6000, 6000]);
+      filterMenuProducts(products, 'pretzels').map(({ slug }) => slug),
+    ).toEqual(['pretzel-original']);
+    expect(
+      filterMenuProducts(products, 'breads').map(({ slug }) => slug),
+    ).toEqual(['nuditos']);
+    expect(filterMenuProducts(products, 'all').map(({ slug }) => slug)).toEqual(
+      ['pretzel-original', 'nuditos'],
+    );
   });
 
-  it('exposes category labels and stable database product identity', () => {
-    expect(catalog.map(({ slug }) => slug)).toEqual(['pretzels', 'nuditos']);
-    expect(catalog[0]?.products[0]).toMatchObject({
-      id: '00000000-0000-4000-8000-000000000001',
-      name: 'Originales',
-      category: { name: 'Pretzels' },
-      priceMinor: 6000,
-    });
+  it('keeps future categories visible in all products but out of known filters', () => {
+    const futureProduct = {
+      ...catalog[0].products[0],
+      id: '00000000-0000-4000-8000-000000000099',
+      slug: 'future-special',
+      category: {
+        id: '00000000-0000-4000-8000-000000000199',
+        slug: 'future-special',
+        name: 'Especiales',
+      },
+    };
+
+    expect(
+      filterMenuProducts([futureProduct], 'all').map(({ slug }) => slug),
+    ).toEqual(['future-special']);
+    expect(filterMenuProducts([futureProduct], 'pretzels')).toEqual([]);
   });
 
-  it('formats whole quetzal minor-unit prices for Guatemala', () => {
-    expect(formatGTQ(13500)).toBe('Q135');
+  it('derives current and future menu guidance without changing the ten-option copy', () => {
+    expect(getMenuGuidance(10)).toBe(
+      'Diez opciones preparadas para que armes tu solicitud con calma.',
+    );
+    expect(getMenuGuidance(11)).toBe(
+      '11 opciones preparadas para que armes tu solicitud con calma.',
+    );
+  });
+
+  it('formats integer minor-unit prices exactly for Guatemala', () => {
+    expect(formatGTQ(1)).toBe('Q0.01');
+    expect(formatGTQ(6001)).toBe('Q60.01');
+    expect(formatGTQ(6050)).toBe('Q60.50');
+    expect(formatGTQ(6000)).toBe('Q60');
+    expect(formatGTQ(123456)).toBe('Q1,234.56');
   });
 
   it('uses the approved fallback and confirmation language', () => {

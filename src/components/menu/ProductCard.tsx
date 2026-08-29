@@ -40,6 +40,7 @@ export function ProductCard({ product, eager = false }: ProductCardProps) {
     items.find((item) => item.productId === product.id)?.quantity ?? 0;
   const remainingCapacity = Math.max(0, 99 - currentQuantity);
   const isAtCapacity = remainingCapacity === 0;
+  const isUnavailable = !product.stockAvailable;
 
   function updateQuantity(event: ChangeEvent<HTMLInputElement>) {
     const nextQuantity = Math.trunc(event.currentTarget.valueAsNumber);
@@ -54,7 +55,7 @@ export function ProductCard({ product, eager = false }: ProductCardProps) {
   function addToCart() {
     const effectiveQuantity = Math.min(quantity, remainingCapacity);
 
-    if (effectiveQuantity < 1) {
+    if (effectiveQuantity < 1 || isUnavailable) {
       return;
     }
 
@@ -90,23 +91,35 @@ export function ProductCard({ product, eager = false }: ProductCardProps) {
             inputMode="numeric"
             value={quantity}
             onChange={updateQuantity}
-            disabled={!hydrated || isAtCapacity}
-            aria-describedby={isAtCapacity ? capacityId : undefined}
+            disabled={!hydrated || isAtCapacity || isUnavailable}
+            aria-describedby={
+              isAtCapacity || isUnavailable ? capacityId : undefined
+            }
           />
           <button
             type="button"
             onClick={addToCart}
-            disabled={!hydrated || isAtCapacity}
+            disabled={!hydrated || isAtCapacity || isUnavailable}
             aria-label={
-              isAtCapacity
-                ? `Máximo de 99 alcanzado para ${product.name} de ${product.category.name}`
-                : `Agregar ${product.name} de ${product.category.name}`
+              isUnavailable
+                ? `Producto no disponible: ${product.name} de ${product.category.name}`
+                : isAtCapacity
+                  ? `Máximo de 99 alcanzado para ${product.name} de ${product.category.name}`
+                  : `Agregar ${product.name} de ${product.category.name}`
             }
           >
-            {isAtCapacity ? 'Máximo alcanzado' : '+ Agregar'}
+            {isUnavailable
+              ? 'No disponible'
+              : isAtCapacity
+                ? 'Máximo alcanzado'
+                : '+ Agregar'}
           </button>
         </div>
-        {isAtCapacity ? (
+        {isUnavailable ? (
+          <p className="product-card__capacity" id={capacityId}>
+            Producto no disponible en este momento.
+          </p>
+        ) : isAtCapacity ? (
           <p className="product-card__capacity" id={capacityId}>
             Máximo de 99 unidades para esta opción del menú.
           </p>

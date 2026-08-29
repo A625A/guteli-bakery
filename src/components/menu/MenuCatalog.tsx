@@ -3,12 +3,8 @@
 import { useState } from 'react';
 
 import { ProductCard } from '@/components/menu/ProductCard';
-import type {
-  PublicCategoryDto,
-  PublicProductDto,
-} from '@/server/products/types';
-
-type MenuFilterId = 'all' | 'pretzels' | 'bagels' | 'breads';
+import { filterMenuProducts, type MenuFilterId } from '@/domain/menu';
+import type { PublicCategoryDto } from '@/server/products/types';
 
 const menuFilters: readonly { id: MenuFilterId; label: string }[] = [
   { id: 'all', label: 'Todos' },
@@ -17,32 +13,12 @@ const menuFilters: readonly { id: MenuFilterId; label: string }[] = [
   { id: 'breads', label: 'Panes' },
 ];
 
-function matchesFilter(
-  product: PublicProductDto,
-  filter: MenuFilterId,
-): boolean {
-  if (filter === 'all') {
-    return true;
-  }
-
-  if (filter === 'breads') {
-    return (
-      product.category.slug === 'burger-buns' ||
-      product.category.slug === 'nuditos'
-    );
-  }
-
-  return product.category.slug === filter;
-}
-
 export function MenuCatalog({
   categories,
 }: Readonly<{ categories: readonly PublicCategoryDto[] }>) {
   const [activeFilter, setActiveFilter] = useState<MenuFilterId>('all');
   const products = categories.flatMap((category) => category.products);
-  const visibleProducts = products.filter((product) =>
-    matchesFilter(product, activeFilter),
-  );
+  const visibleProducts = filterMenuProducts(products, activeFilter);
   const activeFilterLabel =
     menuFilters.find((filter) => filter.id === activeFilter)?.label ?? 'Todos';
 
