@@ -5,6 +5,8 @@ import {
   readFile,
   readdir,
   rm,
+  lstat,
+  chmod,
   symlink,
   unlink,
 } from 'node:fs/promises';
@@ -196,6 +198,17 @@ describe('catalog seed and local storage', () => {
     );
     expect(storedFiles).toHaveLength(9);
     expect(storedFiles.every(({ bytes }) => bytes > 0)).toBe(true);
+    const storedModes = await Promise.all(
+      firstImages.map(async ({ storageKey }) => {
+        const leaf = join(
+          uploadsRoot,
+          createHash('sha256').update(storageKey).digest('hex'),
+        );
+        const stats = await lstat(leaf);
+        return stats.mode & 0o777;
+      }),
+    );
+    expect(storedModes).toEqual(Array.from({ length: 9 }, () => 0o644));
     expect(
       firstImages.every(({ storageKey }) =>
         storageKey.startsWith('catalog/v1/'),
@@ -221,12 +234,18 @@ describe('catalog seed and local storage', () => {
     await expect(
       storage.putIfMissing('atomic/object.webp', Buffer.from('first')),
     ).resolves.toBe(true);
+    const objectLeaf = join(
+      uploadsRoot,
+      createHash('sha256').update('atomic/object.webp').digest('hex'),
+    );
+    await chmod(objectLeaf, 0o600);
     await expect(
       storage.putIfMissing('atomic/object.webp', Buffer.from('second')),
     ).resolves.toBe(false);
     await expect(storage.read('atomic/object.webp')).resolves.toEqual(
       Buffer.from('first'),
     );
+    await expect(lstat(objectLeaf)).resolves.toMatchObject({ mode: 0o100644 });
     const concurrentResults = await Promise.all([
       storage.putIfMissing('atomic/concurrent.webp', Buffer.from('one')),
       storage.putIfMissing('atomic/concurrent.webp', Buffer.from('two')),

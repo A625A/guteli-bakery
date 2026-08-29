@@ -6,6 +6,8 @@ import { isAbsolute, join, resolve } from 'node:path';
 import { MAX_OBJECT_BYTES } from './types';
 import type { ObjectStorage } from './types';
 
+const PUBLIC_OBJECT_MODE = 0o644;
+
 function validateKey(key: string) {
   if (
     typeof key !== 'string' ||
@@ -29,6 +31,17 @@ function validateKey(key: string) {
   }
 
   return key;
+}
+
+async function ensurePublicObjectMode(target: string) {
+  const file = await open(target, constants.O_RDONLY | constants.O_NOFOLLOW);
+  try {
+    const stats = await file.stat();
+    if (!stats.isFile()) throw new Error('Invalid storage object.');
+    await file.chmod(PUBLIC_OBJECT_MODE);
+  } finally {
+    await file.close();
+  }
 }
 
 export class LocalObjectStorage implements ObjectStorage {
@@ -57,6 +70,7 @@ export class LocalObjectStorage implements ObjectStorage {
         const existing = await lstat(target);
         if (existing.isSymbolicLink())
           throw new Error('Invalid storage object.');
+        await ensurePublicObjectMode(target);
         return false;
       } catch (error: unknown) {
         if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
@@ -67,7 +81,7 @@ export class LocalObjectStorage implements ObjectStorage {
           constants.O_CREAT |
           constants.O_EXCL |
           constants.O_NOFOLLOW,
-        0o600,
+        PUBLIC_OBJECT_MODE,
       );
       temporaryExists = true;
       try {
@@ -86,6 +100,7 @@ export class LocalObjectStorage implements ObjectStorage {
           const existing = await lstat(target).catch(() => null);
           if (existing?.isSymbolicLink())
             throw new Error('Invalid storage object.');
+          if (existing) await ensurePublicObjectMode(target);
           return false;
         }
         throw error;
