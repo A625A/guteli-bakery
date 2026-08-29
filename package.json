@@ -11,6 +11,7 @@
     "db:generate": "drizzle-kit generate --config drizzle.config.ts",
     "db:migrate": "drizzle-kit migrate --config drizzle.config.ts",
     "db:studio": "drizzle-kit studio --config drizzle.config.ts",
+    "db:seed": "tsx scripts/seed.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint . --max-warnings=0",
