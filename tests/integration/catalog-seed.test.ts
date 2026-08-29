@@ -265,6 +265,26 @@ describe('catalog seed and local storage', () => {
     expect(rootEntries.some((entry) => entry.endsWith('.tmp'))).toBe(false);
   });
 
+  it('publishes brand-new objects as readable even under a restrictive umask', async () => {
+    const storage = new LocalObjectStorage(uploadsRoot);
+    const key = 'atomic/restrictive-umask.webp';
+    const leaf = join(
+      uploadsRoot,
+      createHash('sha256').update(key).digest('hex'),
+    );
+    const originalUmask = process.umask(0o077);
+
+    try {
+      await expect(
+        storage.putIfMissing(key, Buffer.from('readable')),
+      ).resolves.toBe(true);
+      const stats = await lstat(leaf);
+      expect(stats.mode & 0o777).toBe(0o644);
+    } finally {
+      process.umask(originalUmask);
+    }
+  });
+
   it('does not follow intermediate or leaf symlinks', async () => {
     const storage = new LocalObjectStorage(uploadsRoot);
     const outsideRoot = await mkdtemp('/tmp/guteli-storage-outside-');

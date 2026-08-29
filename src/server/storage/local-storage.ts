@@ -85,6 +85,7 @@ export class LocalObjectStorage implements ObjectStorage {
       );
       temporaryExists = true;
       try {
+        await file.chmod(PUBLIC_OBJECT_MODE);
         await file.writeFile(body);
         await file.sync();
       } finally {
