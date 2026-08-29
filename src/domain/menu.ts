@@ -23,6 +23,10 @@ export function filterMenuProducts(
 }
 
 export function getMenuGuidance(productCount: number): string {
+  if (productCount === 1) {
+    return 'Una opción preparada para que armes tu solicitud con calma.';
+  }
+
   return productCount === 10
     ? 'Diez opciones preparadas para que armes tu solicitud con calma.'
     : `${productCount} opciones preparadas para que armes tu solicitud con calma.`;

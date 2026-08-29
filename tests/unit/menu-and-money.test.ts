@@ -83,7 +83,10 @@ describe('persistent menu', () => {
     expect(filterMenuProducts([futureProduct], 'pretzels')).toEqual([]);
   });
 
-  it('derives current and future menu guidance without changing the ten-option copy', () => {
+  it('derives singular, current, and future menu guidance', () => {
+    expect(getMenuGuidance(1)).toBe(
+      'Una opción preparada para que armes tu solicitud con calma.',
+    );
     expect(getMenuGuidance(10)).toBe(
       'Diez opciones preparadas para que armes tu solicitud con calma.',
     );
@@ -98,6 +101,14 @@ describe('persistent menu', () => {
     expect(formatGTQ(6050)).toBe('Q60.50');
     expect(formatGTQ(6000)).toBe('Q60');
     expect(formatGTQ(123456)).toBe('Q1,234.56');
+    expect(formatGTQ(Number.MAX_SAFE_INTEGER)).toBe('Q90,071,992,547,409.91');
+    expect(formatGTQ(-0)).toBe('Q0');
+  });
+
+  it('rejects invalid minor-unit amounts', () => {
+    for (const invalidAmount of [-1, 1.5, Number.NaN, Infinity]) {
+      expect(() => formatGTQ(invalidAmount)).toThrow(RangeError);
+    }
   });
 
   it('uses the approved fallback and confirmation language', () => {

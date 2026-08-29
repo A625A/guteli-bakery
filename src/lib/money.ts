@@ -4,19 +4,20 @@ const wholeGtqFormatter = new Intl.NumberFormat('es-GT', {
   minimumFractionDigits: 0,
   maximumFractionDigits: 0,
 });
-const minorGtqFormatter = new Intl.NumberFormat('es-GT', {
-  style: 'currency',
-  currency: 'GTQ',
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
 
 export function formatGTQ(amountMinor: number): string {
   if (!Number.isSafeInteger(amountMinor) || amountMinor < 0) {
     throw new RangeError('GTQ amount must be a non-negative safe integer.');
   }
 
-  const formatter =
-    amountMinor % 100 === 0 ? wholeGtqFormatter : minorGtqFormatter;
-  return formatter.format(amountMinor / 100).replace(/\u00a0/g, '');
+  const minor = BigInt(amountMinor);
+  const whole = minor / BigInt(100);
+  const cents = minor % BigInt(100);
+  const wholeDisplay = wholeGtqFormatter
+    .format(Number(whole))
+    .replace(/\u00a0/g, '');
+
+  return cents === BigInt(0)
+    ? wholeDisplay
+    : `${wholeDisplay}.${cents.toString().padStart(2, '0')}`;
 }
