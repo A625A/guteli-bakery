@@ -92,6 +92,7 @@ export const orders = pgTable(
         (
           ${table.fulfillment} = 'DELIVERY'
           AND ${table.deliveryLocation} IS NOT NULL
+          AND btrim(${table.deliveryLocation}) <> ''
           AND (
             (${table.shippingMinor} IS NULL AND ${table.totalMinor} IS NULL)
             OR
@@ -125,7 +126,7 @@ export const orderItems = pgTable(
       }),
     productName: varchar('product_name', { length: 160 }).notNull(),
     categoryLabel: varchar('category_label', { length: 160 }).notNull(),
-    saleUnit: varchar('sale_unit', { length: 80 }).notNull(),
+    saleUnit: varchar('sale_unit', { length: 80 }),
     unitPriceMinor: integer('unit_price_minor').notNull(),
     quantity: integer('quantity').notNull(),
     lineTotalMinor: integer('line_total_minor').notNull(),

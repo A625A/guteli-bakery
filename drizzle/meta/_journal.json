@@ -15,6 +15,13 @@
       "when": 1788035517887,
       "tag": "0001_orders",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788036103632,
+      "tag": "0002_order_schema_review_fixes",
+      "breakpoints": true
     }
   ]
 }

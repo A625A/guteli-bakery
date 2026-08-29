@@ -88,7 +88,7 @@ describe('order schema', () => {
         sourceProductId: product.id,
         productName: 'Pretzel Original',
         categoryLabel: 'Pretzels',
-        saleUnit: 'Unidad',
+        saleUnit: product.saleUnit,
         unitPriceMinor: 6000,
         quantity: 2,
         lineTotalMinor: 12000,
@@ -100,7 +100,7 @@ describe('order schema', () => {
       sourceProductId: product.id,
       productName: 'Pretzel Original',
       categoryLabel: 'Pretzels',
-      saleUnit: 'Unidad',
+      saleUnit: null,
       unitPriceMinor: 6000,
       quantity: 2,
       lineTotalMinor: 12000,
@@ -203,6 +203,29 @@ describe('order schema', () => {
     ).rejects.toMatchObject({ cause: { code: '23505' } });
 
     await expect(
+      db.insert(orders).values({
+        publicId: 'GUT-26-AB12CD34',
+        customerName: 'Otra persona',
+        phone: '+50255555554',
+        fulfillment: 'PICKUP',
+        requestedDate: '2026-08-30',
+        subtotalMinor: 1,
+        shippingMinor: 0,
+        totalMinor: 1,
+        receiptTokenHash: 'i'.repeat(64),
+      }),
+    ).rejects.toMatchObject({ cause: { code: '23505' } });
+
+    await expect(
+      db.insert(rateLimitBuckets).values({
+        policy: 'ORDER_ATTEMPT',
+        subject: 'hmac-ip-subject',
+        windowStartedAt: new Date('2026-08-29T12:00:00.000Z'),
+        count: 2,
+      }),
+    ).rejects.toMatchObject({ cause: { code: '23505' } });
+
+    await expect(
       // Historical snapshots must prevent a physical source-product deletion.
       db.delete(products).where(eq(products.id, product.id)),
     ).rejects.toMatchObject({ cause: { code: '23503' } });
@@ -231,6 +254,32 @@ describe('order schema', () => {
 
     await expect(
       db.insert(orders).values({
+        publicId: 'GUT-26-DELIVERY2',
+        customerName: 'Ana Ruiz',
+        phone: '+50255555549',
+        fulfillment: 'DELIVERY',
+        requestedDate: '2026-08-30',
+        deliveryLocation: '',
+        subtotalMinor: 6000,
+        receiptTokenHash: 'j'.repeat(64),
+      }),
+    ).rejects.toMatchObject({ cause: { code: '23514' } });
+
+    await expect(
+      db.insert(orders).values({
+        publicId: 'GUT-26-DELIVERY3',
+        customerName: 'Ana Ruiz',
+        phone: '+50255555548',
+        fulfillment: 'DELIVERY',
+        requestedDate: '2026-08-30',
+        deliveryLocation: '   ',
+        subtotalMinor: 6000,
+        receiptTokenHash: 'k'.repeat(64),
+      }),
+    ).rejects.toMatchObject({ cause: { code: '23514' } });
+
+    await expect(
+      db.insert(orders).values({
         publicId: 'GUT-26-DELIVERY1',
         customerName: 'Ana Ruiz',
         phone: '+50255555553',
@@ -241,6 +290,36 @@ describe('order schema', () => {
         shippingMinor: null,
         totalMinor: 7000,
         receiptTokenHash: 'e'.repeat(64),
+      }),
+    ).rejects.toMatchObject({ cause: { code: '23514' } });
+
+    await expect(
+      db.insert(orders).values({
+        publicId: 'GUT-26-DELIVERY4',
+        customerName: 'Ana Ruiz',
+        phone: '+50255555547',
+        fulfillment: 'DELIVERY',
+        requestedDate: '2026-08-30',
+        deliveryLocation: 'Zona 1',
+        subtotalMinor: 6000,
+        shippingMinor: 1000,
+        totalMinor: null,
+        receiptTokenHash: 'l'.repeat(64),
+      }),
+    ).rejects.toMatchObject({ cause: { code: '23514' } });
+
+    await expect(
+      db.insert(orders).values({
+        publicId: 'GUT-26-PICKUPLOC',
+        customerName: 'Ana Ruiz',
+        phone: '+50255555546',
+        fulfillment: 'PICKUP',
+        requestedDate: '2026-08-30',
+        deliveryLocation: 'Zona 1',
+        subtotalMinor: 6000,
+        shippingMinor: 0,
+        totalMinor: 6000,
+        receiptTokenHash: 'm'.repeat(64),
       }),
     ).rejects.toMatchObject({ cause: { code: '23514' } });
 
