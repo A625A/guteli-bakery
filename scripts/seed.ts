@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 
+import { resolveUploadsRoot } from '@/server/config/uploads-root';
 import { categories, productImages, products } from '@/server/db/schema';
 import {
   catalogSeedCategories,
@@ -129,10 +130,7 @@ async function main() {
   if (!databaseUrl?.startsWith('postgresql://')) {
     throw new Error('DATABASE_URL is required to seed the catalog.');
   }
-  const uploadsRoot =
-    process.env.UPLOADS_ROOT ??
-    (process.env.NODE_ENV === 'development' ? 'uploads_data' : '/app/uploads');
-  await seedCatalog(databaseUrl, new LocalObjectStorage(uploadsRoot));
+  await seedCatalog(databaseUrl, new LocalObjectStorage(resolveUploadsRoot()));
 }
 
 if (process.argv[1]?.endsWith('/scripts/seed.ts')) {

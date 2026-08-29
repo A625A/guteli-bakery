@@ -1,10 +1,11 @@
-import { randomUUID } from 'node:crypto';
-import { mkdir, open, readFile, unlink, link } from 'node:fs/promises';
-import { dirname, isAbsolute, join, resolve } from 'node:path';
+import { createHash, randomUUID } from 'node:crypto';
+import { constants } from 'node:fs';
+import { mkdir, open, unlink, link, lstat } from 'node:fs/promises';
+import { isAbsolute, join, resolve } from 'node:path';
 
 import type { ObjectStorage } from './types';
 
-function validateKey(root: string, key: string) {
+function validateKey(key: string) {
   if (
     typeof key !== 'string' ||
     key.length === 0 ||
@@ -26,12 +27,7 @@ function validateKey(root: string, key: string) {
     throw new Error('Invalid storage key.');
   }
 
-  const resolvedRoot = resolve(root);
-  const target = resolve(resolvedRoot, key);
-  if (target !== resolvedRoot && !target.startsWith(`${resolvedRoot}/`)) {
-    throw new Error('Invalid storage key.');
-  }
-  return target;
+  return key;
 }
 
 export class LocalObjectStorage implements ObjectStorage {
@@ -44,15 +40,34 @@ export class LocalObjectStorage implements ObjectStorage {
     this.root = resolve(root);
   }
 
+  private leaf(key: string) {
+    validateKey(key);
+    return join(this.root, createHash('sha256').update(key).digest('hex'));
+  }
+
   async putIfMissing(key: string, body: Uint8Array): Promise<boolean> {
-    const target = validateKey(this.root, key);
-    const directory = dirname(target);
-    const temporary = join(directory, `.${randomUUID()}.tmp`);
+    const target = this.leaf(key);
+    const temporary = join(this.root, `.${randomUUID()}.tmp`);
     let temporaryExists = false;
 
     try {
-      await mkdir(directory, { recursive: true });
-      const file = await open(temporary, 'wx');
+      await mkdir(this.root, { recursive: true });
+      try {
+        const existing = await lstat(target);
+        if (existing.isSymbolicLink())
+          throw new Error('Invalid storage object.');
+        return false;
+      } catch (error: unknown) {
+        if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+      }
+      const file = await open(
+        temporary,
+        constants.O_WRONLY |
+          constants.O_CREAT |
+          constants.O_EXCL |
+          constants.O_NOFOLLOW,
+        0o600,
+      );
       temporaryExists = true;
       try {
         await file.writeFile(body);
@@ -64,10 +79,12 @@ export class LocalObjectStorage implements ObjectStorage {
       try {
         // link() publishes atomically and refuses to replace an existing object.
         await link(temporary, target);
-        temporaryExists = false;
         return true;
       } catch (error: unknown) {
         if ((error as NodeJS.ErrnoException).code === 'EEXIST') {
+          const existing = await lstat(target).catch(() => null);
+          if (existing?.isSymbolicLink())
+            throw new Error('Invalid storage object.');
           return false;
         }
         throw error;
@@ -85,19 +102,30 @@ export class LocalObjectStorage implements ObjectStorage {
   }
 
   async read(key: string): Promise<Buffer | null> {
-    const target = validateKey(this.root, key);
+    const target = this.leaf(key);
     try {
-      return await readFile(target);
+      const file = await open(
+        target,
+        constants.O_RDONLY | constants.O_NOFOLLOW,
+      );
+      try {
+        return await file.readFile();
+      } finally {
+        await file.close();
+      }
     } catch (error: unknown) {
       if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
         return null;
+      }
+      if ((error as NodeJS.ErrnoException).code === 'ELOOP') {
+        throw new Error('Invalid storage object.');
       }
       throw new Error('Unable to read object.');
     }
   }
 
   publicUrl(key: string) {
-    validateKey(this.root, key);
+    validateKey(key);
     return `/api/media/${key.split('/').map(encodeURIComponent).join('/')}`;
   }
 }

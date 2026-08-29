@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('server-only', () => ({}));
 
-import { parseServerEnv } from '@/server/config/env';
+import { getUploadsRoot, parseServerEnv } from '@/server/config/env';
 
 describe('parseServerEnv', () => {
   it('accepts the local Docker configuration', () => {
@@ -24,5 +24,18 @@ describe('parseServerEnv', () => {
     expect(() => parseServerEnv({ NODE_ENV: 'test' })).toThrow(
       'Invalid server environment',
     );
+  });
+
+  it('requires an explicit host upload root outside production', () => {
+    expect(() => getUploadsRoot({ NODE_ENV: 'development' })).toThrow(
+      'UPLOADS_ROOT is required',
+    );
+    expect(() => getUploadsRoot({ NODE_ENV: 'test' })).toThrow(
+      'UPLOADS_ROOT is required',
+    );
+    expect(getUploadsRoot({ NODE_ENV: 'production' })).toBe('/app/uploads');
+    expect(
+      getUploadsRoot({ NODE_ENV: 'development', UPLOADS_ROOT: '/tmp/guteli' }),
+    ).toBe('/tmp/guteli');
   });
 });

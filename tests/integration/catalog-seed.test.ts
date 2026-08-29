@@ -1,5 +1,13 @@
 import { execFile } from 'node:child_process';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import {
+  mkdtemp,
+  readFile,
+  readdir,
+  rm,
+  symlink,
+  unlink,
+} from 'node:fs/promises';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
 
@@ -57,12 +65,17 @@ describe('catalog seed and local storage', () => {
   it('seeds the exact approved catalog idempotently', async () => {
     await runSeed();
     const firstCategories = await db
-      .select({ id: categories.id, slug: categories.slug })
+      .select({
+        id: categories.id,
+        name: categories.name,
+        slug: categories.slug,
+      })
       .from(categories)
       .orderBy(asc(categories.sortOrder));
     const firstProducts = await db
       .select({
         id: products.id,
+        name: products.name,
         slug: products.slug,
         priceMinor: products.priceMinor,
         saleUnit: products.saleUnit,
@@ -71,6 +84,7 @@ describe('catalog seed and local storage', () => {
       .orderBy(asc(products.sortOrder));
     const firstImages = await db
       .select({
+        id: productImages.id,
         productId: productImages.productId,
         storageKey: productImages.storageKey,
       })
@@ -78,12 +92,17 @@ describe('catalog seed and local storage', () => {
 
     await runSeed();
     const secondCategories = await db
-      .select({ id: categories.id, slug: categories.slug })
+      .select({
+        id: categories.id,
+        name: categories.name,
+        slug: categories.slug,
+      })
       .from(categories)
       .orderBy(asc(categories.sortOrder));
     const secondProducts = await db
       .select({
         id: products.id,
+        name: products.name,
         slug: products.slug,
         priceMinor: products.priceMinor,
         saleUnit: products.saleUnit,
@@ -92,6 +111,7 @@ describe('catalog seed and local storage', () => {
       .orderBy(asc(products.sortOrder));
     const secondImages = await db
       .select({
+        id: productImages.id,
         productId: productImages.productId,
         storageKey: productImages.storageKey,
       })
@@ -100,6 +120,17 @@ describe('catalog seed and local storage', () => {
     expect(firstCategories).toHaveLength(4);
     expect(firstProducts).toHaveLength(10);
     expect(firstImages).toHaveLength(9);
+    expect(firstImages.map(({ id }) => id).sort()).toEqual([
+      '00000000-0000-4000-8000-000000001001',
+      '00000000-0000-4000-8000-000000001002',
+      '00000000-0000-4000-8000-000000001003',
+      '00000000-0000-4000-8000-000000001004',
+      '00000000-0000-4000-8000-000000001005',
+      '00000000-0000-4000-8000-000000001006',
+      '00000000-0000-4000-8000-000000001007',
+      '00000000-0000-4000-8000-000000001008',
+      '00000000-0000-4000-8000-000000001009',
+    ]);
     expect(secondCategories).toEqual(firstCategories);
     expect(secondProducts).toEqual(firstProducts);
     expect(secondImages).toEqual(firstImages);
@@ -108,6 +139,12 @@ describe('catalog seed and local storage', () => {
       '00000000-0000-4000-8000-000000000102',
       '00000000-0000-4000-8000-000000000103',
       '00000000-0000-4000-8000-000000000104',
+    ]);
+    expect(firstCategories.map(({ name }) => name)).toEqual([
+      'Pretzels',
+      'Bagels',
+      'Burger buns',
+      'Nuditos',
     ]);
     expect(firstProducts.map(({ id }) => id)).toEqual([
       '00000000-0000-4000-8000-000000000001',
@@ -120,6 +157,18 @@ describe('catalog seed and local storage', () => {
       '00000000-0000-4000-8000-000000000008',
       '00000000-0000-4000-8000-000000000009',
       '00000000-0000-4000-8000-000000000010',
+    ]);
+    expect(firstProducts.map(({ name }) => name)).toEqual([
+      'Originales',
+      'Queso y jalapeño',
+      'Queso y pepperoni',
+      'Tomate y albahaca',
+      'Originales',
+      'Queso y jalapeño',
+      'Queso y pepperoni',
+      'Tomate y albahaca',
+      'Burger buns',
+      'Nuditos',
     ]);
     expect(firstProducts.map(({ priceMinor }) => priceMinor)).toEqual([
       6000, 7500, 7500, 7500, 6000, 7500, 7500, 7500, 5500, 6000,
@@ -139,8 +188,10 @@ describe('catalog seed and local storage', () => {
 
     const storedFiles = await Promise.all(
       firstImages.map(async ({ storageKey }) => {
-        const object = await readFile(join(uploadsRoot, storageKey));
-        return { storageKey, bytes: object.byteLength };
+        const object = await new LocalObjectStorage(uploadsRoot).read(
+          storageKey,
+        );
+        return { storageKey, bytes: object?.byteLength ?? 0 };
       }),
     );
     expect(storedFiles).toHaveLength(9);
@@ -190,6 +241,43 @@ describe('catalog seed and local storage', () => {
       '/api/media/atomic/object.webp',
     );
     expect(storage.publicUrl('atomic/object.webp')).not.toContain(uploadsRoot);
+
+    const rootEntries = await readdir(uploadsRoot);
+    expect(rootEntries.some((entry) => entry.endsWith('.tmp'))).toBe(false);
+  });
+
+  it('does not follow intermediate or leaf symlinks', async () => {
+    const storage = new LocalObjectStorage(uploadsRoot);
+    const outsideRoot = await mkdtemp('/tmp/guteli-storage-outside-');
+    const outsideFile = join(outsideRoot, 'outside.webp');
+    const intermediate = join(uploadsRoot, 'link');
+    await symlink(outsideRoot, intermediate);
+
+    await expect(
+      storage.putIfMissing('link/escaped.webp', Buffer.from('safe')),
+    ).resolves.toBe(true);
+    await expect(storage.read('link/escaped.webp')).resolves.toEqual(
+      Buffer.from('safe'),
+    );
+    await expect(
+      readFile(join(outsideRoot, 'escaped.webp')),
+    ).rejects.toMatchObject({
+      code: 'ENOENT',
+    });
+
+    const key = 'atomic/leaf.webp';
+    const leaf = join(
+      uploadsRoot,
+      createHash('sha256').update(key).digest('hex'),
+    );
+    await storage.putIfMissing(key, Buffer.from('original'));
+    await unlink(leaf);
+    await symlink(outsideFile, leaf);
+    await expect(
+      storage.putIfMissing(key, Buffer.from('overwrite')),
+    ).rejects.toThrow();
+    await expect(storage.read(key)).rejects.toThrow();
+    await rm(outsideRoot, { recursive: true, force: true });
   });
 
   it('rolls back database rows when storage fails', async () => {
