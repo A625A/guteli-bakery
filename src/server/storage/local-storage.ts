@@ -33,11 +33,34 @@ function validateKey(key: string) {
   return key;
 }
 
+async function ensureStorageRoot(root: string, create: boolean) {
+  if (create) await mkdir(root, { recursive: true });
+
+  try {
+    const stats = await lstat(root);
+    if (!stats.isDirectory() || stats.isSymbolicLink()) {
+      throw new Error('Invalid storage root.');
+    }
+    return true;
+  } catch (error: unknown) {
+    if (!create && (error as NodeJS.ErrnoException).code === 'ENOENT') {
+      return false;
+    }
+    throw error;
+  }
+}
+
+function assertSingleLinkFile(stats: { isFile(): boolean; nlink: number }) {
+  if (!stats.isFile() || stats.nlink !== 1) {
+    throw new Error('Invalid storage object.');
+  }
+}
+
 async function ensurePublicObjectMode(target: string) {
   const file = await open(target, constants.O_RDONLY | constants.O_NOFOLLOW);
   try {
     const stats = await file.stat();
-    if (!stats.isFile()) throw new Error('Invalid storage object.');
+    assertSingleLinkFile(stats);
     await file.chmod(PUBLIC_OBJECT_MODE);
   } finally {
     await file.close();
@@ -65,7 +88,7 @@ export class LocalObjectStorage implements ObjectStorage {
     let temporaryExists = false;
 
     try {
-      await mkdir(this.root, { recursive: true });
+      await ensureStorageRoot(this.root, true);
       try {
         const existing = await lstat(target);
         if (existing.isSymbolicLink())
@@ -124,6 +147,8 @@ export class LocalObjectStorage implements ObjectStorage {
     }
     const target = this.leaf(key);
     try {
+      const rootExists = await ensureStorageRoot(this.root, false);
+      if (!rootExists) return null;
       const file = await open(
         target,
         constants.O_RDONLY | constants.O_NOFOLLOW,
@@ -131,6 +156,7 @@ export class LocalObjectStorage implements ObjectStorage {
       try {
         const initialStats = await file.stat();
         if (
+          initialStats.nlink !== 1 ||
           !initialStats.isFile() ||
           initialStats.size <= 0 ||
           initialStats.size > maxBytes
@@ -141,6 +167,7 @@ export class LocalObjectStorage implements ObjectStorage {
         const result = await file.read(body, 0, body.byteLength, 0);
         const finalStats = await file.stat();
         if (
+          finalStats.nlink !== 1 ||
           result.bytesRead !== body.byteLength ||
           finalStats.size !== initialStats.size
         ) {

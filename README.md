@@ -77,22 +77,16 @@ If your local Docker client uses a non-default socket or context, export that ov
 
 This foundation plan does not create an empty migration. When Plan 02 adds non-empty SQL files under `drizzle/`, apply them explicitly as a separate step before promoting a release.
 
-The production runtime image intentionally stays lean and does not bundle Drizzle Kit. Start the database first, wait for it to become healthy, then use a dedicated builder-stage container for migrations instead of running them from the long-lived app container:
+The production runtime image intentionally stays lean and does not bundle Drizzle Kit. Start the database first, wait for it to become healthy, then invoke the opt-in builder-stage provisioning service instead of running migrations or seed work from the long-lived app container:
 
 ```bash
 docker compose up -d database
 docker compose ps database
 docker compose exec -T database pg_isready -U guteli -d guteli
-docker build --target builder -t guteli-bakery-migrate .
-export MIGRATION_DATABASE_URL='postgresql://<user>:<password>@database:5432/<database>'
-docker run --rm \
-  --network "$(docker inspect "$(docker compose ps -q database)" --format '{{range $name, $_ := .NetworkSettings.Networks}}{{println $name}}{{end}}' | head -n 1)" \
-  -e DATABASE_URL="${MIGRATION_DATABASE_URL:?set a database-host migration URL before running migrations}" \
-  guteli-bakery-migrate \
-  npm run db:migrate
+docker compose --profile provision run --rm provision
 ```
 
-The first command creates the Compose network and starts PostgreSQL; `docker compose ps database` should report the container as healthy, and `pg_isready` must succeed before you run the builder-stage migration command. Because the one-off migration container joins the Compose network, its URL must use the network-reachable `database` host, never `localhost`. Production should run the equivalent one-off migration step separately from `docker compose up`; the app entrypoint never migrates or seeds implicitly, and the release environment injects DATABASE_URL from its secret environment instead of local credentials.
+The first command creates the Compose network and starts PostgreSQL; `docker compose ps database` should report the container as healthy, and `pg_isready` must succeed before you run provisioning. The `provision` service builds from the Dockerfile's `builder` stage, joins the Compose network, mounts `uploads_data` at `/app/uploads`, and runs `npm run db:migrate && npm run db:seed` only when explicitly invoked with the `provision` profile. Because the provisioning container joins the Compose network, its URL must use the network-reachable `database` host, such as `postgresql://<user>:<password>@database:5432/<database>`, never `localhost`. Production should run the equivalent provisioning step separately from `docker compose up`; the app entrypoint never migrates or seeds implicitly, and the release environment injects DATABASE_URL from its secret environment instead of local credentials.
 
 ## Approved MVP
 

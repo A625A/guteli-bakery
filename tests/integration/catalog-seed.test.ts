@@ -1,15 +1,18 @@
 import { execFile } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import {
+  chmod,
+  link,
+  lstat,
   mkdtemp,
   readFile,
   readdir,
   rm,
-  lstat,
-  chmod,
   symlink,
   unlink,
+  writeFile,
 } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
 
@@ -55,7 +58,7 @@ async function runSeed() {
 
 describe('catalog seed and local storage', () => {
   beforeAll(async () => {
-    uploadsRoot = await mkdtemp('/tmp/guteli-catalog-seed-');
+    uploadsRoot = await mkdtemp(join(tmpdir(), 'guteli-catalog-seed-'));
     await resetDatabase();
   });
 
@@ -285,9 +288,61 @@ describe('catalog seed and local storage', () => {
     }
   });
 
+  it('rejects hard-linked leaves without reading or changing the outside file', async () => {
+    const storage = new LocalObjectStorage(uploadsRoot);
+    const outsideRoot = await mkdtemp(
+      join(tmpdir(), 'guteli-storage-hardlink-'),
+    );
+    const outsideFile = join(outsideRoot, 'outside.webp');
+    const key = 'atomic/hardlink.webp';
+    const leaf = join(
+      uploadsRoot,
+      createHash('sha256').update(key).digest('hex'),
+    );
+
+    try {
+      await writeFile(outsideFile, Buffer.from('outside'));
+      await chmod(outsideFile, 0o600);
+      await link(outsideFile, leaf);
+
+      await expect(storage.read(key)).rejects.toThrow();
+      await expect(
+        storage.putIfMissing(key, Buffer.from('replacement')),
+      ).rejects.toThrow();
+      await expect(readFile(outsideFile)).resolves.toEqual(
+        Buffer.from('outside'),
+      );
+      expect((await lstat(outsideFile)).mode & 0o777).toBe(0o600);
+    } finally {
+      await unlink(leaf).catch(() => undefined);
+      await rm(outsideRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects a symlinked uploads root before storing an object', async () => {
+    const realRoot = await mkdtemp(join(tmpdir(), 'guteli-storage-real-root-'));
+    const linkRoot = await mkdtemp(join(tmpdir(), 'guteli-storage-root-link-'));
+    await rm(linkRoot, { recursive: true, force: true });
+    await symlink(realRoot, linkRoot);
+
+    try {
+      const storage = new LocalObjectStorage(linkRoot);
+
+      await expect(
+        storage.putIfMissing('atomic/root-symlink.webp', Buffer.from('bad')),
+      ).rejects.toThrow();
+      await expect(readdir(realRoot)).resolves.toHaveLength(0);
+    } finally {
+      await unlink(linkRoot).catch(() => undefined);
+      await rm(realRoot, { recursive: true, force: true });
+    }
+  });
+
   it('does not follow intermediate or leaf symlinks', async () => {
     const storage = new LocalObjectStorage(uploadsRoot);
-    const outsideRoot = await mkdtemp('/tmp/guteli-storage-outside-');
+    const outsideRoot = await mkdtemp(
+      join(tmpdir(), 'guteli-storage-outside-'),
+    );
     const outsideFile = join(outsideRoot, 'outside.webp');
     const intermediate = join(uploadsRoot, 'link');
     await symlink(outsideRoot, intermediate);

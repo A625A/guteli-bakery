@@ -49,6 +49,23 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
 
+  provision:
+    profiles:
+      - provision
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://guteli:guteli@database:5432/${GUTELI_DATABASE_NAME:-guteli}
+      UPLOADS_ROOT: /app/uploads
+    volumes:
+      - uploads_data:/app/uploads
+    command: ['sh', '-c', 'npm run db:migrate && npm run db:seed']
+
 volumes:
   db_data:
   uploads_data:

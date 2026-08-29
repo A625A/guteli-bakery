@@ -12,12 +12,20 @@ const dockerfilePath = path.join(repoRoot, 'Dockerfile');
 const entrypointPath = path.join(repoRoot, 'scripts', 'docker-entrypoint.sh');
 
 type ComposeService = {
+  build?: {
+    context?: string;
+    dockerfile?: string;
+    target?: string;
+  };
+  command?: string | string[];
+  depends_on?: Record<string, { condition?: string }>;
   environment?: Record<string, string>;
   healthcheck?: {
     test?: string[] | string;
   };
   image?: string;
   ports?: string[];
+  profiles?: string[];
   volumes?: string[];
 };
 
@@ -42,14 +50,37 @@ function readReadme() {
 }
 
 describe('compose runtime contract', () => {
-  it('defines only the app and database services', () => {
+  it('defines only app, database, and opt-in provisioning services', () => {
     const compose = loadComposeConfig();
     const serviceNames = Object.keys(compose.services).sort();
 
-    expect(serviceNames).toEqual(['app', 'database']);
+    expect(serviceNames).toEqual(['app', 'database', 'provision']);
     expect(serviceNames).not.toContain('queue');
     expect(serviceNames).not.toContain('redis');
     expect(serviceNames).not.toContain('worker');
+  });
+
+  it('keeps catalog provisioning explicit and builder-stage only', () => {
+    const compose = loadComposeConfig();
+    const provision = compose.services.provision;
+
+    expect(provision.profiles).toEqual(['provision']);
+    expect(provision.build).toEqual({
+      context: '.',
+      dockerfile: 'Dockerfile',
+      target: 'builder',
+    });
+    expect(provision.depends_on?.database?.condition).toBe('service_healthy');
+    expect(provision.environment?.DATABASE_URL).toBe(
+      'postgresql://guteli:guteli@database:5432/${GUTELI_DATABASE_NAME:-guteli}',
+    );
+    expect(provision.environment?.UPLOADS_ROOT).toBe('/app/uploads');
+    expect(provision.volumes).toEqual(['uploads_data:/app/uploads']);
+    expect(provision.command).toEqual([
+      'sh',
+      '-c',
+      'npm run db:migrate && npm run db:seed',
+    ]);
   });
 
   it('configures health checks and named persistent volumes', () => {
@@ -83,12 +114,19 @@ describe('compose runtime contract', () => {
       'postgresql://guteli:guteli@database:5432/${GUTELI_DATABASE_NAME:-guteli}',
     );
     expect(compose.services.app.volumes).toEqual(['uploads_data:/app/uploads']);
+    expect(compose.services.app.command).toBeUndefined();
+    expect(compose.services.app.profiles).toBeUndefined();
     expect(dockerfile).toMatch(/^USER nextjs$/m);
     expect(dockerfile).toMatch(
       /^ENTRYPOINT \["\/app\/scripts\/docker-entrypoint\.sh"\]$/m,
     );
     expect(entrypoint).toContain('exec "$@"');
-    expect(`${composeSource}\n${dockerfile}\n${entrypoint}`).not.toMatch(
+    const startupSources =
+      `${composeSource}\n${dockerfile}\n${entrypoint}`.replace(
+        /^  provision:[\s\S]*?(?=^  [a-z]+:|^volumes:)/m,
+        '',
+      );
+    expect(startupSources).not.toMatch(
       /(?:db:migrate|drizzle-kit migrate|npm run seed|seed data)/i,
     );
   });
@@ -117,18 +155,18 @@ describe('compose runtime contract', () => {
     const readme = readReadme();
 
     expect(readme).toContain('docker compose up -d database');
+    expect(readme).toContain(
+      'docker compose --profile provision run --rm provision',
+    );
     expect(readme).toContain('docker compose ps');
     expect(readme).toContain(
       'docker compose exec -T database pg_isready -U guteli -d guteli',
     );
-    expect(readme).toContain('docker build --target builder');
-    expect(readme).toContain(
-      'docker inspect "$(docker compose ps -q database)"',
-    );
+    expect(readme).toContain("builds from the Dockerfile's `builder` stage");
+    expect(readme).toContain('mounts `uploads_data` at `/app/uploads`');
+    expect(readme).toContain('npm run db:migrate && npm run db:seed');
+    expect(readme).toContain('only when explicitly invoked');
     expect(readme).toContain('DATABASE_URL from its secret environment');
-    expect(readme).toContain(
-      'DATABASE_URL="${MIGRATION_DATABASE_URL:?set a database-host migration URL before running migrations}"',
-    );
     expect(readme).toContain('@database:5432/<database>');
     expect(readme).toContain('never `localhost`');
     expect(readme).not.toContain(
