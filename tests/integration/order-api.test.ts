@@ -9,6 +9,7 @@ vi.mock('server-only', () => ({}));
 
 import { createPostOrderHandler } from '@/app/api/orders/route';
 import { categories, products } from '@/server/db/schema';
+import { publicOrderErrorCodes } from '@/server/orders/errors';
 import { requireTestDatabaseUrl } from '@/test/database-url';
 
 const databaseUrl = requireTestDatabaseUrl(
@@ -219,12 +220,13 @@ describe('POST /api/orders', () => {
 
     expect(noDirectSource.status).toBe(503);
     expect(await noDirectSource.json()).toMatchObject({
-      error: { code: 'SERVICE_UNAVAILABLE' },
+      error: { code: 'INTERNAL_ERROR' },
     });
     expect(accepted.status).toBe(201);
   });
 
-  it('fails closed for an insufficient trusted proxy chain', async () => {
+  it('accepts one client XFF address behind one trusted proxy', async () => {
+    await insertProduct();
     const response = await postOrder(
       createHandler({
         getDirectClientAddress: () => null,
@@ -235,9 +237,23 @@ describe('POST /api/orders', () => {
       { headers: { 'x-forwarded-for': '198.51.100.9' } },
     );
 
+    expect(response.status).toBe(201);
+  });
+
+  it('fails closed for an insufficient trusted proxy chain', async () => {
+    const response = await postOrder(
+      createHandler({
+        getDirectClientAddress: () => null,
+        getOrderSecuritySettings: () =>
+          securitySettings({ trustedProxyHops: 2 }),
+      }),
+      requestBody(),
+      { headers: { 'x-forwarded-for': '198.51.100.9' } },
+    );
+
     expect(response.status).toBe(503);
     expect(await response.json()).toMatchObject({
-      error: { code: 'SERVICE_UNAVAILABLE' },
+      error: { code: 'INTERNAL_ERROR' },
     });
   });
 
@@ -339,6 +355,60 @@ describe('POST /api/orders', () => {
     expect(replay.status).toBe(200);
     expect(limited.status).toBe(429);
     expect(limited.headers.get('retry-after')).toBe('1800');
+  });
+
+  it('shares the successful-phone limit across Guatemala display formats', async () => {
+    await insertProduct();
+    const handler = createHandler();
+    const phones = [
+      '55555555',
+      '+502 5555-5555',
+      '50255555555',
+      '00502 5555 5555',
+      '(5555) 5555',
+    ];
+
+    for (const [index, phone] of phones.entries()) {
+      const response = await postOrder(handler, requestBody({ phone }), {
+        key: `00000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`,
+      });
+      expect(response.status).toBe(201);
+    }
+    const limited = await postOrder(
+      handler,
+      requestBody({ phone: '5555.5555' }),
+      {
+        key: '00000000-0000-4000-8000-000000000006',
+      },
+    );
+
+    expect(limited.status).toBe(429);
+  });
+
+  it('rejects a DTO-valid phone that has no Guatemala rate identity', async () => {
+    await insertProduct();
+    const response = await postOrder(
+      createHandler(),
+      requestBody({ phone: '+1 555 555 5555' }),
+    );
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({
+      error: {
+        code: 'VALIDATION_ERROR',
+        fieldErrors: { phone: expect.any(String) },
+      },
+    });
+  });
+
+  it('keeps every POST failure response inside the six-code public contract', async () => {
+    const response = await postOrder(
+      createHandler({ getDirectClientAddress: () => null }),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(503);
+    expect(publicOrderErrorCodes).toContain(body.error.code);
   });
 
   it('atomically caps concurrent successful orders by normalized phone subject', async () => {

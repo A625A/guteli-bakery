@@ -3,13 +3,15 @@ import {
   getOrderSecuritySettings,
   type OrderSecuritySettings,
 } from '@/server/config/order-security-env';
-import { errorResponse } from '@/server/http/error-response';
+import { errorResponse, type PublicError } from '@/server/http/error-response';
 import { getRequestId } from '@/server/observability/request-id';
 import { CreateOrderError, createOrder } from '@/server/orders/create-order';
+import type { PublicOrderErrorCode } from '@/server/orders/errors';
 import type { OrdersDatabase } from '@/server/orders/types';
 import {
   createHmacSubject,
   getTrustedClientAddress,
+  normalizeGuatemalaPhoneRateIdentity,
 } from '@/server/security/client-subject';
 import { consumeFixedWindowRateLimit } from '@/server/security/rate-limit';
 
@@ -18,6 +20,16 @@ export const dynamic = 'force-dynamic';
 const MAX_ORDER_BODY_BYTES = 16 * 1024;
 const idempotencyKeyPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+type PostError = PublicError<PublicOrderErrorCode>;
+
+function postErrorResponse(
+  error: PostError,
+  status: number,
+  retryAfterSeconds?: number,
+) {
+  return errorResponse(error, status, retryAfterSeconds);
+}
 
 class OrderRequestBodyError extends Error {
   readonly kind: 'malformed' | 'too_large';
@@ -83,7 +95,7 @@ function validationResponse(
   requestId: string,
   fieldErrors?: Record<string, string>,
 ) {
-  return errorResponse(
+  return postErrorResponse(
     {
       code: 'VALIDATION_ERROR',
       message: 'Los datos del pedido no son válidos.',
@@ -110,7 +122,7 @@ function safeFieldErrors(
 function orderErrorResponse(error: CreateOrderError, requestId: string) {
   switch (error.code) {
     case 'IDEMPOTENCY_CONFLICT':
-      return errorResponse(
+      return postErrorResponse(
         {
           code: error.code,
           message: 'Esta clave de solicitud ya fue usada con otro pedido.',
@@ -120,7 +132,7 @@ function orderErrorResponse(error: CreateOrderError, requestId: string) {
       );
     case 'PRODUCT_UNAVAILABLE':
     case 'PRODUCT_OUT_OF_STOCK':
-      return errorResponse(
+      return postErrorResponse(
         {
           code: error.code,
           message: 'Uno de los productos ya no está disponible.',
@@ -129,7 +141,7 @@ function orderErrorResponse(error: CreateOrderError, requestId: string) {
         409,
       );
     case 'RATE_LIMITED':
-      return errorResponse(
+      return postErrorResponse(
         {
           code: error.code,
           message: 'Intenta de nuevo más tarde.',
@@ -139,7 +151,7 @@ function orderErrorResponse(error: CreateOrderError, requestId: string) {
         error.retryAfterSeconds,
       );
     default:
-      return errorResponse(
+      return postErrorResponse(
         {
           code: 'INTERNAL_ERROR',
           message: 'No se pudo crear el pedido.',
@@ -167,9 +179,9 @@ export function createPostOrderHandler(
         directAddress: dependencies.getDirectClientAddress?.(request),
       });
     } catch {
-      return errorResponse(
+      return postErrorResponse(
         {
-          code: 'SERVICE_UNAVAILABLE',
+          code: 'INTERNAL_ERROR',
           message: 'El servicio de pedidos no está disponible.',
           requestId,
         },
@@ -193,7 +205,7 @@ export function createPostOrderHandler(
         }),
       );
       if (!attemptRateLimit.allowed) {
-        return errorResponse(
+        return postErrorResponse(
           {
             code: 'RATE_LIMITED',
             message: 'Intenta de nuevo más tarde.',
@@ -219,6 +231,14 @@ export function createPostOrderHandler(
       if (!parsedRequest.success) {
         return validationResponse(requestId, safeFieldErrors(parsedRequest));
       }
+      const phoneRateIdentity = normalizeGuatemalaPhoneRateIdentity(
+        parsedRequest.data.phone,
+      );
+      if (!phoneRateIdentity) {
+        return validationResponse(requestId, {
+          phone: 'Revisa este campo.',
+        });
+      }
 
       const result = await createOrder({
         request: parsedRequest.data,
@@ -231,7 +251,7 @@ export function createPostOrderHandler(
         successfulOrderRateLimitSubject: createHmacSubject(
           settings.rateLimitSecret,
           'order-success-phone',
-          parsedRequest.data.phone,
+          phoneRateIdentity,
         ),
         requestId,
         receiptTokenSecret: settings.receiptTokenSecret,
@@ -252,7 +272,7 @@ export function createPostOrderHandler(
     } catch (error) {
       if (error instanceof OrderRequestBodyError) {
         if (error.kind === 'too_large') {
-          return errorResponse(
+          return postErrorResponse(
             {
               code: 'VALIDATION_ERROR',
               message: 'El pedido es demasiado grande.',
@@ -266,7 +286,7 @@ export function createPostOrderHandler(
       if (error instanceof CreateOrderError) {
         return orderErrorResponse(error, requestId);
       }
-      return errorResponse(
+      return postErrorResponse(
         {
           code: 'INTERNAL_ERROR',
           message: 'No se pudo crear el pedido.',

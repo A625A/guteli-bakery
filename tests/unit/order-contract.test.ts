@@ -205,6 +205,15 @@ describe('createOrderRequestSchema', () => {
 });
 
 describe('canonical order request hashing', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-08-29T12:00:00.000Z'));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it('is stable across harmless normalization, property order, and item order', () => {
     const first = createOrderRequestSchema.parse({
       ...validRequest(),
