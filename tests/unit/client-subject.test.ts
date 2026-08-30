@@ -16,10 +16,17 @@ describe('normalizeGuatemalaPhoneRateIdentity', () => {
     expect(normalizeGuatemalaPhoneRateIdentity(phone)).toBe(expected);
   });
 
-  it('rejects a non-Guatemala identity instead of hashing its raw display value', () => {
-    expect(normalizeGuatemalaPhoneRateIdentity('+1 555 555 5555')).toBeNull();
-    expect(normalizeGuatemalaPhoneRateIdentity('5555-ABCD')).toBeNull();
-  });
+  it.each([
+    ['+1 (555) 555-5555', '15555555555'],
+    ['001 555 555 5555', '15555555555'],
+    ['15555555555', '15555555555'],
+    ['+44 7700 900123', '447700900123'],
+  ])(
+    'preserves the numeric identity of a valid international display phone %s',
+    (phone, expected) => {
+      expect(normalizeGuatemalaPhoneRateIdentity(phone)).toBe(expected);
+    },
+  );
 });
 
 describe('getTrustedClientAddress', () => {

@@ -234,11 +234,6 @@ export function createPostOrderHandler(
       const phoneRateIdentity = normalizeGuatemalaPhoneRateIdentity(
         parsedRequest.data.phone,
       );
-      if (!phoneRateIdentity) {
-        return validationResponse(requestId, {
-          phone: 'Revisa este campo.',
-        });
-      }
 
       const result = await createOrder({
         request: parsedRequest.data,

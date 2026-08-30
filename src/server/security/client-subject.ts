@@ -1,8 +1,6 @@
 import { createHmac } from 'node:crypto';
 import { isIP } from 'node:net';
 
-const permittedPhoneFormatting = /^[0-9+(). -]+$/;
-
 export class ClientAddressError extends Error {
   constructor() {
     super('A trusted client address is required.');
@@ -34,17 +32,12 @@ function parseForwardedAddresses(header: string): readonly string[] | null {
   return addresses as string[];
 }
 
-export function normalizeGuatemalaPhoneRateIdentity(
-  phone: string,
-): string | null {
-  if (!permittedPhoneFormatting.test(phone)) return null;
-
+export function normalizeGuatemalaPhoneRateIdentity(phone: string): string {
   let digits = phone.replace(/[+(). -]/g, '');
   if (digits.startsWith('00')) digits = digits.slice(2);
 
   if (/^\d{8}$/.test(digits)) return `502${digits}`;
-  if (/^502\d{8}$/.test(digits)) return digits;
-  return null;
+  return digits;
 }
 
 export function getTrustedClientAddress(

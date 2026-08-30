@@ -8,7 +8,7 @@ import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('server-only', () => ({}));
 
 import { createPostOrderHandler } from '@/app/api/orders/route';
-import { categories, products } from '@/server/db/schema';
+import { categories, orders, products } from '@/server/db/schema';
 import { publicOrderErrorCodes } from '@/server/orders/errors';
 import { requireTestDatabaseUrl } from '@/test/database-url';
 
@@ -385,20 +385,17 @@ describe('POST /api/orders', () => {
     expect(limited.status).toBe(429);
   });
 
-  it('rejects a DTO-valid phone that has no Guatemala rate identity', async () => {
+  it('accepts a DTO-valid international phone without changing its stored display value', async () => {
     await insertProduct();
     const response = await postOrder(
       createHandler(),
       requestBody({ phone: '+1 555 555 5555' }),
+      { key: '00000000-0000-4000-8000-000000000007' },
     );
+    const [storedOrder] = await db.select({ phone: orders.phone }).from(orders);
 
-    expect(response.status).toBe(400);
-    expect(await response.json()).toMatchObject({
-      error: {
-        code: 'VALIDATION_ERROR',
-        fieldErrors: { phone: expect.any(String) },
-      },
-    });
+    expect(response.status).toBe(201);
+    expect(storedOrder.phone).toBe('+1 555 555 5555');
   });
 
   it('keeps every POST failure response inside the six-code public contract', async () => {
