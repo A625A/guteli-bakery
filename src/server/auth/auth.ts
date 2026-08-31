@@ -7,6 +7,8 @@ import { twoFactor } from 'better-auth/plugins';
 import { db } from '@/server/db/client';
 import * as schema from '@/server/db/schema';
 
+import { loginProtectionPlugin } from './login-protection';
+
 const isProduction = process.env.NODE_ENV === 'production';
 
 function requiredProductionAuthValue(
@@ -74,5 +76,8 @@ export const auth = betterAuth({
       generateId: 'uuid',
     },
   },
-  plugins: [twoFactor({ issuer: 'Guteli Bakery' })],
+  plugins: [
+    loginProtectionPlugin(),
+    twoFactor({ issuer: 'Guteli Bakery', accountLockout: { enabled: true } }),
+  ],
 });
