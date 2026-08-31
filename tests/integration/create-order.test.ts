@@ -71,7 +71,9 @@ async function insertProduct(
     name: overrides.name ?? 'Pretzel Original',
     slug: 'pretzel-original',
     priceMinor: overrides.priceMinor ?? 7500,
-    saleUnit: overrides.saleUnit ?? 'Bolsa de 5',
+    saleUnit: Object.hasOwn(overrides, 'saleUnit')
+      ? overrides.saleUnit
+      : 'Bolsa de 5',
     stockQuantity: overrides.stockQuantity ?? null,
     active: overrides.productActive ?? true,
     deletedAt: overrides.deletedAt ?? null,
@@ -226,6 +228,15 @@ describe('createOrder', () => {
     }
   });
 
+  it('preserves a null sale unit in the immutable order item snapshot', async () => {
+    await insertProduct({ saleUnit: null });
+
+    await createOrder(createInput(parsedRequest()));
+
+    const [storedItem] = await db.select().from(orderItems);
+    expect(storedItem.saleUnit).toBeNull();
+  });
+
   it('keeps delivery shipping and total pending and omits delivery location from operations records', async () => {
     await insertProduct({ priceMinor: 6000 });
     const request = parsedRequest({
@@ -300,6 +311,51 @@ describe('createOrder', () => {
     await expect(
       createOrder(createInput(changedRequest)),
     ).rejects.toMatchObject({ code: 'IDEMPOTENCY_CONFLICT' });
+    expect(await counts()).toEqual({
+      orders: 1,
+      items: 1,
+      idempotency: 1,
+      outbox: 1,
+      audit: 1,
+    });
+  });
+
+  it('replays an existing order through a fresh PostgreSQL pool', async () => {
+    await insertProduct();
+    const request = parsedRequest();
+    const first = await createOrder(createInput(request));
+    const freshPool = new Pool({ connectionString: databaseUrl, max: 1 });
+    const freshDb = drizzle({ client: freshPool });
+
+    try {
+      const replay = await createOrder(
+        createInput(request, { database: freshDb }),
+      );
+
+      expect(replay).toEqual({ kind: 'replayed', order: first.order });
+      expect(await counts()).toEqual({
+        orders: 1,
+        items: 1,
+        idempotency: 1,
+        outbox: 1,
+        audit: 1,
+      });
+    } finally {
+      await freshPool.end();
+    }
+  });
+
+  it('replays an existing order after its idempotency cleanup horizon', async () => {
+    await insertProduct();
+    const request = parsedRequest();
+    const first = await createOrder(createInput(request));
+    await db
+      .update(idempotencyRecords)
+      .set({ expiresAt: new Date('2026-08-28T12:00:00.000Z') });
+
+    const replay = await createOrder(createInput(request));
+
+    expect(replay).toEqual({ kind: 'replayed', order: first.order });
     expect(await counts()).toEqual({
       orders: 1,
       items: 1,

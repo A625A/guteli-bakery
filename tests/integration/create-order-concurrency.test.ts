@@ -4,7 +4,7 @@ import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { Pool } from 'pg';
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createOrderRequestSchema } from '@/domain/order-contract';
 import {
@@ -68,7 +68,7 @@ function request() {
 }
 
 describe('createOrder concurrency', () => {
-  beforeAll(async () => {
+  beforeEach(async () => {
     vi.useFakeTimers();
     vi.setSystemTime(now);
     await resetDatabase();
@@ -147,5 +147,54 @@ describe('createOrder concurrency', () => {
     expect(storedIdempotency).toHaveLength(1);
     expect(storedOutbox).toHaveLength(1);
     expect(storedAudit).toHaveLength(1);
+  });
+
+  it('creates one aggregate and replays the same key across two PostgreSQL connections', async () => {
+    const sharedInput = {
+      request: request(),
+      idempotencyKey: '33333333-3333-4333-8333-333333333333',
+      idempotencySubject: 'hmac-shared-idempotency-subject',
+      receiptTokenSecret,
+      now,
+    } as const;
+    const first = createOrder({
+      ...sharedInput,
+      requestId: 'req_same_key_first',
+      database: firstDb,
+      createOrderId: () => '00000000-0000-4000-8000-000000000211',
+      createPublicId: () => 'GUT-26-SAMEKEY1',
+    });
+    const second = createOrder({
+      ...sharedInput,
+      requestId: 'req_same_key_second',
+      database: secondDb,
+      createOrderId: () => '00000000-0000-4000-8000-000000000212',
+      createPublicId: () => 'GUT-26-SAMEKEY2',
+    });
+
+    const results = await Promise.all([first, second]);
+    expect(results.map((result) => result.kind).sort()).toEqual([
+      'created',
+      'replayed',
+    ]);
+    expect(results[0].order).toEqual(results[1].order);
+
+    const [product] = await managementDb
+      .select({ stockQuantity: products.stockQuantity })
+      .from(products)
+      .where(eq(products.id, productId));
+    const [storedOrders, storedItems, storedIdempotency, storedOutbox] =
+      await Promise.all([
+        managementDb.select().from(orders),
+        managementDb.select().from(orderItems),
+        managementDb.select().from(idempotencyRecords),
+        managementDb.select().from(outboxEvents),
+      ]);
+
+    expect(product.stockQuantity).toBe(0);
+    expect(storedOrders).toHaveLength(1);
+    expect(storedItems).toHaveLength(1);
+    expect(storedIdempotency).toHaveLength(1);
+    expect(storedOutbox).toHaveLength(1);
   });
 });
