@@ -6,9 +6,7 @@ import { twoFactorClient } from 'better-auth/client/plugins';
 export const adminAuthClient = createAuthClient({
   plugins: [
     twoFactorClient({
-      onTwoFactorRedirect: () => {
-        window.location.assign('/admin/enroll-mfa');
-      },
+      twoFactorPage: '/admin/enroll-mfa',
     }),
   ],
 });

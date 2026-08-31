@@ -33,6 +33,8 @@ export default defineConfig({
     env: {
       DATABASE_URL: databaseUrlTest,
       DATABASE_URL_TEST: databaseUrlTest,
+      BETTER_AUTH_SECRET: 'playwright-auth-secret-must-be-at-least-32-bytes',
+      BETTER_AUTH_URL: 'http://127.0.0.1:3000',
       RATE_LIMIT_SECRET: 'playwright-rate-limit-secret-32-bytes',
       RECEIPT_TOKEN_SECRET: 'playwright-receipt-token-secret-32-bytes',
       TRUSTED_PROXY_HOPS: '1',

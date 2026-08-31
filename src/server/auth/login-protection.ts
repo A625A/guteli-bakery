@@ -117,11 +117,14 @@ async function rejectIfThrottled(ctx: {
     .limit(1);
 
   if (bucket) {
-    ctx.setHeader('Retry-After', String(retryAfterSeconds(now, start)));
-    throw APIError.from('TOO_MANY_REQUESTS', {
-      code: 'LOGIN_THROTTLED',
-      message: 'Try again later',
-    });
+    throw new APIError(
+      'TOO_MANY_REQUESTS',
+      {
+        code: 'LOGIN_THROTTLED',
+        message: 'Try again later',
+      },
+      { 'Retry-After': String(retryAfterSeconds(now, start)) },
+    );
   }
 
   const [candidate] = await db

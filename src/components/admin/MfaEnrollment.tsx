@@ -30,7 +30,12 @@ export function MfaEnrollment() {
         method: 'totp',
         issuer: 'Guteli Bakery',
       });
-      if (result.error || !result.data?.totpURI || !result.data.backupCodes) {
+      if (
+        result.error ||
+        result.data?.method !== 'totp' ||
+        !result.data.totpURI ||
+        !result.data.backupCodes
+      ) {
         setMessage(
           'No se pudo iniciar la configuración. Verifica tu contraseña.',
         );

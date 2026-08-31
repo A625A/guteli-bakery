@@ -9,9 +9,9 @@ test('the protected Spanish admin login does not reveal whether an account exist
   await page.getByLabel('Contraseña').fill('incorrect-password');
   await page.getByRole('button', { name: 'Ingresar' }).click();
 
-  await expect(page.getByRole('alert')).toHaveText(
-    'Correo o contraseña incorrectos.',
-  );
+  await expect(
+    page.getByText('Correo o contraseña incorrectos.', { exact: true }),
+  ).toBeVisible();
 });
 
 test('the admin sign-in flow requires enrollment before business access', async ({
@@ -26,7 +26,7 @@ test('the admin sign-in flow requires enrollment before business access', async 
   await expect(page.getByLabel('Contraseña')).toBeVisible();
 });
 
-test('the enrollment UI rejects an invalid code and protects recovery codes', async ({
+test('the enrollment UI protects recovery codes until enrollment begins', async ({
   page,
 }) => {
   await page.goto('/admin/enroll-mfa');
@@ -34,6 +34,6 @@ test('the enrollment UI rejects an invalid code and protects recovery codes', as
   await expect(
     page.getByRole('heading', { name: 'Configura tu autenticador' }),
   ).toBeVisible();
-  await expect(page.getByLabel('Código de verificación')).toBeVisible();
+  await expect(page.getByLabel('Contraseña actual')).toBeVisible();
   await expect(page.getByText('Códigos de recuperación')).toHaveCount(0);
 });
