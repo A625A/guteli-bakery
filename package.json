@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "engines": {
-    "node": "^20.9.0 || >=22.0.0",
+    "node": ">=20.19.0",
     "npm": ">=10.0.0"
   },
   "scripts": {
@@ -30,6 +30,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "better-auth": "^1.7.2",
     "drizzle-orm": "^0.45.2",
     "next": "16.3.3",
     "pg": "^8.23.0",
