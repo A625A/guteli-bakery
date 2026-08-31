@@ -33,6 +33,9 @@ export default defineConfig({
     env: {
       DATABASE_URL: databaseUrlTest,
       DATABASE_URL_TEST: databaseUrlTest,
+      RATE_LIMIT_SECRET: 'playwright-rate-limit-secret-32-bytes',
+      RECEIPT_TOKEN_SECRET: 'playwright-receipt-token-secret-32-bytes',
+      TRUSTED_PROXY_HOPS: '1',
       UPLOADS_ROOT: uploadsRoot,
     },
     url: 'http://127.0.0.1:3000',

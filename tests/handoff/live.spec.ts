@@ -15,25 +15,18 @@ async function prepareOrder(page: Page) {
   await page.getByLabel('Teléfono').fill('5555 5555');
   const date = page.getByLabel('Fecha solicitada');
   await date.fill((await date.getAttribute('min')) ?? '');
-  await page.getByRole('button', { name: 'Revisar solicitud' }).click();
 }
 
-test('live mode identifies and uses the confirmed WhatsApp destination', async ({
+test('live mode keeps the confirmed WhatsApp destination on general contact surfaces only', async ({
   page,
 }) => {
   await prepareOrder(page);
 
   await expect(page.getByText('Sitio de demostración')).toHaveCount(0);
-  const orderLink = page.getByRole('link', {
-    name: 'Enviar pedido por WhatsApp',
-  });
-  await expect(orderLink).toHaveAttribute(
-    'href',
-    new RegExp(`^https://wa\\.me/${confirmedDestination}\\?text=`),
-  );
-  expect(
-    decodeURIComponent((await orderLink.getAttribute('href')) ?? ''),
-  ).toContain('Ana López');
+  await expect(page.locator('#cart-checkout a[href*="wa.me"]')).toHaveCount(0);
+  await expect(
+    page.getByRole('button', { name: 'Enviar pedido' }),
+  ).toBeVisible();
 
   await page.goto('/contact/');
   await expect(page.getByRole('heading', { name: '4256-9861' })).toBeVisible();

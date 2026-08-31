@@ -6,7 +6,9 @@ export function DemoBanner({ enabled }: { enabled: boolean }) {
   return (
     <div className="demo-banner" role="note" aria-label="Modo demostración">
       <strong>Sitio de demostración</strong>
-      <span>Explora el flujo completo; ninguna solicitud se envía.</span>
+      <span>
+        Explora el flujo completo; usa datos de prueba en este entorno.
+      </span>
     </div>
   );
 }

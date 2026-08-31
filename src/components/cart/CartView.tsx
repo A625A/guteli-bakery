@@ -6,11 +6,10 @@ import type { ChangeEvent } from 'react';
 import { useCart } from '@/components/cart/CartProvider';
 import { ProductArtwork } from '@/components/menu/ProductArtwork';
 import { OrderRequest } from '@/components/order/OrderRequest';
-import type { WhatsAppHandoff } from '@/config/public-site';
 import { operationalCopy } from '@/content/business';
 import { formatGTQ } from '@/lib/money';
 
-export function CartView({ handoff }: { handoff: WhatsAppHandoff }) {
+export function CartView() {
   const { hydrated, lines, subtotal, removeItem, updateQuantity } = useCart();
 
   function changeQuantity(
@@ -135,7 +134,7 @@ export function CartView({ handoff }: { handoff: WhatsAppHandoff }) {
               </a>
             </aside>
           </div>
-          <OrderRequest handoff={handoff} embedded />
+          <OrderRequest embedded />
         </>
       )}
     </main>

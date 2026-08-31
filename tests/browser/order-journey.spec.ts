@@ -26,19 +26,10 @@ async function completeRequiredOrderFields(
   await date.fill((await date.getAttribute('min')) ?? '');
 }
 
-test('completes a delivery request without sending it', async ({
-  context,
+test('creates a durable delivery order and renders only its public receipt', async ({
   page,
 }) => {
-  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
-  await page.goto('/menu/');
-  await page
-    .getByRole('button', { name: 'Agregar Originales de Pretzels' })
-    .click();
-  await page.goto('/cart/');
-  await page
-    .getByLabel('Cantidad de Originales, Pretzels en el carrito')
-    .fill('2');
+  await openOrderWithSavedCart(page);
   await expect(
     page.getByTestId(`cart-line-${pretzelOriginalId}`).getByText('Q120'),
   ).toBeVisible();
@@ -46,55 +37,63 @@ test('completes a delivery request without sending it', async ({
   await expect(
     page.getByRole('button', { name: 'Pagar en línea — Próximamente' }),
   ).toBeDisabled();
+  await expect(
+    page.getByText(
+      /Tu nombre, teléfono, ubicación de entrega y notas se usan para procesar, contactarte y coordinar el pedido/,
+    ),
+  ).toBeVisible();
 
-  await page.getByRole('button', { name: 'Revisar solicitud' }).click();
+  await page.getByRole('button', { name: 'Enviar pedido' }).click();
   const errorSummary = page.getByRole('main').getByRole('alert');
   await expect(errorSummary).toContainText('Revisa los campos');
   await expect(errorSummary).toBeFocused();
 
   await completeRequiredOrderFields(page, 'Envío');
+  await page.getByLabel('Teléfono').fill('+502 4300-1101');
   await page.getByLabel('Notas opcionales').fill('Tocar el timbre');
-  await page.getByRole('button', { name: 'Revisar solicitud' }).click();
+  await page.getByRole('button', { name: 'Enviar pedido' }).click();
 
-  await expect(page).toHaveURL(/\/cart\/$/);
-  await expect(
-    page.getByRole('heading', { name: 'Tu solicitud está lista para revisar' }),
-  ).toBeVisible();
-  await expect(
-    page
-      .getByLabel('Tu solicitud está lista para revisar')
-      .getByText('El pedido queda sujeto a confirmación por WhatsApp', {
-        exact: true,
-      }),
-  ).toBeVisible();
-  await expect(page.getByLabel('Resumen de la solicitud')).toContainText(
-    'Modalidad: Entrega',
-  );
-  await expect(page.getByLabel('Resumen de la solicitud')).toContainText(
-    'Ubicación de entrega: Zona 10, Guatemala',
-  );
-  await page.getByRole('button', { name: 'Copiar resumen' }).click();
-  await expect(page.getByRole('status')).toHaveText('Resumen copiado.');
-
-  await expect(
-    page.getByText(
-      'Modo demostración: copia el resumen para probar el flujo.',
-      { exact: true },
-    ),
-  ).toBeVisible();
-  await expect(
-    page.getByRole('link', { name: 'Enviar pedido por WhatsApp' }),
-  ).toHaveCount(0);
-  await expect(page.locator('a[href*="wa.me"]')).toHaveCount(0);
-
-  const storage = await page.evaluate(() => ({ ...window.localStorage }));
-  expect(storage).toEqual({
-    'guteli-cart-v2': savedOriginalPretzels,
+  await expect(page).toHaveURL(/\/order\/confirmation\/[A-Za-z0-9_-]{43}\/$/, {
+    timeout: 15_000,
   });
-  expect(JSON.stringify(storage)).not.toContain('Ana');
-  expect(await page.getByLabel('Nombre completo').inputValue()).toBe(
+  const receiptToken = new URL(page.url()).pathname.split('/').at(-2) ?? '';
+  await expect(
+    page.getByRole('heading', { name: '¡Pedido recibido!' }),
+  ).toBeVisible();
+  await expect(page.getByText(/^GUT-\d{2}-[A-Z0-9]+$/)).toBeVisible();
+  await expect(
+    page.getByText('Pedido recibido', { exact: true }),
+  ).toBeVisible();
+  await expect(page.getByText('Pago pendiente', { exact: true })).toBeVisible();
+  await expect(page.getByText('Envío', { exact: true })).toBeVisible();
+  await expect(page.getByText('Originales', { exact: true })).toBeVisible();
+  await expect(page.getByText('Pretzels', { exact: true })).toBeVisible();
+  await expect(page.getByText('Subtotal: Q120', { exact: true })).toBeVisible();
+  await expect(
+    page.getByText('Costo de envío por confirmar', { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByText('Total por confirmar', { exact: true }),
+  ).toBeVisible();
+
+  const bodyText = await page.locator('body').innerText();
+  for (const privateValue of [
     'Ana López',
-  );
+    '+502 4300-1101',
+    'Zona 10, Guatemala',
+    'Tocar el timbre',
+    receiptToken,
+  ]) {
+    expect(bodyText).not.toContain(privateValue);
+  }
+  await expect
+    .poll(() =>
+      page.evaluate(() => window.localStorage.getItem('guteli-cart-v2')),
+    )
+    .toBe('[]');
+  await expect(
+    page.getByRole('link', { name: 'Carrito, 0 productos' }),
+  ).toBeVisible();
 });
 
 test('offers a menu recovery path when the cart is empty', async ({ page }) => {
@@ -218,9 +217,24 @@ test('prunes a stale UUID from the badge, storage, and order summary', async ({
   await expect(page.getByText('Resumen de la solicitud')).toHaveCount(0);
 });
 
-test('shows pickup guidance and omits a delivery location from the summary', async ({
+test('shows pickup guidance and omits a delivery location from the API payload', async ({
   page,
 }) => {
+  let submittedBody: Record<string, unknown> | undefined;
+  await page.route('**/api/orders', async (route) => {
+    submittedBody = route.request().postDataJSON() as Record<string, unknown>;
+    await route.fulfill({
+      status: 500,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        error: {
+          code: 'INTERNAL_ERROR',
+          message: 'private server detail',
+          requestId: 'private-request-id',
+        },
+      }),
+    });
+  });
   await openOrderWithSavedCart(page);
 
   await expect(
@@ -229,51 +243,181 @@ test('shows pickup guidance and omits a delivery location from the summary', asy
     }),
   ).toBeVisible();
   await completeRequiredOrderFields(page, 'Recogida');
-  await page.getByRole('button', { name: 'Revisar solicitud' }).click();
+  await page.getByRole('button', { name: 'Enviar pedido' }).click();
 
-  const summary = page.getByLabel('Resumen de la solicitud');
-  await expect(summary).toContainText('Modalidad: Recogida');
-  await expect(summary).not.toContainText('Ubicación de entrega:');
+  await expect(page.locator('.order-submit-error')).toContainText(
+    'No pudimos enviar tu pedido.',
+  );
+  expect(submittedBody).toMatchObject({ fulfillment: 'pickup' });
+  expect(submittedBody).not.toHaveProperty('deliveryLocation');
 });
 
-test('selected fulfillment and copy feedback expose clear state', async ({
-  context,
-  page,
-}) => {
-  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+test('selected fulfillment exposes clear state', async ({ page }) => {
   await openOrderWithSavedCart(page);
 
   const pickup = page.getByLabel('Recogida');
   await expect(pickup).toBeChecked();
   await expect(pickup.locator('..')).toHaveAttribute('data-selected', 'true');
-
-  await completeRequiredOrderFields(page, 'Recogida');
-  await page.getByRole('button', { name: 'Revisar solicitud' }).click();
-  await page.getByRole('button', { name: 'Copiar resumen' }).click();
-  await expect(page.getByRole('status')).toHaveText('Resumen copiado.');
 });
 
-test('invalidates the reviewed demo handoff when details change', async ({
+test('blocks rapid double submission synchronously and disables the action', async ({
   page,
 }) => {
+  let requestCount = 0;
+  let releaseResponse: (() => void) | undefined;
+  const responseGate = new Promise<void>((resolve) => {
+    releaseResponse = resolve;
+  });
+  await page.route('**/api/orders', async (route) => {
+    requestCount += 1;
+    await responseGate;
+    await route.fulfill({
+      status: 500,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        error: {
+          code: 'INTERNAL_ERROR',
+          message: 'private detail',
+          requestId: 'private-request-id',
+        },
+      }),
+    });
+  });
   await openOrderWithSavedCart(page);
   await completeRequiredOrderFields(page, 'Recogida');
-  await page.getByRole('button', { name: 'Revisar solicitud' }).click();
 
-  const handoff = page.getByText(
-    'Modo demostración: copia el resumen para probar el flujo.',
-    { exact: true },
+  await page.locator('.order-form').evaluate((form) => {
+    (form as HTMLFormElement).requestSubmit();
+    (form as HTMLFormElement).requestSubmit();
+  });
+
+  await expect.poll(() => requestCount).toBe(1);
+  await expect(
+    page.getByRole('button', { name: 'Enviando pedido…' }),
+  ).toBeDisabled();
+  releaseResponse?.();
+  await expect(page.locator('.order-submit-error')).toContainText(
+    'No pudimos enviar tu pedido.',
   );
-  await expect(handoff).toBeVisible();
+});
 
+test('retains form and cart after a 500 and reuses the same key unchanged', async ({
+  page,
+}) => {
+  const idempotencyKeys: string[] = [];
+  await page.route('**/api/orders', async (route) => {
+    idempotencyKeys.push(route.request().headers()['idempotency-key']);
+    await route.fulfill({
+      status: 500,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        error: {
+          code: 'INTERNAL_ERROR',
+          message: 'raw private failure',
+          requestId: 'private-request-id',
+        },
+      }),
+    });
+  });
+  await openOrderWithSavedCart(page);
+  await completeRequiredOrderFields(page, 'Recogida');
+
+  await page.getByRole('button', { name: 'Enviar pedido' }).click();
+  const failure = page.locator('.order-submit-error');
+  await expect(failure).toContainText('No pudimos enviar tu pedido.');
+  await expect(failure).not.toContainText('raw private failure');
+  await expect(page.getByLabel('Nombre completo')).toHaveValue('Ana López');
+  await expect(
+    page.getByTestId(`cart-line-${pretzelOriginalId}`),
+  ).toBeVisible();
+  await expect
+    .poll(() =>
+      page.evaluate(() => window.localStorage.getItem('guteli-cart-v2')),
+    )
+    .toBe(savedOriginalPretzels);
+
+  await page.getByRole('button', { name: 'Intentar de nuevo' }).click();
+  await expect.poll(() => idempotencyKeys.length).toBe(2);
+  expect(idempotencyKeys[0]).toMatch(
+    /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+  );
+  expect(idempotencyKeys[1]).toBe(idempotencyKeys[0]);
+});
+
+test('rotates the key after a non-retryable idempotency conflict', async ({
+  page,
+}) => {
+  const idempotencyKeys: string[] = [];
+  await page.route('**/api/orders', async (route) => {
+    idempotencyKeys.push(route.request().headers()['idempotency-key']);
+    await route.fulfill({
+      status: 409,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        error: {
+          code: 'IDEMPOTENCY_CONFLICT',
+          message: 'private conflict detail',
+          requestId: 'private-request-id',
+        },
+      }),
+    });
+  });
+  await openOrderWithSavedCart(page);
+  await completeRequiredOrderFields(page, 'Recogida');
+
+  await page.getByRole('button', { name: 'Enviar pedido' }).click();
+  await expect(page.locator('.order-submit-error')).toContainText(
+    'Los datos del pedido cambiaron.',
+  );
+  await page.getByRole('button', { name: 'Intentar de nuevo' }).click();
+
+  await expect.poll(() => idempotencyKeys.length).toBe(2);
+  expect(idempotencyKeys[1]).not.toBe(idempotencyKeys[0]);
+});
+
+test('rotates the retry key after a form edit and a cart quantity change', async ({
+  page,
+}) => {
+  const submissions: Array<{ key: string; body: Record<string, unknown> }> = [];
+  await page.route('**/api/orders', async (route) => {
+    submissions.push({
+      key: route.request().headers()['idempotency-key'],
+      body: route.request().postDataJSON() as Record<string, unknown>,
+    });
+    await route.fulfill({
+      status: 500,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        error: {
+          code: 'INTERNAL_ERROR',
+          message: 'private detail',
+          requestId: 'private-request-id',
+        },
+      }),
+    });
+  });
+  await openOrderWithSavedCart(page);
+  await completeRequiredOrderFields(page, 'Recogida');
+
+  await page.getByRole('button', { name: 'Enviar pedido' }).click();
+  await expect.poll(() => submissions.length).toBe(1);
+  await expect(page.locator('.order-submit-error')).toBeVisible();
   await page.getByLabel('Nombre completo').fill('Ana Pérez');
-  await expect(handoff).toHaveCount(0);
-  await expect(page.getByLabel('Resumen de la solicitud')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Enviar pedido' }).click();
+  await expect.poll(() => submissions.length).toBe(2);
+  await expect(page.locator('.order-submit-error')).toBeVisible();
+  expect(submissions[1].key).not.toBe(submissions[0].key);
 
-  await page.getByRole('button', { name: 'Revisar solicitud' }).click();
-  await expect(handoff).toBeVisible();
-  await page.getByLabel('Envío').check();
-  await expect(handoff).toHaveCount(0);
+  await page
+    .getByLabel('Cantidad de Originales, Pretzels en el carrito')
+    .fill('3');
+  await page.getByRole('button', { name: 'Enviar pedido' }).click();
+  await expect.poll(() => submissions.length).toBe(3);
+  expect(submissions[2].key).not.toBe(submissions[1].key);
+  expect(submissions[2].body).toMatchObject({
+    customerName: 'Ana Pérez',
+    items: [{ productId: pretzelOriginalId, quantity: 3 }],
+  });
 });
 
 test('requires delivery location and preserves active form progress on error', async ({
@@ -287,7 +431,7 @@ test('requires delivery location and preserves active form progress on error', a
   const date = page.getByLabel('Fecha solicitada');
   await date.fill((await date.getAttribute('min')) ?? '');
 
-  await page.getByRole('button', { name: 'Revisar solicitud' }).click();
+  await page.getByRole('button', { name: 'Enviar pedido' }).click();
 
   const errorSummary = page.getByRole('main').getByRole('alert');
   await expect(errorSummary).toContainText('Ingresa la ubicación de entrega.');
@@ -307,7 +451,7 @@ test('clears a delivery-only error when switching back to pickup without stealin
   await openOrderWithSavedCart(page);
   await completeRequiredOrderFields(page, 'Envío');
   await page.getByLabel('Ubicación o dirección').fill('');
-  await page.getByRole('button', { name: 'Revisar solicitud' }).click();
+  await page.getByRole('button', { name: 'Enviar pedido' }).click();
 
   const errorSummary = page.getByRole('main').getByRole('alert');
   await expect(errorSummary).toBeFocused();
@@ -335,7 +479,7 @@ test('gives the focused error summary and recovery links visible target geometry
   page,
 }) => {
   await openOrderWithSavedCart(page);
-  await page.getByRole('button', { name: 'Revisar solicitud' }).click();
+  await page.getByRole('button', { name: 'Enviar pedido' }).click();
 
   const errorSummary = page.getByRole('main').getByRole('alert');
   await expect(errorSummary).toBeFocused();
@@ -422,7 +566,7 @@ test('order fields follow a logical keyboard sequence', async ({ page }) => {
     'delivery',
     'order-requestedDate',
     'order-notes',
-    'Revisar solicitud',
+    'Enviar pedido',
   ]);
 
   const positiveTabIndexes = await orderControls.evaluateAll((elements) =>
@@ -447,7 +591,7 @@ test('rejects a requested date earlier than the Guatemala minimum', async ({
   await date.fill(priorDate);
   await expect(date).toHaveValue(priorDate);
 
-  await page.getByRole('button', { name: 'Revisar solicitud' }).click();
+  await page.getByRole('button', { name: 'Enviar pedido' }).click();
 
   await expect(page.getByRole('main').getByRole('alert')).toContainText(
     `Selecciona una fecha a partir del ${minimumDate}.`,
@@ -467,7 +611,7 @@ test('refreshes the two-day minimum after Guatemala midnight', async ({
   await date.fill('2026-07-22');
 
   await page.clock.setFixedTime(new Date('2026-07-21T06:30:00.000Z'));
-  await page.getByRole('button', { name: 'Revisar solicitud' }).click();
+  await page.getByRole('button', { name: 'Enviar pedido' }).click();
 
   await expect(date).toHaveAttribute('min', '2026-07-23');
   await expect(page.getByRole('main').getByRole('alert')).toContainText(
@@ -475,39 +619,16 @@ test('refreshes the two-day minimum after Guatemala midnight', async ({
   );
 });
 
-test('keeps the readable summary available when clipboard copy is rejected', async ({
+test('uses one generic experience for malformed and unknown receipt tokens', async ({
   page,
 }) => {
-  await page.addInitScript(() => {
-    Object.defineProperty(navigator, 'clipboard', {
-      configurable: true,
-      value: {
-        writeText: () => Promise.reject(new Error('Clipboard blocked')),
-      },
-    });
-  });
-  await openOrderWithSavedCart(page);
-  await completeRequiredOrderFields(page, 'Recogida');
-  await page.getByRole('button', { name: 'Revisar solicitud' }).click();
-  const summary = page.getByLabel('Resumen de la solicitud');
-  const summaryText = await summary.inputValue();
-
-  await page.getByRole('button', { name: 'Copiar resumen' }).click();
-
-  await expect(page.getByRole('status')).toHaveText(
-    'No se pudo copiar automáticamente. Selecciona y copia el resumen manualmente.',
-  );
-  await expect(summary).toBeVisible();
-  await expect(summary).toHaveValue(summaryText);
-  await expect(
-    page.getByRole('link', { name: 'Enviar pedido por WhatsApp' }),
-  ).toHaveCount(0);
-  await expect(
-    page.getByText(
-      'Modo demostración: copia el resumen para probar el flujo.',
-      { exact: true },
-    ),
-  ).toBeVisible();
+  for (const token of ['not-a-token', 'a'.repeat(43)]) {
+    await page.goto(`/order/confirmation/${token}/`);
+    await expect(
+      page.getByRole('heading', { name: 'No encontramos este pedido' }),
+    ).toBeVisible();
+    await expect(page.getByText(token, { exact: true })).toHaveCount(0);
+  }
 });
 
 test('describes the 99 cap as applying to each menu option', async ({

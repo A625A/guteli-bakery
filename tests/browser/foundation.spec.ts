@@ -100,9 +100,11 @@ test('default portfolio mode is identified and exposes no WhatsApp destination',
 }) => {
   await page.goto('/');
 
-  await expect(
-    page.getByRole('note', { name: 'Modo demostración' }),
-  ).toContainText('Sitio de demostración');
+  const demoBanner = page.getByRole('note', { name: 'Modo demostración' });
+  await expect(demoBanner).toContainText('Sitio de demostración');
+  await expect(demoBanner).toContainText(
+    'Explora el flujo completo; usa datos de prueba en este entorno.',
+  );
   await expect(page.locator('a[href*="wa.me"]')).toHaveCount(0);
 
   await page.goto('/contact/');
@@ -110,7 +112,7 @@ test('default portfolio mode is identified and exposes no WhatsApp destination',
   await expect(
     page
       .getByRole('main')
-      .getByText('Las solicitudes no se envían desde esta demostración.', {
+      .getByText('El chat de WhatsApp no se abre desde esta demostración.', {
         exact: true,
       }),
   ).toBeVisible();
@@ -335,7 +337,7 @@ test('contact exposes factual guidance without an active demo destination', asyn
   ).toBeVisible();
   await expect(main.locator('a[href*="wa.me"]')).toHaveCount(0);
   await expect(
-    main.getByText('Las solicitudes no se envían desde esta demostración.', {
+    main.getByText('El chat de WhatsApp no se abre desde esta demostración.', {
       exact: true,
     }),
   ).toBeVisible();
@@ -520,9 +522,12 @@ test('footer exposes navigation and factual request guidance', async ({
   ).toBeVisible();
   await expect(footer.locator('a[href*="wa.me"]')).toHaveCount(0);
   await expect(
-    footer.getByText('Las solicitudes no se envían desde esta demostración.', {
-      exact: true,
-    }),
+    footer.getByText(
+      'El chat de WhatsApp no se abre desde esta demostración.',
+      {
+        exact: true,
+      },
+    ),
   ).toBeVisible();
 });
 

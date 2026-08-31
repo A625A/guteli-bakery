@@ -14,7 +14,6 @@ async function prepareOrder(page: Page) {
   await page.getByLabel('Teléfono').fill('5555 5555');
   const date = page.getByLabel('Fecha solicitada');
   await date.fill((await date.getAttribute('min')) ?? '');
-  await page.getByRole('button', { name: 'Revisar solicitud' }).click();
 }
 
 test('an unapproved live destination fails closed across the customer journey', async ({
@@ -22,12 +21,9 @@ test('an unapproved live destination fails closed across the customer journey', 
 }) => {
   await prepareOrder(page);
 
-  await expect(page.locator('a[href*="wa.me"]')).toHaveCount(0);
+  await expect(page.locator('#cart-checkout a[href*="wa.me"]')).toHaveCount(0);
   await expect(
-    page.getByText(
-      'El envío por WhatsApp no está configurado. Copia el resumen para conservarlo.',
-      { exact: true },
-    ),
+    page.getByRole('button', { name: 'Enviar pedido' }),
   ).toBeVisible();
 
   await page.goto('/contact/');

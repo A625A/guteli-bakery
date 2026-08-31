@@ -42,7 +42,7 @@ export default function ContactPage() {
           ) : (
             <p className="contact-card__handoff-note">
               {publicSiteConfig.handoff.kind === 'demo'
-                ? 'Las solicitudes no se envían desde esta demostración.'
+                ? 'El chat de WhatsApp no se abre desde esta demostración.'
                 : 'El envío por WhatsApp no está configurado en este momento.'}
             </p>
           )}

@@ -1,19 +1,26 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+} from 'react';
 
 import { useCart } from '@/components/cart/CartProvider';
-import type { WhatsAppHandoff } from '@/config/public-site';
 import { operationalCopy, siteConfig } from '@/content/business';
 import {
+  buildCreateOrderRequest,
   validateOrder,
+  type CheckoutState,
   type OrderErrors,
   type OrderFormValues,
 } from '@/domain/order';
 import { getMinimumOrderDate } from '@/lib/date';
-import { buildOrderSummary } from '@/lib/order-summary';
-import { buildWhatsAppUrl } from '@/lib/whatsapp';
+import { submitOrder } from '@/lib/order-api';
 
 const initialValues: OrderFormValues = {
   name: '',
@@ -33,66 +40,65 @@ const fieldLabels: Record<keyof OrderFormValues, string> = {
   notes: 'Notas opcionales',
 };
 
-export function OrderRequest({
-  handoff,
-  embedded = false,
-}: {
-  handoff: WhatsAppHandoff;
-  embedded?: boolean;
-}) {
-  const { hydrated, lines } = useCart();
+type OrderAttempt = Readonly<{
+  idempotencyKey: string;
+  serializedRequest: string;
+}>;
+
+export function OrderRequest({ embedded = false }: { embedded?: boolean }) {
+  const router = useRouter();
+  const { clearCart, hydrated, lines } = useCart();
   const [values, setValues] = useState<OrderFormValues>(initialValues);
   const [errors, setErrors] = useState<OrderErrors>({});
-  const [summary, setSummary] = useState<string | null>(null);
-  const [copyStatus, setCopyStatus] = useState('');
+  const [checkoutState, setCheckoutState] = useState<CheckoutState>({
+    kind: 'EDITING',
+  });
   const [errorFocusRequest, setErrorFocusRequest] = useState(0);
   const [minimumDate, setMinimumDate] = useState(() =>
     getMinimumOrderDate(new Date(), siteConfig.advanceDays),
   );
   const errorSummaryRef = useRef<HTMLDivElement>(null);
+  const attemptRef = useRef<OrderAttempt | null>(null);
+  const inFlightRef = useRef(false);
+  const acceptedRef = useRef(false);
+  const cartFingerprint = lines
+    .map(({ productId, quantity }) => `${productId}:${quantity}`)
+    .join('|');
+  const previousCartFingerprintRef = useRef(cartFingerprint);
 
   useEffect(() => {
-    if (errorFocusRequest > 0) {
-      errorSummaryRef.current?.focus();
-    }
+    if (errorFocusRequest > 0) errorSummaryRef.current?.focus();
   }, [errorFocusRequest]);
+
+  const invalidateAttempt = useCallback(() => {
+    attemptRef.current = null;
+    setCheckoutState((currentState) =>
+      currentState.kind === 'SUBMITTING' || currentState.kind === 'SUCCESS'
+        ? currentState
+        : { kind: 'EDITING' },
+    );
+  }, []);
+
+  useEffect(() => {
+    if (previousCartFingerprintRef.current === cartFingerprint) return;
+
+    previousCartFingerprintRef.current = cartFingerprint;
+    invalidateAttempt();
+  }, [cartFingerprint, invalidateAttempt]);
 
   function setField<Key extends keyof OrderFormValues>(
     field: Key,
     value: OrderFormValues[Key],
   ) {
     setValues((currentValues) => ({ ...currentValues, [field]: value }));
-    setSummary(null);
-    setCopyStatus('');
-  }
-
-  function reviewRequest(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const currentMinimumDate = getMinimumOrderDate(
-      new Date(),
-      siteConfig.advanceDays,
-    );
-    const nextErrors = validateOrder(values, currentMinimumDate);
-
-    setMinimumDate(currentMinimumDate);
-
-    if (Object.keys(nextErrors).length > 0) {
-      setErrors(nextErrors);
-      setErrorFocusRequest((currentRequest) => currentRequest + 1);
-      return;
-    }
-
-    setErrors({});
-    setCopyStatus('');
-    setSummary(buildOrderSummary(lines, values));
+    invalidateAttempt();
   }
 
   function changeFulfillment(fulfillment: OrderFormValues['fulfillment']) {
     const nextValues = { ...values, fulfillment };
 
     setValues(nextValues);
-    setSummary(null);
-    setCopyStatus('');
+    invalidateAttempt();
     setErrors((currentErrors) =>
       Object.keys(currentErrors).length > 0
         ? validateOrder(nextValues, minimumDate)
@@ -100,21 +106,66 @@ export function OrderRequest({
     );
   }
 
-  async function copySummary() {
-    if (!summary) {
+  async function sendOrder(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (inFlightRef.current || acceptedRef.current) return;
+
+    const currentMinimumDate = getMinimumOrderDate(
+      new Date(),
+      siteConfig.advanceDays,
+    );
+    const nextErrors = validateOrder(values, currentMinimumDate);
+    setMinimumDate(currentMinimumDate);
+
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
+      setCheckoutState({ kind: 'EDITING' });
+      setErrorFocusRequest((currentRequest) => currentRequest + 1);
       return;
     }
 
+    const request = buildCreateOrderRequest(values, lines);
+    const serializedRequest = JSON.stringify(request);
+    const existingAttempt = attemptRef.current;
+    const idempotencyKey =
+      existingAttempt?.serializedRequest === serializedRequest
+        ? existingAttempt.idempotencyKey
+        : crypto.randomUUID();
+
+    attemptRef.current = { idempotencyKey, serializedRequest };
+    inFlightRef.current = true;
+    setErrors({});
+    setCheckoutState({ kind: 'SUBMITTING', idempotencyKey });
+
     try {
-      await navigator.clipboard.writeText(summary);
-      setCopyStatus('Resumen copiado.');
-    } catch {
-      setCopyStatus(
-        'No se pudo copiar automáticamente. Selecciona y copia el resumen manualmente.',
+      const result = await submitOrder(request, idempotencyKey);
+
+      if (!result.ok) {
+        if (!result.canRetryUnchanged) attemptRef.current = null;
+        setCheckoutState({
+          kind: 'ERROR',
+          idempotencyKey,
+          message: result.message,
+        });
+        return;
+      }
+
+      acceptedRef.current = true;
+      setCheckoutState({
+        kind: 'SUCCESS',
+        publicId: result.order.publicId,
+        receiptToken: result.order.receiptToken,
+      });
+      clearCart();
+      router.push(
+        `/order/confirmation/${encodeURIComponent(result.order.receiptToken)}/`,
       );
+    } finally {
+      inFlightRef.current = false;
     }
   }
 
+  const submitting = checkoutState.kind === 'SUBMITTING';
   const PageContainer = embedded ? 'section' : 'main';
 
   return (
@@ -134,8 +185,8 @@ export function OrderRequest({
           <h1>Pedido</h1>
         )}
         <p>
-          Completa tus datos, revisa el resumen y decide cuándo abrir WhatsApp.
-          Nada se envía al revisar la solicitud.
+          Completa tus datos y envía la solicitud. Güteli confirmará contigo los
+          detalles del pedido antes de prepararlo.
         </p>
       </header>
 
@@ -143,7 +194,7 @@ export function OrderRequest({
         <p className="request-page__loading" role="status">
           Cargando tu carrito…
         </p>
-      ) : lines.length === 0 ? (
+      ) : lines.length === 0 && checkoutState.kind !== 'SUCCESS' ? (
         <section className="request-empty" aria-labelledby="empty-order-title">
           <p className="request-empty__number" aria-hidden="true">
             00
@@ -152,7 +203,7 @@ export function OrderRequest({
             <h2 id="empty-order-title">Agrega productos antes de continuar</h2>
             <p>
               Tu solicitud necesita al menos una opción del menú para crear el
-              resumen.
+              pedido.
             </p>
             <Link className="button-link button-link--primary" href="/menu/">
               Ir al menú
@@ -160,8 +211,8 @@ export function OrderRequest({
           </div>
         </section>
       ) : (
-        <div className="order-layout">
-          <form className="order-form" noValidate onSubmit={reviewRequest}>
+        <div className="order-layout order-layout--submission">
+          <form className="order-form" noValidate onSubmit={sendOrder}>
             {Object.keys(errors).length > 0 ? (
               <div
                 className="order-errors"
@@ -170,7 +221,7 @@ export function OrderRequest({
                 tabIndex={-1}
               >
                 <h2>Revisa los campos</h2>
-                <p>Corrige lo indicado y vuelve a revisar tu solicitud.</p>
+                <p>Corrige lo indicado y vuelve a enviar tu pedido.</p>
                 <ul>
                   {Object.entries(errors).map(([field, error]) => (
                     <li key={field}>
@@ -183,7 +234,17 @@ export function OrderRequest({
               </div>
             ) : null}
 
-            <fieldset className="order-form__section">
+            {checkoutState.kind === 'ERROR' ? (
+              <div className="order-submit-error" role="alert">
+                <h2>No se pudo enviar el pedido</h2>
+                <p>{checkoutState.message}</p>
+                <p>
+                  Tu carrito y tus datos siguen aquí para que puedas reintentar.
+                </p>
+              </div>
+            ) : null}
+
+            <fieldset className="order-form__section" disabled={submitting}>
               <legend>Datos de contacto</legend>
               <div className="form-field">
                 <label htmlFor="order-name">Nombre completo</label>
@@ -229,7 +290,7 @@ export function OrderRequest({
               </div>
             </fieldset>
 
-            <fieldset className="order-form__section">
+            <fieldset className="order-form__section" disabled={submitting}>
               <legend>Entrega del pedido</legend>
               <div className="fulfillment-options">
                 <label data-selected={values.fulfillment === 'pickup'}>
@@ -328,53 +389,26 @@ export function OrderRequest({
               </div>
             </fieldset>
 
-            <button className="order-form__submit" type="submit">
-              Revisar solicitud
+            <p className="order-privacy">
+              Tu nombre, teléfono, ubicación de entrega y notas se usan para
+              procesar, contactarte y coordinar el pedido. Cuando esté
+              configurado, Güteli podrá incluir estos datos en una notificación
+              por WhatsApp a la persona dueña para preparar y entregar tu
+              pedido.
+            </p>
+
+            <button
+              className="order-form__submit"
+              type="submit"
+              disabled={submitting || checkoutState.kind === 'SUCCESS'}
+            >
+              {submitting
+                ? 'Enviando pedido…'
+                : checkoutState.kind === 'ERROR'
+                  ? 'Intentar de nuevo'
+                  : 'Enviar pedido'}
             </button>
           </form>
-
-          {summary ? (
-            <section className="order-summary" aria-labelledby="summary-title">
-              <p className="eyebrow">Todavía no se ha enviado</p>
-              <h2 id="summary-title">Tu solicitud está lista para revisar</h2>
-              <p>{operationalCopy.confirmation}</p>
-              <label htmlFor="order-summary-text">
-                Resumen de la solicitud
-              </label>
-              <textarea
-                id="order-summary-text"
-                rows={16}
-                value={summary}
-                readOnly
-              />
-              <div className="order-summary__actions">
-                <button type="button" onClick={copySummary}>
-                  Copiar resumen
-                </button>
-                {handoff.kind === 'live' ? (
-                  <a
-                    className="button-link button-link--primary"
-                    href={buildWhatsAppUrl(handoff.destination, summary)}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Enviar pedido por WhatsApp
-                  </a>
-                ) : (
-                  <p className="order-summary__handoff-note">
-                    {handoff.kind === 'demo'
-                      ? 'Modo demostración: copia el resumen para probar el flujo.'
-                      : 'El envío por WhatsApp no está configurado. Copia el resumen para conservarlo.'}
-                  </p>
-                )}
-              </div>
-              {copyStatus ? (
-                <p className="order-summary__status" role="status">
-                  {copyStatus}
-                </p>
-              ) : null}
-            </section>
-          ) : null}
         </div>
       )}
     </PageContainer>

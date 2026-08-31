@@ -9,22 +9,18 @@ const screenshots = {
     homepage: artifactPath('desktop', 'milestone-3-homepage.png'),
     menu: artifactPath('desktop', 'milestone-3-menu.png'),
     cart: artifactPath('desktop', 'milestone-3-cart.png'),
-    summary: artifactPath('desktop', 'milestone-3-summary.png'),
+    confirmation: artifactPath('desktop', 'milestone-3-confirmation.png'),
   },
   mobile: {
     homepage: artifactPath('mobile', 'milestone-3-homepage.png'),
     menu: artifactPath('mobile', 'milestone-3-menu.png'),
     cart: artifactPath('mobile', 'milestone-3-cart.png'),
-    summary: artifactPath('mobile', 'milestone-3-summary.png'),
+    confirmation: artifactPath('mobile', 'milestone-3-confirmation.png'),
   },
   states: {
     validation: artifactPath(
       'interaction-states',
       'milestone-3-validation.png',
-    ),
-    demoHandoff: artifactPath(
-      'interaction-states',
-      'milestone-3-demo-handoff.png',
     ),
   },
 } as const;
@@ -122,10 +118,8 @@ async function fillPickupRequest(page: Page, includeName = true) {
 
 test.describe.serial('Milestone 3 evidence capture', () => {
   test('captures the desktop customer journey and one field-error state', async ({
-    context,
     page,
   }) => {
-    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     const consoleErrors: string[] = [];
     page.on('console', (message) => {
       if (message.type() === 'error') {
@@ -145,7 +139,7 @@ test.describe.serial('Milestone 3 evidence capture', () => {
     await capture(page, screenshots.desktop.cart);
 
     await fillPickupRequest(page, false);
-    await page.getByRole('button', { name: 'Revisar solicitud' }).click();
+    await page.getByRole('button', { name: 'Enviar pedido' }).click();
 
     const errorSummary = page.getByRole('main').getByRole('alert');
     await expect(errorSummary).toBeFocused();
@@ -158,27 +152,17 @@ test.describe.serial('Milestone 3 evidence capture', () => {
     await capture(page, screenshots.states.validation);
 
     await page.getByLabel('Nombre completo').fill('Ana López');
-    await page.getByRole('button', { name: 'Revisar solicitud' }).click();
+    await page.getByRole('button', { name: 'Enviar pedido' }).click();
     await expect(
       page.getByRole('heading', {
-        name: 'Tu solicitud está lista para revisar',
+        name: '¡Pedido recibido!',
       }),
     ).toBeVisible();
-    await expect(page.getByLabel('Resumen de la solicitud')).toContainText(
-      'Modalidad: Recogida',
+    await expect(page).toHaveURL(
+      /\/order\/confirmation\/[A-Za-z0-9_-]{43}\/$/,
+      { timeout: 15_000 },
     );
-    await capture(page, screenshots.desktop.summary);
-
-    await page.getByRole('button', { name: 'Copiar resumen' }).click();
-    await expect(page.getByRole('status')).toHaveText('Resumen copiado.');
-    await expect(
-      page.getByText(
-        'Modo demostración: copia el resumen para probar el flujo.',
-        { exact: true },
-      ),
-    ).toBeVisible();
-    await expect(page.locator('a[href*="wa.me"]')).toHaveCount(0);
-    await capture(page, screenshots.states.demoHandoff);
+    await capture(page, screenshots.desktop.confirmation);
 
     expect(consoleErrors).toEqual([]);
   });
@@ -203,16 +187,17 @@ test.describe.serial('Milestone 3 evidence capture', () => {
     await capture(page, screenshots.mobile.cart);
 
     await fillPickupRequest(page);
-    await page.getByRole('button', { name: 'Revisar solicitud' }).click();
+    await page.getByRole('button', { name: 'Enviar pedido' }).click();
     await expect(
       page.getByRole('heading', {
-        name: 'Tu solicitud está lista para revisar',
+        name: '¡Pedido recibido!',
       }),
     ).toBeVisible();
-    await expect(page.getByLabel('Resumen de la solicitud')).toContainText(
-      'Modalidad: Recogida',
+    await expect(page).toHaveURL(
+      /\/order\/confirmation\/[A-Za-z0-9_-]{43}\/$/,
+      { timeout: 15_000 },
     );
-    await capture(page, screenshots.mobile.summary);
+    await capture(page, screenshots.mobile.confirmation);
 
     expect(consoleErrors).toEqual([]);
   });

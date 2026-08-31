@@ -1,4 +1,6 @@
 import { addCalendarDays } from '@/lib/date';
+import type { CartLine } from '@/domain/cart';
+import type { CreateOrderRequest } from '@/domain/order-contract';
 
 export type OrderFormValues = {
   name: string;
@@ -10,6 +12,12 @@ export type OrderFormValues = {
 };
 
 export type OrderErrors = Partial<Record<keyof OrderFormValues, string>>;
+
+export type CheckoutState =
+  | { kind: 'EDITING' }
+  | { kind: 'SUBMITTING'; idempotencyKey: string }
+  | { kind: 'SUCCESS'; publicId: string; receiptToken: string }
+  | { kind: 'ERROR'; idempotencyKey: string; message: string };
 
 export const orderFieldLimits = {
   name: 100,
@@ -82,6 +90,23 @@ export function validateOrder(
   }
 
   return errors;
+}
+
+export function buildCreateOrderRequest(
+  values: OrderFormValues,
+  lines: readonly CartLine[],
+): CreateOrderRequest {
+  return {
+    customerName: values.name,
+    phone: values.phone,
+    fulfillment: values.fulfillment,
+    requestedDate: values.requestedDate,
+    ...(values.fulfillment === 'delivery'
+      ? { deliveryLocation: values.location }
+      : {}),
+    ...(values.notes ? { notes: values.notes } : {}),
+    items: lines.map(({ productId, quantity }) => ({ productId, quantity })),
+  };
 }
 
 function isValidIsoDate(value: string): boolean {
