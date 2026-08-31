@@ -104,6 +104,23 @@ describe('owner provisioning and credential protection', () => {
     await expect(db.select().from(user)).resolves.toHaveLength(1);
   });
 
+  it('allows exactly one concurrent bootstrap owner creation', async () => {
+    const input = {
+      email: 'owner@example.test',
+      name: 'Propietaria',
+      password: 'a-password-that-is-at-least-14-characters',
+    };
+
+    const results = await Promise.all(
+      Array.from({ length: 6 }, () => provisionOwner(input)),
+    );
+
+    expect(results.filter((result) => result === 'created')).toHaveLength(1);
+    expect(results.filter((result) => result === 'exists')).toHaveLength(5);
+    await expect(db.select().from(user)).resolves.toHaveLength(1);
+    await expect(db.select().from(account)).resolves.toHaveLength(1);
+  });
+
   it('rejects inactive accounts with the same generic credential error', async () => {
     await provisionOwner({
       email: 'owner@example.test',
