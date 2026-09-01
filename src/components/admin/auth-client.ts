@@ -6,7 +6,7 @@ import { twoFactorClient } from 'better-auth/client/plugins';
 export const adminAuthClient = createAuthClient({
   plugins: [
     twoFactorClient({
-      twoFactorPage: '/admin/enroll-mfa',
+      twoFactorPage: '/admin/verify-mfa',
     }),
   ],
 });

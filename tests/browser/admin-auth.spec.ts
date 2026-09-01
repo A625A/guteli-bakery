@@ -26,14 +26,22 @@ test('the admin sign-in flow requires enrollment before business access', async 
   await expect(page.getByLabel('Contraseña')).toBeVisible();
 });
 
-test('the enrollment UI protects recovery codes until enrollment begins', async ({
-  page,
-}) => {
+test('unauthenticated users cannot open MFA enrollment', async ({ page }) => {
   await page.goto('/admin/enroll-mfa');
 
   await expect(
-    page.getByRole('heading', { name: 'Configura tu autenticador' }),
+    page.getByRole('heading', { name: 'Acceso administrativo' }),
   ).toBeVisible();
-  await expect(page.getByLabel('Contraseña actual')).toBeVisible();
-  await expect(page.getByText('Códigos de recuperación')).toHaveCount(0);
+  await expect(page.getByLabel('Contraseña actual')).toHaveCount(0);
+});
+
+test('the MFA challenge is distinct from TOTP enrollment', async ({ page }) => {
+  await page.goto('/admin/verify-mfa');
+
+  await expect(
+    page.getByRole('heading', { name: 'Verifica tu autenticador' }),
+  ).toBeVisible();
+  await expect(page.getByLabel('Código de verificación')).toBeVisible();
+  await expect(page.getByLabel('Código de recuperación')).toBeVisible();
+  await expect(page.getByLabel('Contraseña actual')).toHaveCount(0);
 });
