@@ -31,6 +31,9 @@ export function PasswordChangeForm() {
         return;
       }
       router.replace('/admin/enroll-mfa');
+      router.refresh();
+    } catch {
+      setMessage('No se pudo cambiar la contraseña. Intenta de nuevo.');
     } finally {
       setPending(false);
     }

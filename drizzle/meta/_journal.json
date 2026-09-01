@@ -29,6 +29,13 @@
       "when": 1788189748880,
       "tag": "0003_chubby_shadowcat",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1788223340938,
+      "tag": "0004_needy_wolf_cub",
+      "breakpoints": true
     }
   ]
 }

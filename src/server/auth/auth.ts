@@ -7,6 +7,7 @@ import { twoFactor } from 'better-auth/plugins';
 import { db } from '@/server/db/client';
 import * as schema from '@/server/db/schema';
 
+import { adminSessionPolicyPlugin } from './admin-session-policy';
 import { loginProtectionPlugin } from './login-protection';
 
 const isProduction = process.env.NODE_ENV === 'production';
@@ -42,6 +43,13 @@ export const auth = betterAuth({
   session: {
     expiresIn: 60 * 60 * 8,
     updateAge: 60 * 60,
+    additionalFields: {
+      mfaVerifiedAt: {
+        type: 'date',
+        required: false,
+        input: false,
+      },
+    },
   },
   user: {
     additionalFields: {
@@ -77,7 +85,8 @@ export const auth = betterAuth({
     },
   },
   plugins: [
-    loginProtectionPlugin(),
+    adminSessionPolicyPlugin(),
     twoFactor({ issuer: 'Guteli Bakery', accountLockout: { enabled: true } }),
+    loginProtectionPlugin(),
   ],
 });

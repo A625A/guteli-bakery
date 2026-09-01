@@ -1,10 +1,12 @@
 import 'server-only';
 
-import { eq } from 'drizzle-orm';
+import { randomUUID } from 'node:crypto';
+
+import { sql } from 'drizzle-orm';
 
 import { auth } from '@/server/auth/auth';
-import { db, pool } from '@/server/db/client';
-import { user } from '@/server/db/schema';
+import { db } from '@/server/db/client';
+import { account, user } from '@/server/db/schema';
 
 export type ProvisionOwnerInput = Readonly<{
   email: string;
@@ -13,6 +15,7 @@ export type ProvisionOwnerInput = Readonly<{
 }>;
 
 const OWNER_PROVISIONING_LOCK = 4_728_519_113;
+const SETUP_CREDENTIAL_TTL_MS = 24 * 60 * 60 * 1000;
 
 function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
@@ -29,57 +32,52 @@ function validateInput(input: ProvisionOwnerInput) {
   return { email, name };
 }
 
-/**
- * Creates the one local bootstrap owner. The PostgreSQL advisory lock spans
- * Better Auth's official user and credential adapter calls, making the
- * no-user check and creation atomic across concurrent CLI processes.
- */
+/** Creates the one local bootstrap owner in one PostgreSQL transaction. */
 export async function provisionOwner(
   input: ProvisionOwnerInput,
 ): Promise<'created' | 'exists'> {
   const { email, name } = validateInput(input);
-  const connection = await pool.connect();
+  const context = await auth.$context;
 
-  try {
-    await connection.query('SELECT pg_advisory_lock($1)', [
-      OWNER_PROVISIONING_LOCK,
-    ]);
-
-    const [existingUser] = await db.select({ id: user.id }).from(user).limit(1);
-    if (existingUser) return 'exists';
-
-    const context = await auth.$context;
-    const provisionedUser = await context.internalAdapter.createUser(
-      {
-        email,
-        name,
-        emailVerified: true,
-        role: 'OWNER',
-        active: true,
-        mustChangePassword: false,
-        setupCredentialExpiresAt: null,
-      },
-      { method: 'admin' },
+  return db.transaction(async (transaction) => {
+    await transaction.execute(
+      sql`SELECT pg_advisory_xact_lock(${OWNER_PROVISIONING_LOCK})`,
     );
 
-    try {
-      await context.internalAdapter.linkAccount({
-        userId: provisionedUser.id,
-        providerId: 'credential',
-        issuer: 'local:credential',
-        accountId: provisionedUser.id,
-        password: await context.password.hash(input.password),
-      });
-    } catch (error) {
-      await db.delete(user).where(eq(user.id, provisionedUser.id));
-      throw error;
-    }
+    const [existingUser] = await transaction
+      .select({ id: user.id })
+      .from(user)
+      .limit(1);
+    if (existingUser) return 'exists';
+
+    const now = new Date();
+    const userId = randomUUID();
+    const password = await context.password.hash(input.password);
+    await transaction.insert(user).values({
+      id: userId,
+      email,
+      name,
+      emailVerified: true,
+      createdAt: now,
+      updatedAt: now,
+      role: 'OWNER',
+      active: true,
+      mustChangePassword: true,
+      setupCredentialExpiresAt: new Date(
+        now.getTime() + SETUP_CREDENTIAL_TTL_MS,
+      ),
+    });
+    await transaction.insert(account).values({
+      id: randomUUID(),
+      userId,
+      providerId: 'credential',
+      issuer: 'local:credential',
+      accountId: userId,
+      password,
+      createdAt: now,
+      updatedAt: now,
+    });
 
     return 'created';
-  } finally {
-    await connection
-      .query('SELECT pg_advisory_unlock($1)', [OWNER_PROVISIONING_LOCK])
-      .catch(() => undefined);
-    connection.release();
-  }
+  });
 }

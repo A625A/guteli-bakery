@@ -1,4 +1,5 @@
 import { provisionOwner } from '../src/server/auth/provision-owner';
+import { ownerCliErrorMessage } from './create-owner-error';
 
 function prompt(label: string, masked = false): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -73,8 +74,6 @@ async function main() {
 }
 
 main().catch((error: unknown) => {
-  process.stderr.write(
-    `${error instanceof Error ? error.message : 'No se pudo crear el propietario.'}\n`,
-  );
+  process.stderr.write(`${ownerCliErrorMessage(error)}\n`);
   process.exitCode = 1;
 });

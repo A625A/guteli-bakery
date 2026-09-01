@@ -51,7 +51,7 @@ describe('Better Auth configuration', () => {
         role: 'OWNER',
         active: true,
         mustChangePassword: true,
-        setupCredentialExpiresAt: new Date('2026-09-01T00:00:00.000Z'),
+        setupCredentialExpiresAt: new Date(Date.now() + 60_000),
       },
       { method: 'admin' },
     );

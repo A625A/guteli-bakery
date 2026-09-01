@@ -4,6 +4,7 @@ import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { adminAuthClient } from './auth-client';
+import { SessionActions } from './SessionActions';
 
 type Enrollment = Readonly<{
   backupCodes: string[];
@@ -14,7 +15,6 @@ export function MfaEnrollment() {
   const router = useRouter();
   const [password, setPassword] = useState('');
   const [code, setCode] = useState('');
-  const [recoveryCode, setRecoveryCode] = useState('');
   const [enrollment, setEnrollment] = useState<Enrollment | null>(null);
   const [confirmedBackupCodes, setConfirmedBackupCodes] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -46,6 +46,8 @@ export function MfaEnrollment() {
         backupCodes: result.data.backupCodes,
       });
       setPassword('');
+    } catch {
+      setMessage('No se pudo iniciar la configuración. Intenta de nuevo.');
     } finally {
       setPending(false);
     }
@@ -65,36 +67,10 @@ export function MfaEnrollment() {
         setMessage('El código de verificación no es válido.');
         return;
       }
-      router.replace('/admin/login');
-    } finally {
-      setPending(false);
-    }
-  }
-
-  async function recover(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setMessage(null);
-    setPending(true);
-    try {
-      const result = await adminAuthClient.twoFactor.verifyBackupCode({
-        code: recoveryCode,
-      });
-      if (result.error) {
-        setMessage('El código de recuperación no es válido.');
-        return;
-      }
-      router.replace('/admin/login');
-    } finally {
-      setPending(false);
-    }
-  }
-
-  async function signOutEverywhere() {
-    setPending(true);
-    try {
-      await adminAuthClient.revokeOtherSessions();
-      await adminAuthClient.signOut();
-      router.replace('/admin/login');
+      router.replace('/admin');
+      router.refresh();
+    } catch {
+      setMessage('No se pudo verificar el código. Intenta de nuevo.');
     } finally {
       setPending(false);
     }
@@ -163,24 +139,8 @@ export function MfaEnrollment() {
           </form>
         </>
       )}
-      <form onSubmit={recover}>
-        <label>
-          Código de recuperación
-          <input
-            autoComplete="one-time-code"
-            onChange={(event) => setRecoveryCode(event.target.value)}
-            required
-            value={recoveryCode}
-          />
-        </label>
-        <button disabled={pending} type="submit">
-          Recuperar acceso
-        </button>
-      </form>
       {message ? <p role="alert">{message}</p> : null}
-      <button disabled={pending} onClick={signOutEverywhere} type="button">
-        Cerrar sesión en todos los dispositivos
-      </button>
+      <SessionActions />
     </section>
   );
 }

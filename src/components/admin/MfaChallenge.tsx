@@ -21,7 +21,10 @@ export function MfaChallenge() {
         setMessage('El código de verificación no es válido.');
         return;
       }
-      router.replace('/admin/login');
+      router.replace('/admin');
+      router.refresh();
+    } catch {
+      setMessage('No se pudo verificar el código. Intenta de nuevo.');
     } finally {
       setPending(false);
     }

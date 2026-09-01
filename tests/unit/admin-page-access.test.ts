@@ -24,4 +24,10 @@ describe('admin authentication page access', () => {
       destinationForAdminAuthPage('MFA_REQUIRED', '/admin/enroll-mfa'),
     ).toBe('/admin/login');
   });
+
+  it('moves a fully verified session off authentication pages', () => {
+    expect(destinationForAdminAuthPage('ALLOWED', '/admin/login')).toBe(
+      '/admin',
+    );
+  });
 });

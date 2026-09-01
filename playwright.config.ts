@@ -29,7 +29,7 @@ export default defineConfig({
   },
   webServer: {
     command:
-      'node scripts/reset-test-database.mjs && npm run db:migrate && npm run db:seed && npm run dev -- --hostname 127.0.0.1',
+      'node scripts/reset-test-database.mjs && npm run db:migrate && npm run db:seed && node --conditions=react-server --import tsx tests/support/seed-admin-owner.ts && npm run dev -- --hostname 127.0.0.1',
     env: {
       DATABASE_URL: databaseUrlTest,
       DATABASE_URL_TEST: databaseUrlTest,
