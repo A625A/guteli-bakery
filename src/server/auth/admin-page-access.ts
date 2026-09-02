@@ -37,6 +37,7 @@ export type VerifiedAdminSession = Readonly<{
   sessionId: string;
   userId: string;
   role: 'OWNER' | 'ADMIN';
+  mfaVerifiedAt: Date;
 }>;
 
 export type AdminSessionAccess =
@@ -109,6 +110,7 @@ export async function getAdminSessionAccess(
       sessionId: stored.sessionId,
       userId: stored.sessionUserId,
       role: stored.role,
+      mfaVerifiedAt: stored.mfaVerifiedAt!,
     },
   };
 }

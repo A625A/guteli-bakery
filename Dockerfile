@@ -10,6 +10,12 @@ RUN npm ci
 
 FROM base AS builder
 ENV NEXT_PUBLIC_DEMO_MODE=true
+ENV DATABASE_URL=postgresql://build:build@127.0.0.1:5432/guteli
+ENV BETTER_AUTH_SECRET=build-only-auth-secret-must-be-at-least-32-bytes
+ENV BETTER_AUTH_URL=http://127.0.0.1:3000
+ENV RATE_LIMIT_SECRET=build-only-rate-limit-secret-must-be-at-least-32-bytes
+ENV RECEIPT_TOKEN_SECRET=build-only-receipt-secret-must-be-at-least-32-bytes
+ENV TRUSTED_PROXY_HOPS=1
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build

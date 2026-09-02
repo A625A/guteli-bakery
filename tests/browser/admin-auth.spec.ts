@@ -23,6 +23,7 @@ test('the protected Spanish admin login does not reveal whether an account exist
 test('the real admin lifecycle requires password change, TOTP, and explicit logout', async ({
   page,
 }) => {
+  test.setTimeout(60_000);
   await page.goto('/admin/login');
 
   await page.getByLabel('Correo electrónico').fill(adminAuthFixture.email);
@@ -84,6 +85,9 @@ test('the real admin lifecycle requires password change, TOTP, and explicit logo
   await expect(
     page.getByRole('heading', { name: 'Verifica tu autenticador' }),
   ).toBeVisible();
+  await expect
+    .poll(() => createOTP(secret).totp(), { timeout: 31_000 })
+    .not.toBe(validCode);
   await page
     .getByLabel('Código de verificación')
     .fill(await createOTP(secret).totp());
