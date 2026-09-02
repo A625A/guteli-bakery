@@ -355,7 +355,7 @@ describe('owner provisioning and credential protection', () => {
       new Headers({ cookie: cookieHeader(firstFactor) }),
     );
 
-    expect(access).toEqual({ policy: 'MFA_REQUIRED' });
+    expect(access).toEqual({ policy: 'UNAUTHENTICATED' });
     await expect(db.select().from(session)).resolves.toHaveLength(0);
   });
 

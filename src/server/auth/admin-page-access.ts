@@ -3,10 +3,12 @@ import 'server-only';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
+import { isAPIError } from 'better-auth/api';
 import { and, eq } from 'drizzle-orm';
 
+import { getAdminAuthSessionState } from './admin-auth-route-policy';
 import { auth } from './auth';
-import { getAdminAccessPolicy, type AdminAccessPolicy } from './policies';
+import type { AdminAccessPolicy } from './policies';
 import { db } from '@/server/db/client';
 import { session, user } from '@/server/db/schema';
 
@@ -46,10 +48,18 @@ export type AdminSessionAccess =
 export async function getAdminSessionAccess(
   requestHeaders: Headers,
 ): Promise<AdminSessionAccess> {
-  const current = await auth.api.getSession({
-    headers: requestHeaders,
-    query: { disableCookieCache: true, disableRefresh: true },
-  });
+  let current;
+  try {
+    current = await auth.api.getSession({
+      headers: requestHeaders,
+      query: { disableCookieCache: true, disableRefresh: true },
+    });
+  } catch (error) {
+    if (isAPIError(error) && error.statusCode === 401) {
+      return { policy: 'UNAUTHENTICATED' };
+    }
+    throw error;
+  }
   if (!current) return { policy: 'UNAUTHENTICATED' };
 
   const [stored] = await db
@@ -74,16 +84,23 @@ export async function getAdminSessionAccess(
     .limit(1);
   if (!stored) return { policy: 'UNAUTHENTICATED' };
 
-  const policy = getAdminAccessPolicy(stored);
-  if (policy === 'MFA_REQUIRED' || policy === 'SETUP_CREDENTIAL_EXPIRED') {
-    await db.delete(session).where(eq(session.userId, stored.sessionUserId));
-    return { policy };
-  }
-  if (policy !== 'ALLOWED') return { policy };
-
-  if (stored.mfaVerifiedAt === null) {
-    await db.delete(session).where(eq(session.id, stored.sessionId));
-    return { policy: 'MFA_REQUIRED' };
+  const state = getAdminAuthSessionState(stored);
+  switch (state) {
+    case 'ACCOUNT_INACTIVE':
+      await db.delete(session).where(eq(session.userId, stored.sessionUserId));
+      return { policy: 'MFA_REQUIRED' };
+    case 'SETUP_CREDENTIAL_EXPIRED':
+      await db.delete(session).where(eq(session.userId, stored.sessionUserId));
+      return { policy: 'SETUP_CREDENTIAL_EXPIRED' };
+    case 'MFA_REQUIRED':
+      await db.delete(session).where(eq(session.id, stored.sessionId));
+      return { policy: 'MFA_REQUIRED' };
+    case 'PASSWORD_CHANGE_REQUIRED':
+      return { policy: 'PASSWORD_CHANGE_REQUIRED' };
+    case 'MFA_ENROLLMENT_REQUIRED':
+      return { policy: 'MFA_ENROLLMENT_REQUIRED' };
+    case 'MFA_VERIFIED':
+      break;
   }
 
   return {

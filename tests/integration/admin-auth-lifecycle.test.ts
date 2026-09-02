@@ -16,7 +16,8 @@ vi.hoisted(() => {
 
 vi.mock('server-only', () => ({}));
 
-import { POST } from '@/app/api/auth/[...all]/route';
+import { GET, POST } from '@/app/api/auth/[...all]/route';
+import { ADMIN_AUTH_HTTP_ENDPOINT_POLICY } from '@/server/auth/admin-auth-route-policy';
 import { getAdminSessionAccess } from '@/server/auth/admin-page-access';
 import { auth } from '@/server/auth/auth';
 import { provisionOwner } from '@/server/auth/provision-owner';
@@ -80,6 +81,19 @@ async function authPost(
         'x-forwarded-for': forwardedFor,
       },
       body: JSON.stringify(body),
+    }),
+  );
+  jar.absorb(response);
+  return response;
+}
+
+async function authGet(path: string, jar: CookieJar) {
+  const response = await GET(
+    new Request(`http://localhost:3000/api/auth/${path}`, {
+      headers: {
+        cookie: jar.header(),
+        origin: 'http://localhost:3000',
+      },
     }),
   );
   jar.absorb(response);
@@ -170,6 +184,172 @@ describe('real Better Auth admin lifecycle', () => {
 
   afterAll(async () => {
     await pool.end();
+  });
+
+  it('classifies every installed Better Auth HTTP endpoint', () => {
+    const installedPaths = Object.values(auth.api)
+      .flatMap((endpoint) => {
+        const path = (endpoint as { path?: string }).path;
+        return path === undefined ? [] : [path];
+      })
+      .sort();
+
+    expect(installedPaths).toEqual(
+      Object.keys(ADMIN_AUTH_HTTP_ENDPOINT_POLICY).sort(),
+    );
+    expect(auth.options.plugins?.map((plugin) => plugin.id)).toEqual([
+      'guteli-admin-session-policy',
+      'two-factor',
+      'guteli-login-protection',
+    ]);
+  });
+
+  it('fails closed on account and session endpoints until password change and MFA enrollment finish', async () => {
+    const email = 'owner@example.test';
+    const setupPassword = 'setup-password-that-is-at-least-14-characters';
+    const password = 'changed-password-that-is-at-least-14-characters';
+    await provisionOwner({
+      email,
+      name: 'Propietaria',
+      password: setupPassword,
+    });
+    const jar = new CookieJar();
+
+    expect(
+      (await authPost('sign-in/email', { email, password: setupPassword }, jar))
+        .status,
+    ).toBe(200);
+    const setupLogout = new CookieJar();
+    expect(
+      (
+        await authPost(
+          'sign-in/email',
+          { email, password: setupPassword },
+          setupLogout,
+        )
+      ).status,
+    ).toBe(200);
+    expect((await authPost('sign-out', {}, setupLogout)).status).toBe(200);
+    const blockedUpdate = await authPost(
+      'update-user',
+      { name: 'No debe cambiar' },
+      jar,
+    );
+    expect(blockedUpdate.status).toBe(403);
+    expect(await blockedUpdate.json()).toMatchObject({
+      code: 'PASSWORD_CHANGE_REQUIRED',
+    });
+    expect((await authGet('list-sessions', jar)).status).toBe(403);
+    expect((await authGet('get-session', jar)).status).toBe(200);
+
+    expect(
+      (
+        await authPost(
+          'change-password',
+          {
+            currentPassword: setupPassword,
+            newPassword: password,
+            revokeOtherSessions: true,
+          },
+          jar,
+        )
+      ).status,
+    ).toBe(200);
+    const enrollmentUpdate = await authPost(
+      'update-user',
+      { name: 'Tampoco debe cambiar' },
+      jar,
+    );
+    expect(enrollmentUpdate.status).toBe(403);
+    expect(await enrollmentUpdate.json()).toMatchObject({
+      code: 'MFA_ENROLLMENT_REQUIRED',
+    });
+    expect((await authGet('list-sessions', jar)).status).toBe(403);
+
+    const enable = await authPost(
+      'two-factor/enable',
+      { method: 'totp', password },
+      jar,
+    );
+    expect(enable.status).toBe(200);
+    const enrollment = (await enable.json()) as { totpURI: string };
+    const encodedSecret = new URL(enrollment.totpURI).searchParams.get(
+      'secret',
+    );
+    expect(encodedSecret).toBeTruthy();
+    const secret = new TextDecoder().decode(base32.decode(encodedSecret!));
+    const generated = await auth.api.generateTOTP({ body: { secret } });
+    expect(
+      (await authPost('two-factor/verify-totp', generated, jar)).status,
+    ).toBe(200);
+
+    expect(
+      (await authPost('update-user', { name: 'Propietaria verificada' }, jar))
+        .status,
+    ).toBe(200);
+    const sessions = await authGet('list-sessions', jar);
+    expect(sessions.status).toBe(200);
+    expect(await sessions.json()).toHaveLength(1);
+    const deletion = await authPost('delete-user', { password }, jar);
+    expect(deletion.status).toBe(403);
+    expect(await deletion.json()).toMatchObject({
+      code: 'AUTH_OPERATION_NOT_ALLOWED',
+    });
+    await expect(
+      db
+        .select({ name: user.name })
+        .from(user)
+        .then((rows) => rows[0]),
+    ).resolves.toEqual({ name: 'Propietaria verificada' });
+  });
+
+  it('rejects and revokes inactive sessions across the auth handler surface', async () => {
+    const enrolled = await enrollOwner();
+    await db.update(user).set({ active: false });
+
+    const blockedUpdate = await authPost(
+      'update-user',
+      { name: 'No debe cambiar' },
+      enrolled.jar,
+    );
+    expect(blockedUpdate.status).toBe(401);
+    expect(await blockedUpdate.json()).toMatchObject({
+      code: 'INVALID_EMAIL_OR_PASSWORD',
+    });
+    expect((await authGet('list-sessions', enrolled.jar)).status).toBe(401);
+    await expect(db.select().from(session)).resolves.toHaveLength(0);
+  });
+
+  it('rejects and revokes setup-expired sessions across the auth handler surface', async () => {
+    const setupPassword = 'setup-password-that-is-at-least-14-characters';
+    await provisionOwner({
+      email: 'owner@example.test',
+      name: 'Propietaria',
+      password: setupPassword,
+    });
+    const jar = new CookieJar();
+    expect(
+      (
+        await authPost(
+          'sign-in/email',
+          { email: 'owner@example.test', password: setupPassword },
+          jar,
+        )
+      ).status,
+    ).toBe(200);
+    await db
+      .update(user)
+      .set({ setupCredentialExpiresAt: new Date(Date.now() - 1) });
+
+    const blockedSessions = await authGet('list-sessions', jar);
+    expect(blockedSessions.status).toBe(401);
+    expect(await blockedSessions.json()).toMatchObject({
+      code: 'INVALID_EMAIL_OR_PASSWORD',
+    });
+    expect(
+      (await authPost('update-user', { name: 'No debe cambiar' }, jar)).status,
+    ).toBe(401);
+    await expect(db.select().from(session)).resolves.toHaveLength(0);
   });
 
   it('preserves the exact login subject through the signed TOTP challenge and clears it only on success', async () => {
@@ -420,12 +600,12 @@ describe('real Better Auth admin lifecycle', () => {
     ).resolves.toMatchObject({ policy: 'ALLOWED' });
   });
 
-  it('revokes inactive and setup-expired existing sessions at the reusable boundary', async () => {
+  it('revokes invalid existing sessions and treats them as unauthenticated at the reusable boundary', async () => {
     const enrolled = await enrollOwner();
     await db.update(user).set({ active: false });
     await expect(
       getAdminSessionAccess(new Headers({ cookie: enrolled.jar.header() })),
-    ).resolves.toEqual({ policy: 'MFA_REQUIRED' });
+    ).resolves.toEqual({ policy: 'UNAUTHENTICATED' });
     await expect(db.select().from(session)).resolves.toHaveLength(0);
 
     await resetDatabase();
@@ -451,7 +631,7 @@ describe('real Better Auth admin lifecycle', () => {
       .where(eq(user.email, 'owner@example.test'));
     await expect(
       getAdminSessionAccess(new Headers({ cookie: setupJar.header() })),
-    ).resolves.toEqual({ policy: 'SETUP_CREDENTIAL_EXPIRED' });
+    ).resolves.toEqual({ policy: 'UNAUTHENTICATED' });
     await expect(db.select().from(session)).resolves.toHaveLength(0);
   });
 
