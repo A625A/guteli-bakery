@@ -87,6 +87,30 @@ async function authPost(
   return response;
 }
 
+async function authPostWithHeaders(
+  path: string,
+  body: Record<string, unknown>,
+  jar: CookieJar,
+  securityHeaders: HeadersInit,
+) {
+  const headers = new Headers({
+    'content-type': 'application/json',
+    'x-forwarded-for': '198.51.100.17',
+    ...securityHeaders,
+  });
+  const cookie = jar.header();
+  if (cookie) headers.set('cookie', cookie);
+  const response = await POST(
+    new Request(`http://localhost:3000/api/auth/${path}`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body),
+    }),
+  );
+  jar.absorb(response);
+  return response;
+}
+
 async function authGet(path: string, jar: CookieJar) {
   const response = await GET(
     new Request(`http://localhost:3000/api/auth/${path}`, {
@@ -202,6 +226,67 @@ describe('real Better Auth admin lifecycle', () => {
       'two-factor',
       'guteli-login-protection',
     ]);
+  });
+
+  it('requires an explicit trusted Origin for session-cookie mutations without breaking the public MFA challenge', async () => {
+    const enrolled = await enrollOwner();
+
+    const missingOrigin = await authPostWithHeaders(
+      'sign-out',
+      {},
+      enrolled.jar,
+      { referer: 'http://localhost:3000/admin' },
+    );
+    expect(missingOrigin.status).toBe(403);
+    expect(await missingOrigin.json()).toMatchObject({
+      code: 'INVALID_ORIGIN',
+    });
+
+    const forgedOrigin = await authPostWithHeaders(
+      'sign-out',
+      {},
+      enrolled.jar,
+      {
+        origin: 'https://attacker.example',
+        referer: 'http://localhost:3000/admin',
+      },
+    );
+    expect(forgedOrigin.status).toBe(403);
+    expect(await forgedOrigin.json()).toMatchObject({
+      code: 'INVALID_ORIGIN',
+    });
+
+    expect(
+      (
+        await authPostWithHeaders('sign-out', {}, enrolled.jar, {
+          origin: 'http://localhost:3000',
+        })
+      ).status,
+    ).toBe(200);
+
+    const challenge = new CookieJar();
+    const firstFactor = await authPostWithHeaders(
+      'sign-in/email',
+      { email: enrolled.email, password: enrolled.password },
+      challenge,
+      { referer: 'http://localhost:3000/admin/login' },
+    );
+    expect(firstFactor.status).toBe(200);
+    expect(await firstFactor.json()).toMatchObject({ twoFactorRedirect: true });
+
+    const generated = await auth.api.generateTOTP({
+      body: { secret: enrolled.secret },
+    });
+    expect(
+      (
+        await authPostWithHeaders(
+          'two-factor/verify-totp',
+          generated,
+          challenge,
+          { referer: 'http://localhost:3000/admin/verify-mfa' },
+        )
+      ).status,
+    ).toBe(200);
   });
 
   it('fails closed on account and session endpoints until password change and MFA enrollment finish', async () => {

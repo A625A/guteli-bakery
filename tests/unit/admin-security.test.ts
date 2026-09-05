@@ -74,7 +74,21 @@ describe('admin request security', () => {
 
   it('never exempts protected admin paths that look like static files', () => {
     expect(config.matcher).toEqual(
-      expect.arrayContaining(['/admin/:path*', '/api/admin/:path*']),
+      expect.arrayContaining([
+        '/admin/:path*',
+        '/api/admin',
+        '/api/admin/:path*',
+      ]),
     );
+  });
+
+  it('marks the exact admin API root private too', () => {
+    const response = proxy(
+      new NextRequest('https://admin.guteli.test/api/admin'),
+    );
+
+    expect(response.headers.get('cache-control')).toBe('private, no-store');
+    expect(response.headers.get('x-robots-tag')).toBe('noindex, nofollow');
+    expect(response.headers.get('referrer-policy')).toBe('no-referrer');
   });
 });

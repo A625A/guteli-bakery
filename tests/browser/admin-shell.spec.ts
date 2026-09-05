@@ -22,6 +22,12 @@ test('anonymous visitors are redirected to the private admin login', async ({
     /'nonce-[^']+' /,
   );
   await expect(page.getByRole('link', { name: 'Menú' })).toHaveCount(0);
+
+  await page.goto('/admin/not-a-real-page');
+  expect(new URL(page.url()).pathname).toBe('/admin/login');
+  await expect(
+    page.getByRole('heading', { name: 'Acceso administrativo' }),
+  ).toBeVisible();
 });
 
 test('verified admins receive the operational shell without storefront chrome', async ({
@@ -81,6 +87,34 @@ test('verified admins receive the operational shell without storefront chrome', 
     navigation.getByRole('link', { name: 'Categorías' }),
   ).toBeVisible();
   await expect(page.getByRole('link', { name: 'Menú' })).toHaveCount(0);
+
+  for (const path of [
+    '/admin/orders',
+    '/admin/products',
+    '/admin/categories',
+    '/admin/not-a-real-page',
+  ]) {
+    const response = await page.goto(path);
+
+    expect(response?.headers()['cache-control']).toMatch(/no-store|no-cache/);
+    expect(response?.headers()['x-robots-tag']).toBe('noindex, nofollow');
+    expect(response?.headers()['referrer-policy']).toBe('no-referrer');
+    await expect(
+      page.getByRole('heading', {
+        level: 1,
+        name: 'Página administrativa no encontrada',
+      }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('navigation', { name: 'Administración' }),
+    ).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Menú' })).toHaveCount(0);
+    await expect(
+      page.getByRole('heading', {
+        name: 'Pretzels, bagels y panes por encargo',
+      }),
+    ).toHaveCount(0);
+  }
 });
 
 test('the storefront keeps its public layout and URL', async ({ page }) => {

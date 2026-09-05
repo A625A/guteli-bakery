@@ -25,6 +25,7 @@ export function proxy(request: NextRequest) {
   const isAdmin =
     request.nextUrl.pathname === '/admin' ||
     request.nextUrl.pathname.startsWith('/admin/') ||
+    request.nextUrl.pathname === '/api/admin' ||
     request.nextUrl.pathname.startsWith('/api/admin/');
   response.headers.set(
     'referrer-policy',
@@ -40,6 +41,7 @@ export function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     '/admin/:path*',
+    '/api/admin',
     '/api/admin/:path*',
     '/((?!_next/static|_next/image|api/media(?:/|$)|favicon.ico|.*\\.(?:avif|bmp|css|csv|eot|gif|ico|jpe?g|js|json|map|mp3|mp4|ogg|otf|pdf|png|svg|ttf|txt|wav|webm|webp|woff2?)$).*)',
   ],
