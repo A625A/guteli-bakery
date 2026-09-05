@@ -10,13 +10,16 @@ const links = [
   { href: '/admin/categories', label: 'Categorías' },
 ] as const;
 
-export function AdminNav() {
+const ownerLinks = [{ href: '/admin/users', label: 'Usuarios' }] as const;
+
+export function AdminNav({ role }: { role: 'OWNER' | 'ADMIN' }) {
   const pathname = usePathname();
+  const visibleLinks = role === 'OWNER' ? [...links, ...ownerLinks] : links;
 
   return (
     <nav aria-label="Administración">
       <ul className="admin-navigation">
-        {links.map(({ href, label }) => {
+        {visibleLinks.map(({ href, label }) => {
           const current =
             pathname === href ||
             (href !== '/admin' && pathname.startsWith(`${href}/`));

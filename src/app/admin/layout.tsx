@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 async function VerifiedAdminNavigation() {
   const access = await getAdminSessionAccess(await headers());
   if (access.policy !== 'ALLOWED') return null;
-  return <AdminNav />;
+  return <AdminNav role={access.principal.role} />;
 }
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
