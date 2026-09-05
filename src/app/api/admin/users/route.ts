@@ -4,6 +4,7 @@ import {
   AdminUserError,
   createAdminUser,
   listAdminUsers,
+  parseAdminUserPagination,
 } from '@/server/auth/admin-users';
 import { AuthorizationError } from '@/server/auth/authorize';
 import { getRequestId } from '@/server/observability/request-id';
@@ -102,12 +103,6 @@ export function adminUsersErrorResponse(error: unknown, requestId: string) {
   );
 }
 
-function parsePositiveInteger(value: string | null, fallback: number) {
-  if (value === null) return fallback;
-  if (!/^[1-9]\d*$/.test(value)) throw new RangeError('Invalid pagination.');
-  return Number(value);
-}
-
 function paginationFrom(request: Request) {
   const parameters = new URL(request.url).searchParams;
   for (const key of parameters.keys()) {
@@ -118,10 +113,10 @@ function paginationFrom(request: Request) {
       throw new RangeError('Invalid pagination.');
     }
   }
-  const page = parsePositiveInteger(parameters.get('page'), 1);
-  const pageSize = parsePositiveInteger(parameters.get('pageSize'), 25);
-  if (pageSize > 100) throw new RangeError('Invalid pagination.');
-  return { page, pageSize };
+  return parseAdminUserPagination({
+    page: parameters.get('page'),
+    pageSize: parameters.get('pageSize'),
+  });
 }
 
 export async function GET(request: Request) {

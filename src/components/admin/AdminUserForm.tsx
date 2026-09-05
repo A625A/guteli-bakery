@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 import type { AdminUserDto } from '@/server/auth/admin-users';
 
@@ -26,7 +27,6 @@ export function AdminUserForm({
   currentUserId: string;
 }) {
   const router = useRouter();
-  const [users, setUsers] = useState(initial.users);
   const [message, setMessage] = useState<string | null>(null);
   const [credential, setCredential] = useState<{
     value: string;
@@ -35,6 +35,11 @@ export function AdminUserForm({
   const [pending, setPending] = useState(false);
   const [reauthenticationRequired, setReauthenticationRequired] =
     useState(false);
+  const totalPages = Math.max(1, Math.ceil(initial.total / initial.pageSize));
+
+  function pageHref(page: number) {
+    return `/admin/users?page=${page}&pageSize=${initial.pageSize}`;
+  }
 
   async function readResponse(response: Response) {
     const payload = (await response.json()) as ApiError & {
@@ -70,16 +75,12 @@ export function AdminUserForm({
         }),
       });
       const payload = await readResponse(response);
-      setUsers((current) =>
-        [...current, payload.user!].sort((a, b) =>
-          a.email.localeCompare(b.email),
-        ),
-      );
       setCredential({
         value: payload.setupCredential!,
         expiresAt: payload.setupCredentialExpiresAt!,
       });
       setMessage('Cuenta administrativa creada.');
+      router.refresh();
     } catch (error) {
       setMessage(
         error instanceof Error ? error.message : 'No se pudo crear la cuenta.',
@@ -105,13 +106,9 @@ export function AdminUserForm({
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ ...mutation, userId: candidate.id }),
       });
-      const payload = await readResponse(response);
-      setUsers((current) =>
-        current.map((item) =>
-          item.id === payload.user!.id ? payload.user! : item,
-        ),
-      );
+      await readResponse(response);
       setMessage('Cambio guardado. Las sesiones afectadas fueron cerradas.');
+      router.refresh();
     } catch (error) {
       setMessage(
         error instanceof Error
@@ -192,7 +189,7 @@ export function AdminUserForm({
               </tr>
             </thead>
             <tbody>
-              {users.map((candidate) => (
+              {initial.users.map((candidate) => (
                 <tr key={candidate.id}>
                   <th scope="row">
                     {candidate.name}
@@ -252,6 +249,21 @@ export function AdminUserForm({
             </tbody>
           </table>
         </div>
+        <nav aria-label="Paginación de cuentas administrativas">
+          {initial.page > 1 ? (
+            <Link href={pageHref(initial.page - 1)}>Anterior</Link>
+          ) : (
+            <span aria-disabled="true">Anterior</span>
+          )}
+          <p aria-live="polite">
+            Página {initial.page} de {totalPages}
+          </p>
+          {initial.page < totalPages ? (
+            <Link href={pageHref(initial.page + 1)}>Siguiente</Link>
+          ) : (
+            <span aria-disabled="true">Siguiente</span>
+          )}
+        </nav>
       </section>
     </>
   );

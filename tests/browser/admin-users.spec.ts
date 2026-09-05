@@ -24,6 +24,11 @@ const adminFixture = {
   password: 'users-admin-replacement-password-at-least-14',
 } as const;
 
+const paginatedAdminFixtures = Array.from({ length: 26 }, (_, index) => ({
+  email: `zz-browser-users-paged-${index.toString().padStart(2, '0')}@example.test`,
+  name: `Administradora paginada ${index.toString().padStart(2, '0')}`,
+}));
+
 test.beforeAll(async () => {
   const databaseUrl = requireTestDatabaseUrl(
     process.env.DATABASE_URL_TEST,
@@ -56,6 +61,20 @@ test.beforeAll(async () => {
           now(), now()
         )`,
         [randomUUID(), userId, password],
+      );
+    }
+    for (const fixture of paginatedAdminFixtures) {
+      await pool.query(
+        `INSERT INTO "user" (
+          id, name, email, email_verified, role, active,
+          must_change_password, setup_credential_expires_at
+        ) VALUES ($1, $2, $3, true, 'ADMIN', true, true, $4)`,
+        [
+          randomUUID(),
+          fixture.name,
+          fixture.email,
+          new Date(Date.now() + 24 * 60 * 60 * 1_000),
+        ],
       );
     }
   } finally {
@@ -152,6 +171,20 @@ test('an owner creates an admin whose one-time credential requires replacement a
       setupCredential,
     ),
   ).toBe(false);
+
+  await expect(page.getByText('Página 1 de 2')).toBeVisible();
+  await page.getByRole('link', { name: 'Siguiente' }).click();
+  await expect(page).toHaveURL(/\/admin\/users\?page=2&pageSize=25$/);
+  const paginatedUser = page.getByRole('row', {
+    name: /Administradora paginada 25/,
+  });
+  await expect(paginatedUser).toContainText(
+    'zz-browser-users-paged-25@example.test',
+  );
+  await paginatedUser
+    .getByRole('button', { name: 'Desactivar: Administradora paginada 25' })
+    .click();
+  await expect(paginatedUser).toContainText('Desactivada');
 
   await page.goto('/admin');
   await page.getByRole('button', { name: 'Cerrar esta sesión' }).click();

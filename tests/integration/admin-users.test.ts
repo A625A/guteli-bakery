@@ -23,7 +23,11 @@ import {
   POST as POST_USERS,
 } from '@/app/api/admin/users/route';
 import { PATCH as PATCH_USER } from '@/app/api/admin/users/[id]/route';
-import { AdminUserError, createAdminUser } from '@/server/auth/admin-users';
+import {
+  AdminUserError,
+  createAdminUser,
+  listAdminUsers,
+} from '@/server/auth/admin-users';
 import { auth } from '@/server/auth/auth';
 import { provisionOwner } from '@/server/auth/provision-owner';
 import { auditLogs, session, twoFactor, user } from '@/server/db/schema';
@@ -36,9 +40,12 @@ const databaseUrl = requireTestDatabaseUrl(
 const pool = new Pool({ connectionString: databaseUrl });
 const db = drizzle({ client: pool });
 const totpSecrets = new WeakMap<CookieJar, string>();
+const ADMIN_USER_MUTATION_LOCK = 4_728_519_114;
+let nextTestIpSuffix = 10;
 
 class CookieJar {
   private readonly values = new Map<string, string>();
+  readonly forwardedFor = `198.51.100.${nextTestIpSuffix++}`;
 
   absorb(response: Response) {
     for (const setCookie of response.headers.getSetCookie()) {
@@ -76,6 +83,55 @@ async function resetDatabase() {
   await migrate(db, { migrationsFolder: join(process.cwd(), 'drizzle') });
 }
 
+async function waitForAdminMutationToBlock() {
+  const deadline = Date.now() + 5_000;
+  while (Date.now() < deadline) {
+    const result = await pool.query<{ waiting: boolean }>(
+      `
+      SELECT EXISTS (
+        SELECT 1
+        FROM pg_locks
+        WHERE locktype = 'advisory'
+          AND granted = false
+          AND classid = (($1::bigint >> 32) & 4294967295)::oid
+          AND objid = ($1::bigint & 4294967295)::oid
+      ) AS waiting
+    `,
+      [ADMIN_USER_MUTATION_LOCK],
+    );
+    if (result.rows[0]?.waiting) return;
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+  throw new Error('Admin mutation did not wait for the advisory lock.');
+}
+
+async function releaseAdminMutationAfter(
+  boundary: Date,
+  startMutation: () => Promise<Response>,
+) {
+  const blocker = await pool.connect();
+  await blocker.query('BEGIN');
+  await blocker.query('SELECT pg_advisory_xact_lock($1::bigint)', [
+    ADMIN_USER_MUTATION_LOCK,
+  ]);
+  const mutation = startMutation();
+  try {
+    await waitForAdminMutationToBlock();
+    const remaining = boundary.getTime() - Date.now() + 50;
+    if (remaining > 0) {
+      await new Promise((resolve) => setTimeout(resolve, remaining));
+    }
+    await blocker.query('COMMIT');
+    return await mutation;
+  } catch (error) {
+    await blocker.query('ROLLBACK');
+    await mutation.catch(() => undefined);
+    throw error;
+  } finally {
+    blocker.release();
+  }
+}
+
 async function authPost(
   path: string,
   body: Record<string, unknown>,
@@ -88,7 +144,7 @@ async function authPost(
         'content-type': 'application/json',
         cookie: jar.cookie(),
         origin: 'http://localhost:3000',
-        'x-forwarded-for': '198.51.100.84',
+        'x-forwarded-for': jar.forwardedFor,
       },
       body: JSON.stringify(body),
     }),
@@ -393,6 +449,8 @@ describe('owner-only administrator management', () => {
       '?pageSize=0',
       '?page=1&page=2',
       '?unknown=1',
+      '?page=9007199254740992',
+      '?page=9007199254740991&pageSize=2',
     ]) {
       const invalid = await usersRequest('GET', owner.jar, undefined, query);
       expect(invalid.status).toBe(400);
@@ -411,7 +469,90 @@ describe('owner-only administrator management', () => {
     expect(
       result.users.map((candidate: { email: string }) => candidate.email),
     ).toEqual(['a@example.test', 'b@example.test']);
+
+    await expect(
+      listAdminUsers(owner.jar.headers(), {
+        page: Number.MAX_SAFE_INTEGER,
+        pageSize: 2,
+      }),
+    ).rejects.toThrow(RangeError);
   });
+
+  it('denies a mutation whose owner session expires while waiting for the real global lock without writing state or audit', async () => {
+    const owner = await enrolledOwner('lock-session-expiry');
+    const [ownerRow] = await db
+      .select({ id: user.id })
+      .from(user)
+      .where(eq(user.email, owner.email));
+    const expiryBoundary = new Date(Date.now() + 1_500);
+    await db
+      .update(session)
+      .set({ expiresAt: expiryBoundary })
+      .where(eq(session.userId, ownerRow.id));
+
+    const response = await releaseAdminMutationAfter(expiryBoundary, () =>
+      usersRequest('POST', owner.jar, {
+        kind: 'CREATE',
+        email: 'expired-during-lock@example.test',
+        name: 'Expired during lock',
+        role: 'ADMIN',
+      }),
+    );
+
+    expect(response.status).toBe(403);
+    expect(
+      await db
+        .select()
+        .from(user)
+        .where(eq(user.email, 'expired-during-lock@example.test')),
+    ).toHaveLength(0);
+    expect(
+      await db
+        .select()
+        .from(auditLogs)
+        .where(eq(auditLogs.action, 'ADMIN_USER_CREATED')),
+    ).toHaveLength(0);
+  }, 15_000);
+
+  it('denies a mutation whose MFA freshness crosses ten minutes while waiting for the real global lock without writing state or audit', async () => {
+    const owner = await enrolledOwner('lock-mfa-expiry');
+    const [ownerRow] = await db
+      .select({ id: user.id })
+      .from(user)
+      .where(eq(user.email, owner.email));
+    const mfaVerifiedAt = new Date(Date.now() - 598_500);
+    const freshnessBoundary = new Date(mfaVerifiedAt.getTime() + 600_000);
+    await db
+      .update(session)
+      .set({ mfaVerifiedAt })
+      .where(eq(session.userId, ownerRow.id));
+
+    const response = await releaseAdminMutationAfter(freshnessBoundary, () =>
+      usersRequest('POST', owner.jar, {
+        kind: 'CREATE',
+        email: 'stale-during-lock@example.test',
+        name: 'Stale during lock',
+        role: 'ADMIN',
+      }),
+    );
+
+    expect(response.status).toBe(401);
+    expect(await response.json()).toMatchObject({
+      error: { code: 'REAUTHENTICATION_REQUIRED' },
+    });
+    expect(
+      await db
+        .select()
+        .from(user)
+        .where(eq(user.email, 'stale-during-lock@example.test')),
+    ).toHaveLength(0);
+    expect(
+      await db
+        .select()
+        .from(auditLogs)
+        .where(eq(auditLogs.action, 'ADMIN_USER_CREATED')),
+    ).toHaveLength(0);
+  }, 15_000);
 
   it('returns a private validation error for malformed JSON and mismatched target IDs', async () => {
     const owner = await enrolledOwner();
@@ -741,7 +882,10 @@ describe('owner-only administrator management', () => {
     );
     expect(
       results.some(
-        (response) => response.status === 409 || response.status === 403,
+        (response) =>
+          response.status === 409 ||
+          response.status === 403 ||
+          response.status === 401,
       ),
     ).toBe(true);
     const [{ count }] = await db

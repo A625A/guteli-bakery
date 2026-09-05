@@ -59,7 +59,6 @@ type AdminUserState = Readonly<{
 
 type CreateAdminUserDependencies = Readonly<{
   generateSetupCredential?: () => string;
-  now?: () => Date;
 }>;
 
 const ADMIN_USER_MUTATION_LOCK = 4_728_519_114;
@@ -126,11 +125,11 @@ async function initialMutationActor(requestHeaders: Headers) {
 async function lockAndRevalidateActor(
   transaction: Parameters<Parameters<typeof db.transaction>[0]>[0],
   actor: AuthorizedActor,
-  now: Date,
 ) {
   await transaction.execute(
     sql`SELECT pg_advisory_xact_lock(${ADMIN_USER_MUTATION_LOCK})`,
   );
+  const now = new Date();
   const [current] = await transaction
     .select({
       active: user.active,
@@ -160,6 +159,37 @@ async function lockAndRevalidateActor(
     MAX_REAUTHENTICATION_AGE_SECONDS,
     now,
   );
+  return now;
+}
+
+export function parseAdminUserPagination(
+  pagination: Readonly<{ page?: unknown; pageSize?: unknown }> = {},
+) {
+  const parseInteger = (value: unknown, fallback: number) => {
+    if (value === undefined || value === null) return fallback;
+    if (typeof value === 'string') {
+      if (!/^[1-9]\d*$/.test(value)) {
+        throw new RangeError('Invalid admin user pagination.');
+      }
+      value = Number(value);
+    }
+    if (
+      typeof value !== 'number' ||
+      !Number.isSafeInteger(value) ||
+      value < 1
+    ) {
+      throw new RangeError('Invalid admin user pagination.');
+    }
+    return value;
+  };
+
+  const page = parseInteger(pagination.page, 1);
+  const pageSize = parseInteger(pagination.pageSize, 25);
+  const offset = (page - 1) * pageSize;
+  if (pageSize > 100 || !Number.isSafeInteger(offset)) {
+    throw new RangeError('Invalid admin user pagination.');
+  }
+  return { page, pageSize, offset } as const;
 }
 
 async function writeAudit(
@@ -194,15 +224,7 @@ export async function listAdminUsers(
   },
 ) {
   await requireOwner(requestHeaders);
-  if (
-    !Number.isInteger(pagination.page) ||
-    pagination.page < 1 ||
-    !Number.isInteger(pagination.pageSize) ||
-    pagination.pageSize < 1 ||
-    pagination.pageSize > 100
-  ) {
-    throw new RangeError('Invalid admin user pagination.');
-  }
+  const validatedPagination = parseAdminUserPagination(pagination);
 
   const [users, [{ value: total }]] = await Promise.all([
     db
@@ -219,15 +241,15 @@ export async function listAdminUsers(
       })
       .from(user)
       .orderBy(asc(user.email), asc(user.id))
-      .limit(pagination.pageSize)
-      .offset((pagination.page - 1) * pagination.pageSize),
+      .limit(validatedPagination.pageSize)
+      .offset(validatedPagination.offset),
     db.select({ value: count() }).from(user),
   ]);
 
   return {
     users: users.map(toDto),
-    page: pagination.page,
-    pageSize: pagination.pageSize,
+    page: validatedPagination.page,
+    pageSize: validatedPagination.pageSize,
     total,
   } as const;
 }
@@ -245,16 +267,15 @@ export async function createAdminUser(
     throw new AdminUserError('WEAK_SETUP_CREDENTIAL');
   }
 
-  const now = dependencies.now?.() ?? new Date();
   const email = normalizeEmail(mutation.email);
   const name = mutation.name.trim();
-  const expiresAt = new Date(now.getTime() + SETUP_CREDENTIAL_TTL_MS);
   const authContext = await (await import('./auth')).auth.$context;
   const passwordHash = await authContext.password.hash(credential);
 
   try {
     const created = await db.transaction(async (transaction) => {
-      await lockAndRevalidateActor(transaction, actor, now);
+      const now = await lockAndRevalidateActor(transaction, actor);
+      const expiresAt = new Date(now.getTime() + SETUP_CREDENTIAL_TTL_MS);
       const userId = randomUUID();
       const [createdUser] = await transaction
         .insert(user)
@@ -299,13 +320,13 @@ export async function createAdminUser(
         before: null,
         after: safeState(createdUser),
       });
-      return createdUser;
+      return { user: createdUser, expiresAt };
     });
 
     return {
-      user: toDto(created),
+      user: toDto(created.user),
       setupCredential: credential,
-      setupCredentialExpiresAt: expiresAt.toISOString(),
+      setupCredentialExpiresAt: created.expiresAt.toISOString(),
     } as const;
   } catch (error) {
     if (isUniqueViolation(error)) {
@@ -321,10 +342,9 @@ export async function updateAdminUser(
   requestId: string,
 ) {
   const actor = await initialMutationActor(requestHeaders);
-  const now = new Date();
 
   return db.transaction(async (transaction) => {
-    await lockAndRevalidateActor(transaction, actor, now);
+    const now = await lockAndRevalidateActor(transaction, actor);
     const [target] = await transaction
       .select({
         id: user.id,
