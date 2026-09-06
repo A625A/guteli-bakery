@@ -229,3 +229,116 @@ export async function insertOrderCreatedAuditLog(
     },
   });
 }
+
+export type LockedAdminOrder = Readonly<{
+  id: string;
+  publicId: string;
+  fulfillment: 'PICKUP' | 'DELIVERY';
+  orderStatus: OrderStatus;
+  subtotalMinor: number;
+  shippingMinor: number | null;
+  totalMinor: number | null;
+  version: number;
+}>;
+
+export async function lockAdminOrderByPublicId(
+  transaction: OrdersTransaction,
+  publicId: string,
+): Promise<LockedAdminOrder | null> {
+  const [order] = await transaction
+    .select({
+      id: orders.id,
+      publicId: orders.publicId,
+      fulfillment: orders.fulfillment,
+      orderStatus: orders.orderStatus,
+      subtotalMinor: orders.subtotalMinor,
+      shippingMinor: orders.shippingMinor,
+      totalMinor: orders.totalMinor,
+      version: orders.version,
+    })
+    .from(orders)
+    .where(eq(orders.publicId, publicId))
+    .for('update')
+    .limit(1);
+  return order ?? null;
+}
+
+export async function persistAdminOrderStatus(
+  transaction: OrdersTransaction,
+  orderId: string,
+  status: OrderStatus,
+  now: Date,
+) {
+  const [updated] = await transaction
+    .update(orders)
+    .set({
+      orderStatus: status,
+      terminalAt: status === 'COMPLETED' || status === 'CANCELLED' ? now : null,
+      updatedAt: now,
+      version: sql`${orders.version} + 1`,
+    })
+    .where(eq(orders.id, orderId))
+    .returning({
+      publicId: orders.publicId,
+      fulfillment: orders.fulfillment,
+      orderStatus: orders.orderStatus,
+      subtotalMinor: orders.subtotalMinor,
+      shippingMinor: orders.shippingMinor,
+      totalMinor: orders.totalMinor,
+      version: orders.version,
+      terminalAt: orders.terminalAt,
+      updatedAt: orders.updatedAt,
+    });
+  return updated;
+}
+
+export async function persistAdminDeliveryQuote(
+  transaction: OrdersTransaction,
+  orderId: string,
+  shippingMinor: number,
+  totalMinor: number,
+  now: Date,
+) {
+  const [updated] = await transaction
+    .update(orders)
+    .set({
+      shippingMinor,
+      totalMinor,
+      updatedAt: now,
+      version: sql`${orders.version} + 1`,
+    })
+    .where(eq(orders.id, orderId))
+    .returning({
+      publicId: orders.publicId,
+      fulfillment: orders.fulfillment,
+      orderStatus: orders.orderStatus,
+      subtotalMinor: orders.subtotalMinor,
+      shippingMinor: orders.shippingMinor,
+      totalMinor: orders.totalMinor,
+      version: orders.version,
+      terminalAt: orders.terminalAt,
+      updatedAt: orders.updatedAt,
+    });
+  return updated;
+}
+
+export async function insertAdminOrderAudit(
+  transaction: OrdersTransaction,
+  values: Readonly<{
+    actorId: string;
+    orderId: string;
+    action: 'ORDER_STATUS_CHANGED' | 'ORDER_DELIVERY_QUOTED';
+    requestId: string;
+    before: Readonly<Record<string, string | number | null>>;
+    after: Readonly<Record<string, string | number | null>>;
+  }>,
+) {
+  await transaction.insert(auditLogs).values({
+    actorId: values.actorId,
+    action: values.action,
+    entityType: 'ORDER',
+    entityId: values.orderId,
+    requestId: values.requestId,
+    metadata: { before: values.before, after: values.after },
+  });
+}

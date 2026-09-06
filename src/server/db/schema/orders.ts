@@ -61,6 +61,8 @@ export const orders = pgTable(
     paymentStatus: paymentStatusEnum('payment_status')
       .notNull()
       .default('UNPAID'),
+    version: integer('version').notNull().default(1),
+    terminalAt: timestamp('terminal_at', { withTimezone: true }),
     receiptTokenHash: varchar('receipt_token_hash', { length: 64 }).notNull(),
     ...timestamps,
     anonymizedAt: timestamp('anonymized_at', { withTimezone: true }),
@@ -78,6 +80,21 @@ export const orders = pgTable(
     check(
       'orders_total_nonnegative',
       sql`${table.totalMinor} IS NULL OR ${table.totalMinor} >= 0`,
+    ),
+    check('orders_version_positive', sql`${table.version} >= 1`),
+    check(
+      'orders_terminal_timestamp_consistent',
+      sql`
+        (
+          ${table.orderStatus} IN ('COMPLETED', 'CANCELLED')
+          AND ${table.terminalAt} IS NOT NULL
+        )
+        OR
+        (
+          ${table.orderStatus} NOT IN ('COMPLETED', 'CANCELLED')
+          AND ${table.terminalAt} IS NULL
+        )
+      `,
     ),
     check(
       'orders_fulfillment_totals',
