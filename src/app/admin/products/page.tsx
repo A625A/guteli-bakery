@@ -60,7 +60,10 @@ export default async function AdminProductsPage({
           </p>
         </div>
       </header>
-      <ProductForm categories={categoryResult.categories} />
+      <ProductForm
+        categories={categoryResult.categories}
+        categoryTotal={categoryResult.total}
+      />
       <div className="admin-dashboard__table-wrap">
         <table>
           <thead>

@@ -1,13 +1,14 @@
 import { getRequestId } from '@/server/observability/request-id';
 import {
   adminCategoryCreateSchema,
+  parseAdminCategorySearch,
   parseAdminCatalogPagination,
 } from '@/server/products/admin-contracts';
 import {
   adminCatalogErrorResponse,
   adminCatalogValidationError,
+  categoryListFromRequest,
   hasJsonContentType,
-  paginationFromRequest,
   privateAdminCatalogHeaders,
 } from '@/server/products/admin-http';
 import {
@@ -21,10 +22,11 @@ export const revalidate = 0;
 export async function GET(request: Request) {
   const requestId = getRequestId(request.headers);
   try {
-    const result = await adminListCategories(
-      request.headers,
-      parseAdminCatalogPagination(paginationFromRequest(request)),
-    );
+    const parameters = categoryListFromRequest(request);
+    const result = await adminListCategories(request.headers, {
+      ...parseAdminCatalogPagination(parameters),
+      search: parseAdminCategorySearch(parameters.search),
+    });
     return Response.json(result, {
       headers: privateAdminCatalogHeaders(requestId),
     });

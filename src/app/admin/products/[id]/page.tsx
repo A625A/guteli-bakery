@@ -6,7 +6,10 @@ import { z } from 'zod';
 
 import { ProductForm } from '@/components/admin/ProductForm';
 import { requireVerifiedAdminSession } from '@/server/auth/admin-page-access';
-import { adminListCategories } from '@/server/products/admin-categories';
+import {
+  adminGetCategory,
+  adminListCategories,
+} from '@/server/products/admin-categories';
 import { adminGetProduct } from '@/server/products/admin-products';
 
 export const dynamic = 'force-dynamic';
@@ -35,6 +38,18 @@ export default async function AdminProductPage({
     adminListCategories(requestHeaders, { page: 1, pageSize: 100 }),
   ]);
   if (!product) notFound();
+  const currentCategory = categoryResult.categories.find(
+    (category) => category.id === product.categoryId,
+  );
+  const missingCurrentCategory = currentCategory
+    ? null
+    : await adminGetCategory(product.categoryId, requestHeaders);
+  const completeCategories = currentCategory
+    ? categoryResult.categories
+    : [
+        ...(missingCurrentCategory ? [missingCurrentCategory] : []),
+        ...categoryResult.categories,
+      ];
 
   return (
     <main className="admin-dashboard" id="main-content" tabIndex={-1}>
@@ -49,7 +64,11 @@ export default async function AdminProductPage({
         </div>
         <Link href="/admin/products">Volver a productos</Link>
       </header>
-      <ProductForm product={product} categories={categoryResult.categories} />
+      <ProductForm
+        product={product}
+        categories={completeCategories}
+        categoryTotal={categoryResult.total}
+      />
     </main>
   );
 }

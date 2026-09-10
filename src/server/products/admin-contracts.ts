@@ -103,3 +103,15 @@ export function parseAdminCatalogPagination(
   }
   return { page, pageSize, offset } as const;
 }
+
+export function parseAdminCategorySearch(value: unknown) {
+  if (value === undefined || value === null) return undefined;
+  if (typeof value !== 'string') {
+    throw new RangeError('Invalid category search.');
+  }
+  const search = value.trim();
+  if (search.length > 160) {
+    throw new RangeError('Invalid category search.');
+  }
+  return search || undefined;
+}

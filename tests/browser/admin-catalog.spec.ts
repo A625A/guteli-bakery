@@ -1,15 +1,55 @@
+import { randomUUID } from 'node:crypto';
+
 import { base32 } from '@better-auth/utils/base32';
 import { createOTP } from '@better-auth/utils/otp';
 import { expect, test } from '@playwright/test';
+import { Pool } from 'pg';
 
 import { adminAuthFixture } from '../support/admin-auth-fixture';
+import { requireTestDatabaseUrl } from '../../src/test/database-url';
 
 test.describe.configure({ mode: 'serial' });
+
+async function seedOverflowCategories() {
+  const pool = new Pool({
+    connectionString: requireTestDatabaseUrl(
+      process.env.DATABASE_URL_TEST,
+      'admin catalog browser tests',
+    ),
+  });
+  const target = {
+    id: randomUUID(),
+    name: 'Categoría paginada objetivo 104',
+    slug: 'categoria-paginada-objetivo-104',
+  };
+  try {
+    for (let index = 0; index < 105; index += 1) {
+      const isTarget = index === 104;
+      await pool.query(
+        `INSERT INTO categories (id, name, slug, active, sort_order, version)
+         VALUES ($1, $2, $3, true, $4, 1)`,
+        [
+          isTarget ? target.id : randomUUID(),
+          isTarget
+            ? target.name
+            : `Categoría paginada ${index.toString().padStart(3, '0')}`,
+          isTarget
+            ? target.slug
+            : `categoria-paginada-${index.toString().padStart(3, '0')}`,
+          10_000 + index,
+        ],
+      );
+    }
+    return target;
+  } finally {
+    await pool.end();
+  }
+}
 
 test('an owner creates, edits, reorders, and deactivates a product with immediate public visibility', async ({
   page,
 }) => {
-  test.setTimeout(90_000);
+  test.setTimeout(120_000);
   await page.goto('/admin/login');
   await page.getByLabel('Correo electrónico').fill(adminAuthFixture.email);
   await page.getByLabel('Contraseña').fill(adminAuthFixture.setupPassword);
@@ -68,7 +108,7 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
   await page.getByLabel('Nombre del producto').fill('Primero navegador');
   await page.getByLabel('Slug del producto').fill('primero-navegador');
   await page
-    .getByLabel('Categoría')
+    .getByLabel('Categoría', { exact: true })
     .selectOption({ label: 'Especiales navegador' });
   await page
     .getByLabel('Descripción')
@@ -77,7 +117,15 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
   await page.getByLabel('Precio en centavos').fill('2500');
   await page.getByLabel('Existencia').fill('10');
   await page.getByLabel('Orden del producto').fill('20');
+  const firstCreateResponse = page.waitForResponse(
+    (response) =>
+      response.request().method() === 'POST' &&
+      response.url().endsWith('/api/admin/products'),
+  );
   await page.getByRole('button', { name: 'Crear producto' }).click();
+  const firstCreated = (await (await firstCreateResponse).json()) as {
+    product: { id: string };
+  };
   await expect(page.getByRole('status')).toHaveText('Producto creado.');
   await expect(
     page.getByRole('row', { name: /Primero navegador/ }),
@@ -86,7 +134,7 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
   await page.getByLabel('Nombre del producto').fill('Segundo navegador');
   await page.getByLabel('Slug del producto').fill('segundo-navegador');
   await page
-    .getByLabel('Categoría')
+    .getByLabel('Categoría', { exact: true })
     .selectOption({ label: 'Especiales navegador' });
   await page
     .getByLabel('Descripción')
@@ -152,24 +200,111 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
     reorderedNames.indexOf('Segundo navegador'),
   );
 
-  await page.goto('/admin/products');
-  await expect(page.getByRole('heading', { name: 'Productos' })).toBeVisible();
+  await page.goto('/admin/categories');
+  await expect(
+    page.getByRole('heading', { name: 'Categorías', exact: true }),
+  ).toBeVisible();
   await page
-    .getByRole('row', { name: /Primero navegador editado/ })
-    .getByRole('link', { name: 'Editar Primero navegador editado' })
+    .getByRole('button', { name: 'Desactivar Especiales navegador' })
     .click();
+  await expect(page.getByText('Categoría desactivada.')).toBeVisible();
+
+  await page.goto(`/admin/products/${firstCreated.product.id}`);
   await expect(
     page.getByRole('heading', { name: 'Editar Primero navegador editado' }),
   ).toBeVisible();
+  await expect(
+    page.getByLabel('Categoría', { exact: true }).locator('option:checked'),
+  ).toHaveText('Especiales navegador (inactiva)');
+  await expect(
+    page.getByLabel('Categoría', { exact: true }).locator('option:checked'),
+  ).toBeEnabled();
   await expect(page.getByText('Este producto está disponible')).toBeVisible();
+  const deactivateResponse = page.waitForResponse(
+    (response) =>
+      response.request().method() === 'PATCH' &&
+      response.url().endsWith(`/api/admin/products/${firstCreated.product.id}`),
+  );
   await page.getByRole('button', { name: 'Desactivar producto' }).click();
+  expect((await deactivateResponse).status()).toBe(200);
   await expect(page.getByRole('status')).toHaveText('Producto desactivado.');
+  await page
+    .getByLabel('Nombre del producto')
+    .fill('Primero navegador editado inactivo');
+  const inactiveEditResponse = page.waitForResponse(
+    (response) =>
+      response.request().method() === 'PATCH' &&
+      response.url().endsWith(`/api/admin/products/${firstCreated.product.id}`),
+  );
+  await page.getByRole('button', { name: 'Guardar producto' }).click();
+  expect((await inactiveEditResponse).status()).toBe(200);
+  await expect(page.getByRole('status')).toHaveText('Producto actualizado.');
 
   await page.goto('/menu');
   await expect(
-    page.getByRole('heading', { name: 'Primero navegador editado' }),
+    page.getByRole('heading', { name: 'Primero navegador editado inactivo' }),
   ).toHaveCount(0);
   await expect(
     page.getByRole('heading', { name: 'Segundo navegador' }),
+  ).toHaveCount(0);
+
+  const overflowCategory = await seedOverflowCategories();
+  await page.goto('/admin/products');
+  await expect(page.getByRole('heading', { name: 'Productos' })).toBeVisible();
+  await page.getByLabel('Buscar categoría').fill(overflowCategory.name);
+  const categorySearchResponse = page.waitForResponse((response) =>
+    response.url().includes('/api/admin/categories?'),
+  );
+  await page.getByRole('button', { name: 'Buscar categorías' }).click();
+  expect((await categorySearchResponse).status()).toBe(200);
+  await page
+    .getByLabel('Categoría', { exact: true })
+    .selectOption({ label: overflowCategory.name });
+  await page.getByLabel('Nombre del producto').fill('Producto categoría 105');
+  await page.getByLabel('Slug del producto').fill('producto-categoria-105');
+  await page.getByLabel('Descripción').fill('Seleccionado mediante búsqueda.');
+  await page.getByLabel('Precio en centavos').fill('4200');
+  await page.getByLabel('Orden del producto').fill('1');
+  const overflowCreateResponse = page.waitForResponse(
+    (response) =>
+      response.request().method() === 'POST' &&
+      response.url().endsWith('/api/admin/products'),
+  );
+  await page.getByRole('button', { name: 'Crear producto' }).click();
+  const overflowCreatedResponse = await overflowCreateResponse;
+  expect(overflowCreatedResponse.status()).toBe(201);
+  const overflowCreated = (await overflowCreatedResponse.json()) as {
+    product: { id: string; categoryId: string };
+  };
+  expect(overflowCreated.product.categoryId).toBe(overflowCategory.id);
+  await expect(page.getByRole('status')).toHaveText('Producto creado.');
+
+  await page.goto(`/admin/products/${overflowCreated.product.id}`);
+  await expect(
+    page.getByRole('heading', { name: 'Editar Producto categoría 105' }),
   ).toBeVisible();
+  await expect(page.getByLabel('Categoría', { exact: true })).toHaveValue(
+    overflowCategory.id,
+  );
+  await page.getByLabel('Precio en centavos').fill('4300');
+  const overflowEditResponse = page.waitForResponse(
+    (response) =>
+      response.request().method() === 'PATCH' &&
+      response
+        .url()
+        .endsWith(`/api/admin/products/${overflowCreated.product.id}`),
+  );
+  await page.getByRole('button', { name: 'Guardar producto' }).click();
+  const overflowUpdatedResponse = await overflowEditResponse;
+  expect(overflowUpdatedResponse.status()).toBe(200);
+  const overflowUpdated = (await overflowUpdatedResponse.json()) as {
+    product: { categoryId: string; priceMinor: number };
+  };
+  expect(overflowUpdated.product).toMatchObject({
+    categoryId: overflowCategory.id,
+    priceMinor: 4300,
+  });
+  await expect(page.getByLabel('Categoría', { exact: true })).toHaveValue(
+    overflowCategory.id,
+  );
 });

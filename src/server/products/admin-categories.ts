@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { and, asc, count, eq, isNull, sql } from 'drizzle-orm';
+import { and, asc, count, eq, ilike, isNull, or, sql } from 'drizzle-orm';
 
 import {
   assertRecentReauthentication,
@@ -15,7 +15,10 @@ import type {
   AdminCategoryCreateInput,
   AdminCategoryUpdateInput,
 } from './admin-contracts';
-import { parseAdminCatalogPagination } from './admin-contracts';
+import {
+  parseAdminCatalogPagination,
+  parseAdminCategorySearch,
+} from './admin-contracts';
 import { revalidateCatalogActorAfterLock } from './admin-products';
 
 type CatalogTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
@@ -45,6 +48,23 @@ export type AdminCategoryDto = Readonly<{
   version: number;
   productCount: number;
 }>;
+
+type CategoryDtoFields = Omit<AdminCategoryDto, 'productCount'>;
+
+function toCategoryDto(
+  row: CategoryDtoFields,
+  affectedProducts: number,
+): AdminCategoryDto {
+  return {
+    id: row.id,
+    name: row.name,
+    slug: row.slug,
+    active: row.active,
+    sortOrder: row.sortOrder,
+    version: row.version,
+    productCount: affectedProducts,
+  };
+}
 
 function isUniqueViolation(error: unknown) {
   const cause =
@@ -112,10 +132,21 @@ async function writeCategoryAudit(
 
 export async function adminListCategories(
   requestHeaders: Headers,
-  pagination: Readonly<{ page?: unknown; pageSize?: unknown }> = {},
+  pagination: Readonly<{
+    page?: unknown;
+    pageSize?: unknown;
+    search?: unknown;
+  }> = {},
 ) {
   await requireAdmin(requestHeaders);
   const parsed = parseAdminCatalogPagination(pagination);
+  const search = parseAdminCategorySearch(pagination.search);
+  const pattern = search
+    ? `%${search.replace(/[\\%_]/g, (character) => `\\${character}`)}%`
+    : undefined;
+  const filter = pattern
+    ? or(ilike(categories.name, pattern), ilike(categories.slug, pattern))
+    : undefined;
   const [rows, [{ value: total }]] = await Promise.all([
     db
       .select({
@@ -136,6 +167,7 @@ export async function adminListCategories(
           isNull(products.deletedAt),
         ),
       )
+      .where(filter)
       .groupBy(categories.id)
       .orderBy(
         asc(categories.sortOrder),
@@ -144,10 +176,10 @@ export async function adminListCategories(
       )
       .limit(parsed.pageSize)
       .offset(parsed.offset),
-    db.select({ value: count() }).from(categories),
+    db.select({ value: count() }).from(categories).where(filter),
   ]);
   return {
-    categories: rows satisfies AdminCategoryDto[],
+    categories: rows.map((row) => toCategoryDto(row, row.productCount)),
     page: parsed.page,
     pageSize: parsed.pageSize,
     total,
@@ -178,7 +210,7 @@ export async function adminGetCategory(id: string, requestHeaders: Headers) {
     .where(eq(categories.id, id))
     .groupBy(categories.id)
     .limit(1);
-  return row ?? null;
+  return row ? toCategoryDto(row, row.productCount) : null;
 }
 
 export async function createAdminCategory(
@@ -220,7 +252,7 @@ export async function createAdminCategory(
           version: created.version,
         },
       });
-      return { category: { ...created, productCount: 0 } } as const;
+      return { category: toCategoryDto(created, 0) } as const;
     });
   } catch (error) {
     if (isUniqueViolation(error)) {
@@ -294,7 +326,7 @@ export async function updateAdminCategory(
         requestId,
         changes,
       });
-      return { category: { ...updated, productCount: affected } } as const;
+      return { category: toCategoryDto(updated, affected) } as const;
     });
   } catch (error) {
     if (isUniqueViolation(error)) {
@@ -352,6 +384,6 @@ export async function deactivateAdminCategory(
       requestId,
       changes: { active: false, version: updated.version },
     });
-    return { category: { ...updated, productCount: affected } } as const;
+    return { category: toCategoryDto(updated, affected) } as const;
   });
 }

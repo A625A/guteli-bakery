@@ -16,11 +16,21 @@ type MutationPayload = Readonly<{
   error?: { message?: string };
 }>;
 
+type CategoryListPayload = Readonly<{
+  categories?: readonly CategoryOption[];
+  page?: number;
+  pageSize?: number;
+  total?: number;
+  error?: { message?: string };
+}>;
+
 export function ProductForm({
   categories,
+  categoryTotal,
   product,
 }: Readonly<{
   categories: readonly CategoryOption[];
+  categoryTotal: number;
   product?: AdminProductDto;
 }>) {
   const router = useRouter();
@@ -31,11 +41,67 @@ export function ProductForm({
   );
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [categoryOptions, setCategoryOptions] = useState(categories);
+  const [selectedCategoryId, setSelectedCategoryId] = useState(
+    product?.categoryId ??
+      categories.find((category) => category.active)?.id ??
+      '',
+  );
+  const [categorySearch, setCategorySearch] = useState('');
+  const [categoryPage, setCategoryPage] = useState(1);
+  const [categoryResultTotal, setCategoryResultTotal] = useState(categoryTotal);
+  const [categoryLoading, setCategoryLoading] = useState(false);
   const available =
     !!product &&
     active &&
     !deleted &&
     (product.stockQuantity === null || product.stockQuantity > 0);
+
+  async function loadCategories(page: number, replace: boolean) {
+    setCategoryLoading(true);
+    setMessage(null);
+    try {
+      const parameters = new URLSearchParams({
+        page: String(page),
+        pageSize: '100',
+      });
+      if (categorySearch.trim()) {
+        parameters.set('search', categorySearch.trim());
+      }
+      const response = await fetch(`/api/admin/categories?${parameters}`);
+      const payload = (await response.json()) as CategoryListPayload;
+      if (!response.ok || !payload.categories) {
+        throw new Error(
+          payload.error?.message ?? 'No se pudieron cargar las categorías.',
+        );
+      }
+      setCategoryOptions((current) => {
+        const preserved = current.find(
+          (category) => category.id === selectedCategoryId,
+        );
+        const merged = replace ? [] : [...current];
+        if (preserved && !merged.some(({ id }) => id === preserved.id)) {
+          merged.push(preserved);
+        }
+        for (const category of payload.categories!) {
+          if (!merged.some(({ id }) => id === category.id)) {
+            merged.push(category);
+          }
+        }
+        return merged;
+      });
+      setCategoryPage(payload.page ?? page);
+      setCategoryResultTotal(payload.total ?? 0);
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : 'No se pudieron cargar las categorías.',
+      );
+    } finally {
+      setCategoryLoading(false);
+    }
+  }
 
   function mutationBody(formData: FormData, nextActive = active) {
     const saleUnit = String(formData.get('saleUnit') ?? '').trim();
@@ -214,23 +280,48 @@ export function ProductForm({
           required
         />
         <label htmlFor="product-category">Categoría</label>
+        <label htmlFor="product-category-search">Buscar categoría</label>
+        <input
+          id="product-category-search"
+          type="search"
+          value={categorySearch}
+          onChange={(event) => setCategorySearch(event.target.value)}
+          maxLength={160}
+        />
+        <button
+          type="button"
+          onClick={() => loadCategories(1, true)}
+          disabled={pending || categoryLoading}
+        >
+          Buscar categorías
+        </button>
         <select
           id="product-category"
           name="categoryId"
-          defaultValue={product?.categoryId}
+          value={selectedCategoryId}
+          onChange={(event) => setSelectedCategoryId(event.target.value)}
           required
         >
-          {categories.map((category) => (
+          {categoryOptions.map((category) => (
             <option
               key={category.id}
               value={category.id}
-              disabled={!category.active}
+              disabled={!category.active && category.id !== product?.categoryId}
             >
               {category.name}
               {category.active ? '' : ' (inactiva)'}
             </option>
           ))}
         </select>
+        {categoryPage * 100 < categoryResultTotal ? (
+          <button
+            type="button"
+            onClick={() => loadCategories(categoryPage + 1, false)}
+            disabled={pending || categoryLoading}
+          >
+            Más categorías
+          </button>
+        ) : null}
         <label htmlFor="product-description">Descripción</label>
         <textarea
           id="product-description"
@@ -303,7 +394,7 @@ export function ProductForm({
         </label>
         <button
           type="submit"
-          disabled={pending || categories.length === 0 || deleted}
+          disabled={pending || !selectedCategoryId || deleted}
         >
           {product ? 'Guardar producto' : 'Crear producto'}
         </button>

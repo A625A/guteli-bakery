@@ -123,3 +123,20 @@ export function paginationFromRequest(request: Request) {
     pageSize: parameters.get('pageSize'),
   };
 }
+
+export function categoryListFromRequest(request: Request) {
+  const parameters = new URL(request.url).searchParams;
+  for (const key of parameters.keys()) {
+    if (
+      (key !== 'page' && key !== 'pageSize' && key !== 'search') ||
+      parameters.getAll(key).length !== 1
+    ) {
+      throw new RangeError('Invalid category list parameters.');
+    }
+  }
+  return {
+    page: parameters.get('page'),
+    pageSize: parameters.get('pageSize'),
+    search: parameters.get('search'),
+  };
+}

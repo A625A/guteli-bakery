@@ -288,6 +288,64 @@ async function waitForProductLock() {
   throw new Error('Product mutation did not wait for the row lock.');
 }
 
+async function waitForCatalogMutationDatabaseLock() {
+  const deadline = Date.now() + 5_000;
+  while (Date.now() < deadline) {
+    const result = await pool.query<{ waiting: boolean }>(`
+      SELECT EXISTS (
+        SELECT 1 FROM pg_stat_activity
+        WHERE datname = current_database()
+          AND pid <> pg_backend_pid()
+          AND wait_event_type = 'Lock'
+          AND (
+            query ILIKE '%UPDATE%products%'
+            OR query ILIKE '%categories%FOR UPDATE%'
+          )
+      ) AS waiting
+    `);
+    if (result.rows[0]?.waiting) return;
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+  throw new Error('Product mutation did not wait for the category lock.');
+}
+
+function expectExactKeys(value: unknown, expected: readonly string[]) {
+  expect(value).toBeTypeOf('object');
+  expect(value).not.toBeNull();
+  expect(Object.keys(value as Record<string, unknown>).sort()).toEqual(
+    [...expected].sort(),
+  );
+}
+
+const categoryDtoKeys = [
+  'id',
+  'name',
+  'slug',
+  'active',
+  'sortOrder',
+  'version',
+  'productCount',
+] as const;
+
+const productDtoKeys = [
+  'id',
+  'categoryId',
+  'categoryName',
+  'name',
+  'slug',
+  'description',
+  'saleUnit',
+  'sku',
+  'priceMinor',
+  'stockQuantity',
+  'active',
+  'featured',
+  'sortOrder',
+  'version',
+  'deletedAt',
+  'images',
+] as const;
+
 describe('protected catalog administration', () => {
   beforeEach(resetDatabase);
   afterAll(() => pool.end());
@@ -389,6 +447,25 @@ describe('protected catalog administration', () => {
       pageSize: 100,
       total: 1,
     });
+    const searchedCategories = await categoriesRequest(
+      actor.jar,
+      '?page=1&pageSize=1&search=panes-prueba',
+    );
+    expect(searchedCategories.status).toBe(200);
+    expect(await searchedCategories.json()).toMatchObject({
+      categories: [{ slug: 'panes-prueba' }],
+      page: 1,
+      pageSize: 1,
+      total: 1,
+    });
+    expect(
+      (
+        await categoriesRequest(
+          actor.jar,
+          `?search=${encodeURIComponent('a'.repeat(161))}`,
+        )
+      ).status,
+    ).toBe(400);
   });
 
   it('rejects public products in inactive categories and duplicates approved fields without images', async () => {
@@ -715,6 +792,199 @@ describe('protected catalog administration', () => {
       blocker.release();
       await mutation.catch(() => undefined);
     }
+  });
+
+  it('locks the destination category before rechecking a deactivating move', async () => {
+    const actor = await enrolledActor();
+    const sourceCategory = await createCategory(actor.jar, 'origen-bloqueo');
+    const destinationCategory = await createCategory(
+      actor.jar,
+      'destino-bloqueo',
+    );
+    const created = await createProduct(actor.jar, sourceCategory.category.id, {
+      slug: 'mover-desactivado',
+    });
+    const blocker = await pool.connect();
+    await blocker.query('BEGIN');
+    await blocker.query('SELECT id FROM categories WHERE id = $1 FOR UPDATE', [
+      destinationCategory.category.id,
+    ]);
+    const mutation = PATCH_PRODUCT(
+      jsonRequest(
+        `http://localhost:3000/api/admin/products/${created.product.id}`,
+        'PATCH',
+        actor.jar,
+        {
+          ...productInput(destinationCategory.category.id, {
+            slug: 'mover-desactivado',
+            active: false,
+          }),
+          expectedVersion: created.product.version,
+        },
+      ),
+      { params: Promise.resolve({ id: created.product.id }) },
+    );
+    try {
+      await waitForCatalogMutationDatabaseLock();
+      await db
+        .update(session)
+        .set({ mfaVerifiedAt: new Date(Date.now() - 11 * 60 * 1_000) })
+        .where(eq(session.userId, actor.id));
+      await blocker.query('COMMIT');
+      const response = await mutation;
+      expect(response.status).toBe(401);
+      expect(await response.json()).toMatchObject({
+        error: { code: 'REAUTHENTICATION_REQUIRED' },
+      });
+      const [unchanged] = await db
+        .select({
+          categoryId: products.categoryId,
+          active: products.active,
+          version: products.version,
+        })
+        .from(products)
+        .where(eq(products.id, created.product.id));
+      expect(unchanged).toEqual({
+        categoryId: sourceCategory.category.id,
+        active: true,
+        version: 1,
+      });
+    } finally {
+      await blocker.query('ROLLBACK').catch(() => undefined);
+      blocker.release();
+      await mutation.catch(() => undefined);
+    }
+  });
+
+  it('returns only the exact public DTO keys from every catalog mutation', async () => {
+    const actor = await enrolledActor();
+    const categoryResponse = await POST_CATEGORY(
+      jsonRequest(
+        'http://localhost:3000/api/admin/categories',
+        'POST',
+        actor.jar,
+        {
+          name: 'DTO exacto',
+          slug: 'dto-exacto',
+          active: true,
+          sortOrder: 8,
+        },
+      ),
+    );
+    const categoryPayload = (await categoryResponse.json()) as {
+      category: Record<string, unknown> & { id: string; version: number };
+    };
+    expectExactKeys(categoryPayload, ['category']);
+    expectExactKeys(categoryPayload.category, categoryDtoKeys);
+
+    const createdResponse = await POST_PRODUCT(
+      jsonRequest(
+        'http://localhost:3000/api/admin/products',
+        'POST',
+        actor.jar,
+        productInput(categoryPayload.category.id, { slug: 'dto-producto' }),
+      ),
+    );
+    const createdPayload = (await createdResponse.json()) as {
+      product: Record<string, unknown> & { id: string; version: number };
+    };
+    expectExactKeys(createdPayload, ['product']);
+    expectExactKeys(createdPayload.product, productDtoKeys);
+
+    const updatedResponse = await PATCH_PRODUCT(
+      jsonRequest(
+        `http://localhost:3000/api/admin/products/${createdPayload.product.id}`,
+        'PATCH',
+        actor.jar,
+        {
+          ...productInput(categoryPayload.category.id, {
+            name: 'DTO producto actualizado',
+            slug: 'dto-producto',
+          }),
+          expectedVersion: createdPayload.product.version,
+        },
+      ),
+      { params: Promise.resolve({ id: createdPayload.product.id }) },
+    );
+    const updatedPayload = (await updatedResponse.json()) as {
+      product: Record<string, unknown> & { version: number };
+    };
+    expectExactKeys(updatedPayload, ['product']);
+    expectExactKeys(updatedPayload.product, productDtoKeys);
+
+    const duplicateResponse = await POST_DUPLICATE(
+      jsonRequest(
+        `http://localhost:3000/api/admin/products/${createdPayload.product.id}/duplicate`,
+        'POST',
+        actor.jar,
+        {
+          name: 'DTO copia',
+          slug: 'dto-copia',
+          expectedVersion: updatedPayload.product.version,
+        },
+      ),
+      { params: Promise.resolve({ id: createdPayload.product.id }) },
+    );
+    const duplicatePayload = (await duplicateResponse.json()) as {
+      product: Record<string, unknown> & { id: string; version: number };
+    };
+    expectExactKeys(duplicatePayload, ['product']);
+    expectExactKeys(duplicatePayload.product, productDtoKeys);
+
+    const removedResponse = await DELETE_PRODUCT(
+      jsonRequest(
+        `http://localhost:3000/api/admin/products/${duplicatePayload.product.id}`,
+        'DELETE',
+        actor.jar,
+        { expectedVersion: duplicatePayload.product.version },
+      ),
+      { params: Promise.resolve({ id: duplicatePayload.product.id }) },
+    );
+    const removedPayload = (await removedResponse.json()) as {
+      product: Record<string, unknown>;
+    };
+    expectExactKeys(removedPayload, ['product']);
+    expectExactKeys(removedPayload.product, productDtoKeys);
+
+    const updatedCategoryResponse = await PATCH_CATEGORY(
+      jsonRequest(
+        `http://localhost:3000/api/admin/categories/${categoryPayload.category.id}`,
+        'PATCH',
+        actor.jar,
+        {
+          name: 'DTO exacto actualizado',
+          slug: 'dto-exacto',
+          active: true,
+          sortOrder: 9,
+          expectedVersion: categoryPayload.category.version,
+        },
+      ),
+      { params: Promise.resolve({ id: categoryPayload.category.id }) },
+    );
+    const updatedCategoryPayload = (await updatedCategoryResponse.json()) as {
+      category: Record<string, unknown> & { version: number };
+    };
+    expectExactKeys(updatedCategoryPayload, ['category']);
+    expectExactKeys(updatedCategoryPayload.category, categoryDtoKeys);
+
+    const deactivatedCategoryResponse = await DELETE_CATEGORY(
+      jsonRequest(
+        `http://localhost:3000/api/admin/categories/${categoryPayload.category.id}`,
+        'DELETE',
+        actor.jar,
+        {
+          expectedVersion: updatedCategoryPayload.category.version,
+          confirmAffectedProducts: true,
+        },
+      ),
+      { params: Promise.resolve({ id: categoryPayload.category.id }) },
+    );
+    const deactivatedCategoryPayload =
+      (await deactivatedCategoryResponse.json()) as {
+        category: Record<string, unknown>;
+      };
+    expectExactKeys(deactivatedCategoryPayload, ['category']);
+    expectExactKeys(deactivatedCategoryPayload.category, categoryDtoKeys);
   });
 
   it('validates detail paths, missing entities, mutation origins, and category confirmation', async () => {

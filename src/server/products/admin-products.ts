@@ -226,7 +226,20 @@ function toDto(
   images: AdminProductDto['images'] = [],
 ): AdminProductDto {
   return {
-    ...row,
+    id: row.id,
+    categoryId: row.categoryId,
+    categoryName: row.categoryName,
+    name: row.name,
+    slug: row.slug,
+    description: row.description,
+    saleUnit: row.saleUnit,
+    sku: row.sku,
+    priceMinor: row.priceMinor,
+    stockQuantity: row.stockQuantity,
+    active: row.active,
+    featured: row.featured,
+    sortOrder: row.sortOrder,
+    version: row.version,
     deletedAt: row.deletedAt?.toISOString() ?? null,
     images,
   };
@@ -287,7 +300,7 @@ async function lockProduct(transaction: CatalogTransaction, id: string) {
   return row ?? null;
 }
 
-async function assertActiveCategory(
+async function lockProductCategory(
   transaction: CatalogTransaction,
   categoryId: string,
 ) {
@@ -297,7 +310,8 @@ async function assertActiveCategory(
     .where(eq(categories.id, categoryId))
     .for('update')
     .limit(1);
-  if (!category?.active) throw new AdminProductError('INACTIVE_CATEGORY');
+  if (!category) throw new AdminProductError('INACTIVE_CATEGORY');
+  return category;
 }
 
 async function writeProductAudit(
@@ -338,17 +352,12 @@ export async function createAdminProduct(
   try {
     return await db.transaction(async (transaction) => {
       await acquireCatalogMutationLock(transaction);
-      if (input.active)
-        await assertActiveCategory(transaction, input.categoryId);
-      else {
-        const [category] = await transaction
-          .select({ id: categories.id })
-          .from(categories)
-          .where(eq(categories.id, input.categoryId))
-          .for('update')
-          .limit(1);
-        if (!category) throw new AdminProductError('INACTIVE_CATEGORY');
-      }
+      const lockedCategory = await lockProductCategory(
+        transaction,
+        input.categoryId,
+      );
+      if (input.active && !lockedCategory.active)
+        throw new AdminProductError('INACTIVE_CATEGORY');
       const { actor, now } = await revalidateCatalogActorAfterLock(
         transaction,
         initial,
@@ -400,8 +409,12 @@ export async function updateAdminProduct(
       await acquireCatalogMutationLock(transaction);
       const current = await lockProduct(transaction, id);
       if (!current) throw new AdminProductError('PRODUCT_NOT_FOUND');
-      if (input.active)
-        await assertActiveCategory(transaction, input.categoryId);
+      const destinationCategory = await lockProductCategory(
+        transaction,
+        input.categoryId,
+      );
+      if (input.active && !destinationCategory.active)
+        throw new AdminProductError('INACTIVE_CATEGORY');
       const { actor, now } = await revalidateCatalogActorAfterLock(
         transaction,
         initial,
