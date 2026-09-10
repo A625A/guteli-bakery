@@ -43,6 +43,13 @@
       "when": 1788644553226,
       "tag": "0005_peaceful_blue_marvel",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1788719615007,
+      "tag": "0006_perfect_jazinda",
+      "breakpoints": true
     }
   ]
 }

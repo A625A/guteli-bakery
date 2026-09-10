@@ -3,8 +3,7 @@ import { listPublicProducts } from '@/server/products/list-public-products';
 
 export const dynamic = 'force-dynamic';
 
-const CATALOG_CACHE_CONTROL =
-  'public, max-age=0, s-maxage=60, stale-while-revalidate=300';
+const CATALOG_CACHE_CONTROL = 'no-store';
 
 function errorResponse(
   requestId: string,
@@ -14,7 +13,13 @@ function errorResponse(
 ) {
   return Response.json(
     { error: { code, message, requestId } },
-    { status, headers: { 'x-request-id': requestId } },
+    {
+      status,
+      headers: {
+        'cache-control': CATALOG_CACHE_CONTROL,
+        'x-request-id': requestId,
+      },
+    },
   );
 }
 

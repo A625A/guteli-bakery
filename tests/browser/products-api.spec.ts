@@ -1,8 +1,8 @@
 import { expect, test } from '@playwright/test';
 
 const requestId = '63f2debf-7d45-4d6b-a78f-43ff8d64fe98';
-const catalogCache =
-  'public, max-age=0, s-maxage=60, stale-while-revalidate=300';
+const mediaCache = 'public, max-age=0, s-maxage=60, stale-while-revalidate=300';
+const catalogCache = 'no-store';
 
 test('public catalog returns ten minimal DTO products and nine safe media objects', async ({
   request,
@@ -56,7 +56,7 @@ test('public catalog returns ten minimal DTO products and nine safe media object
     expect(media.status()).toBe(200);
     expect(media.headers()['content-type']).toBe('image/webp');
     expect(media.headers()['x-content-type-options']).toBe('nosniff');
-    expect(media.headers()['cache-control']).toBe(catalogCache);
+    expect(media.headers()['cache-control']).toBe(mediaCache);
     expect((await media.body()).byteLength).toBeGreaterThan(0);
   }
 });
@@ -69,6 +69,7 @@ test('public routes return request-aware safe errors and reject traversal/hidden
   });
   expect(missing.status()).toBe(404);
   expect(missing.headers()['x-request-id']).toBe(requestId);
+  expect(missing.headers()['cache-control']).toBe(catalogCache);
   expect(await missing.json()).toEqual({
     error: {
       code: 'PRODUCT_NOT_FOUND',

@@ -3,8 +3,7 @@ import { findPublicProductBySlug } from '@/server/products/repository';
 
 export const dynamic = 'force-dynamic';
 
-const CATALOG_CACHE_CONTROL =
-  'public, max-age=0, s-maxage=60, stale-while-revalidate=300';
+const CATALOG_CACHE_CONTROL = 'no-store';
 
 export async function GET(
   request: Request,
@@ -23,7 +22,13 @@ export async function GET(
             requestId,
           },
         },
-        { status: 404, headers: { 'x-request-id': requestId } },
+        {
+          status: 404,
+          headers: {
+            'cache-control': CATALOG_CACHE_CONTROL,
+            'x-request-id': requestId,
+          },
+        },
       );
     }
     return Response.json(product, {
@@ -42,7 +47,13 @@ export async function GET(
           requestId,
         },
       },
-      { status: 500, headers: { 'x-request-id': requestId } },
+      {
+        status: 500,
+        headers: {
+          'cache-control': CATALOG_CACHE_CONTROL,
+          'x-request-id': requestId,
+        },
+      },
     );
   }
 }

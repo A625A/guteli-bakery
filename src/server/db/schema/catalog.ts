@@ -27,10 +27,12 @@ export const categories = pgTable(
     slug: varchar('slug', { length: 120 }).notNull().unique(),
     active: boolean('active').notNull().default(true),
     sortOrder: integer('sort_order').notNull().default(0),
+    version: integer('version').notNull().default(1),
     ...timestamps,
   },
   (table) => [
     check('categories_sort_order_nonnegative', sql`${table.sortOrder} >= 0`),
+    check('categories_version_positive', sql`${table.version} > 0`),
   ],
 );
 
@@ -54,6 +56,7 @@ export const products = pgTable(
     active: boolean('active').notNull().default(true),
     featured: boolean('featured').notNull().default(false),
     sortOrder: integer('sort_order').notNull().default(0),
+    version: integer('version').notNull().default(1),
     ...timestamps,
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
   },
@@ -64,6 +67,7 @@ export const products = pgTable(
       sql`${table.stockQuantity} IS NULL OR ${table.stockQuantity} >= 0`,
     ),
     check('products_sort_order_nonnegative', sql`${table.sortOrder} >= 0`),
+    check('products_version_positive', sql`${table.version} > 0`),
   ],
 );
 

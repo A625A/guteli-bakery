@@ -168,6 +168,7 @@ export async function decrementTrackedStock(
     .update(products)
     .set({
       stockQuantity: sql`${products.stockQuantity} - ${quantity}`,
+      version: sql`${products.version} + 1`,
       updatedAt: now,
     })
     .where(
