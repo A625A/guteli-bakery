@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -24,6 +25,13 @@ type CategoryListPayload = Readonly<{
   error?: { message?: string };
 }>;
 
+const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+const IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+
+function imageUrl(storageKey: string) {
+  return `/api/media/${storageKey.split('/').map(encodeURIComponent).join('/')}`;
+}
+
 export function ProductForm({
   categories,
   categoryTotal,
@@ -40,7 +48,9 @@ export function ProductForm({
     product?.deletedAt !== null && !!product,
   );
   const [pending, setPending] = useState(false);
+  const [imagePending, setImagePending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [images, setImages] = useState(product?.images ?? []);
   const [categoryOptions, setCategoryOptions] = useState(categories);
   const [selectedCategoryId, setSelectedCategoryId] = useState(
     product?.categoryId ??
@@ -254,6 +264,91 @@ export function ProductForm({
     }
   }
 
+  async function uploadImage(formData: FormData) {
+    const file = formData.get('image');
+    if (!(file instanceof File) || file.size === 0) {
+      setMessage('Selecciona una imagen para continuar.');
+      return;
+    }
+    const extension = file.name.split('.').pop()?.toLowerCase();
+    const validExtension =
+      extension === 'jpg' ||
+      extension === 'jpeg' ||
+      extension === 'png' ||
+      extension === 'webp';
+    if (
+      file.size > MAX_IMAGE_BYTES ||
+      !IMAGE_TYPES.has(file.type) ||
+      !validExtension
+    ) {
+      setMessage('Usa una imagen JPEG, PNG o WebP de hasta 8 MB.');
+      return;
+    }
+
+    setPending(true);
+    setImagePending(true);
+    setMessage('Subiendo imagen…');
+    try {
+      const body = new FormData();
+      body.set('productId', product!.id);
+      body.set('expectedVersion', String(version));
+      body.set('file', file);
+      const response = await fetch('/api/admin/uploads', {
+        method: 'POST',
+        body,
+      });
+      const payload = (await response.json()) as MutationPayload;
+      if (!response.ok || !payload.product) {
+        throw new Error(
+          payload.error?.message ?? 'No se pudo cargar la imagen.',
+        );
+      }
+      setVersion(payload.product.version);
+      setImages(payload.product.images);
+      setMessage('Imagen actualizada.');
+      router.refresh();
+    } catch (error) {
+      setMessage(
+        error instanceof Error ? error.message : 'No se pudo cargar la imagen.',
+      );
+    } finally {
+      setImagePending(false);
+      setPending(false);
+    }
+  }
+
+  async function removeImage(imageId: string) {
+    setPending(true);
+    setImagePending(true);
+    setMessage('Eliminando imagen…');
+    try {
+      const response = await fetch(`/api/admin/products/${product!.id}`, {
+        method: 'DELETE',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ imageId, expectedVersion: version }),
+      });
+      const payload = (await response.json()) as MutationPayload;
+      if (!response.ok || !payload.product) {
+        throw new Error(
+          payload.error?.message ?? 'No se pudo eliminar la imagen.',
+        );
+      }
+      setVersion(payload.product.version);
+      setImages(payload.product.images);
+      setMessage('Imagen eliminada.');
+      router.refresh();
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : 'No se pudo eliminar la imagen.',
+      );
+    } finally {
+      setImagePending(false);
+      setPending(false);
+    }
+  }
+
   return (
     <section
       className="admin-auth-card"
@@ -444,18 +539,69 @@ export function ProductForm({
           </div>
         </>
       ) : null}
-      {product?.images.length ? (
+      {product && !deleted ? (
         <section aria-labelledby="current-images-title">
-          <h2 id="current-images-title">Imágenes actuales</h2>
-          <ul>
-            {product.images.map((image) => (
-              <li key={image.id}>{image.storageKey}</li>
-            ))}
-          </ul>
-          <p>La carga y eliminación de imágenes se habilitará por separado.</p>
+          <h2 id="current-images-title">Administrar imagen</h2>
+          <p id="product-image-help">
+            JPEG, PNG o WebP. Máximo 8 MB; se publicará como WebP optimizado.
+          </p>
+          <form action={uploadImage} aria-describedby="product-image-help">
+            <label htmlFor="product-image">Imagen del producto</label>
+            <input
+              id="product-image"
+              name="image"
+              type="file"
+              accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+              disabled={pending}
+              required
+            />
+            <button type="submit" disabled={pending}>
+              Cargar imagen
+            </button>
+          </form>
+          {imagePending ? (
+            <progress aria-label="Progreso de imagen">Procesando</progress>
+          ) : null}
+          {images.length ? (
+            <ul>
+              {images.map((image) => (
+                <li key={image.id}>
+                  <Image
+                    src={imageUrl(image.storageKey)}
+                    alt={`Vista previa de ${product.name}`}
+                    width={Math.min(image.width, 320)}
+                    height={Math.max(
+                      1,
+                      Math.round(
+                        (Math.min(image.width, 320) * image.height) /
+                          image.width,
+                      ),
+                    )}
+                    unoptimized
+                  />
+                  <p>
+                    {image.width} × {image.height} px · WebP
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => removeImage(image.id)}
+                    disabled={pending}
+                  >
+                    Eliminar imagen
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>Este producto no tiene imagen.</p>
+          )}
         </section>
       ) : null}
-      {message ? <p role="status">{message}</p> : null}
+      {message ? (
+        <p role="status" aria-live="polite">
+          {message}
+        </p>
+      ) : null}
     </section>
   );
 }

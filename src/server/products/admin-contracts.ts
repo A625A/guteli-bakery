@@ -57,6 +57,13 @@ export const adminProductDeleteSchema = z
   .object({ expectedVersion: z.number().int().positive() })
   .strict();
 
+export const adminProductImageDeleteSchema = z
+  .object({
+    imageId: z.string().uuid(),
+    expectedVersion: z.number().int().positive(),
+  })
+  .strict();
+
 export const adminProductDuplicateSchema = z
   .object({
     name: z.string().trim().min(1).max(160),

@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { and, asc, count, eq, gt, inArray, sql } from 'drizzle-orm';
+import { and, asc, count, eq, gt, inArray, isNull, sql } from 'drizzle-orm';
 
 import {
   AuthorizationError,
@@ -207,7 +207,12 @@ async function imagesFor(productIds: readonly string[]) {
       sortOrder: productImages.sortOrder,
     })
     .from(productImages)
-    .where(inArray(productImages.productId, [...productIds]))
+    .where(
+      and(
+        inArray(productImages.productId, [...productIds]),
+        isNull(productImages.removedAt),
+      ),
+    )
     .orderBy(asc(productImages.sortOrder), asc(productImages.id));
   const grouped = new Map<
     string,

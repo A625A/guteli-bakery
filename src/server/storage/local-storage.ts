@@ -188,6 +188,43 @@ export class LocalObjectStorage implements ObjectStorage {
     }
   }
 
+  async delete(key: string): Promise<boolean> {
+    const target = this.leaf(key);
+    try {
+      const rootExists = await ensureStorageRoot(this.root, false);
+      if (!rootExists) return false;
+      const file = await open(
+        target,
+        constants.O_RDONLY | constants.O_NOFOLLOW,
+      );
+      try {
+        const opened = await file.stat();
+        assertSingleLinkFile(opened);
+        const current = await lstat(target);
+        if (
+          current.isSymbolicLink() ||
+          !current.isFile() ||
+          current.nlink !== 1 ||
+          current.dev !== opened.dev ||
+          current.ino !== opened.ino
+        ) {
+          throw new Error('Invalid storage object.');
+        }
+        await unlink(target);
+        await file.sync();
+        return true;
+      } finally {
+        await file.close();
+      }
+    } catch (error: unknown) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') return false;
+      if ((error as NodeJS.ErrnoException).code === 'ELOOP') {
+        throw new Error('Invalid storage object.');
+      }
+      throw new Error('Unable to delete object.');
+    }
+  }
+
   publicUrl(key: string) {
     validateKey(key);
     return `/api/media/${key.split('/').map(encodeURIComponent).join('/')}`;

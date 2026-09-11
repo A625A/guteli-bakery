@@ -4,6 +4,7 @@ import { base32 } from '@better-auth/utils/base32';
 import { createOTP } from '@better-auth/utils/otp';
 import { expect, test } from '@playwright/test';
 import { Pool } from 'pg';
+import sharp from 'sharp';
 
 import { adminAuthFixture } from '../support/admin-auth-fixture';
 import { requireTestDatabaseUrl } from '../../src/test/database-url';
@@ -183,6 +184,45 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
   await page.getByRole('button', { name: 'Guardar producto' }).click();
   expect((await editResponse).status()).toBe(200);
   await expect(page.getByRole('status')).toHaveText('Producto actualizado.');
+
+  const browserImage = await sharp({
+    create: {
+      width: 24,
+      height: 18,
+      channels: 3,
+      background: '#d98b51',
+    },
+  })
+    .png()
+    .toBuffer();
+  await page.getByLabel('Imagen del producto').setInputFiles({
+    name: 'browser-product.png',
+    mimeType: 'image/png',
+    buffer: browserImage,
+  });
+  const uploadResponse = page.waitForResponse(
+    (response) =>
+      response.request().method() === 'POST' &&
+      response.url().endsWith('/api/admin/uploads'),
+  );
+  await page.getByRole('button', { name: 'Cargar imagen' }).click();
+  expect((await uploadResponse).status()).toBe(201);
+  await expect(page.getByRole('status')).toHaveText('Imagen actualizada.');
+  await expect(
+    page.getByAltText('Vista previa de Primero navegador editado'),
+  ).toBeVisible();
+
+  const removeImageResponse = page.waitForResponse(
+    (response) =>
+      response.request().method() === 'DELETE' &&
+      response.url().endsWith(`/api/admin/products/${firstCreated.product.id}`),
+  );
+  await page.getByRole('button', { name: 'Eliminar imagen' }).click();
+  expect((await removeImageResponse).status()).toBe(200);
+  await expect(page.getByRole('status')).toHaveText('Imagen eliminada.');
+  await expect(
+    page.getByAltText('Vista previa de Primero navegador editado'),
+  ).toHaveCount(0);
 
   await page.goto('/menu');
   await expect(

@@ -11,5 +11,6 @@ export interface ObjectStorage {
     metadata?: StoragePutMetadata,
   ): Promise<boolean>;
   read(key: string, maxBytes?: number): Promise<Buffer | null>;
+  delete(key: string): Promise<boolean>;
   publicUrl(key: string): string;
 }

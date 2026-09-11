@@ -3,6 +3,8 @@ import { InvalidMutationOriginError } from '@/server/security/origin';
 
 import { AdminCategoryError } from './admin-categories';
 import { AdminProductError } from './admin-products';
+import { ProductImageError } from './add-product-image';
+import { ProductImageValidationError } from '@/server/storage/image-validation';
 
 export const privateAdminCatalogHeaders = (requestId: string) => ({
   'cache-control': 'private, no-store',
@@ -34,6 +36,12 @@ export function adminCatalogValidationError(requestId: string) {
 }
 
 export function adminCatalogErrorResponse(error: unknown, requestId: string) {
+  if (
+    error instanceof ProductImageValidationError ||
+    error instanceof RangeError
+  ) {
+    return adminCatalogValidationError(requestId);
+  }
   if (error instanceof AuthorizationError) {
     const status = error.code === 'FORBIDDEN' ? 403 : 401;
     const message =
@@ -70,6 +78,34 @@ export function adminCatalogErrorResponse(error: unknown, requestId: string) {
     };
     const [status, message] = response[error.code];
     return responseError(requestId, error.code, message, status);
+  }
+  if (error instanceof ProductImageError) {
+    if (error.code === 'RATE_LIMITED') {
+      return Response.json(
+        {
+          error: {
+            code: error.code,
+            message: 'Demasiados intentos. Intenta de nuevo más tarde.',
+            requestId,
+          },
+        },
+        {
+          status: 429,
+          headers: {
+            ...privateAdminCatalogHeaders(requestId),
+            'retry-after': String(error.retryAfterSeconds ?? 1),
+          },
+        },
+      );
+    }
+    if (error.code === 'PRODUCT_IMAGE_NOT_FOUND') {
+      return responseError(
+        requestId,
+        error.code,
+        'No se encontró la imagen del producto.',
+        404,
+      );
+    }
   }
   if (error instanceof AdminCategoryError) {
     const response: Record<

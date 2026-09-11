@@ -381,6 +381,7 @@ describe('catalog seed and local storage', () => {
         throw new Error('storage unavailable');
       },
       read: async () => null,
+      delete: async () => false,
       publicUrl: (key: string) => `/api/media/${key}`,
     };
 

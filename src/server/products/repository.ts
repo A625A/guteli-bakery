@@ -86,7 +86,13 @@ export async function findPublicProducts(
     .select(publicProductSelection)
     .from(products)
     .innerJoin(categories, eq(products.categoryId, categories.id))
-    .leftJoin(productImages, eq(productImages.productId, products.id))
+    .leftJoin(
+      productImages,
+      and(
+        eq(productImages.productId, products.id),
+        isNull(productImages.removedAt),
+      ),
+    )
     .where(publicProductFilters)
     .orderBy(
       asc(categories.sortOrder),
@@ -109,7 +115,13 @@ export async function findPublicProductBySlug(
     .select(publicProductSelection)
     .from(products)
     .innerJoin(categories, eq(products.categoryId, categories.id))
-    .leftJoin(productImages, eq(productImages.productId, products.id))
+    .leftJoin(
+      productImages,
+      and(
+        eq(productImages.productId, products.id),
+        isNull(productImages.removedAt),
+      ),
+    )
     .where(and(publicProductFilters, eq(products.slug, slug)))
     .orderBy(asc(productImages.sortOrder), asc(productImages.id));
   return mapRows(rows, storage)[0] ?? null;
@@ -136,6 +148,7 @@ export async function findPublicMedia(
     .where(
       and(
         eq(productImages.storageKey, storageKey),
+        isNull(productImages.removedAt),
         eq(products.active, true),
         isNull(products.deletedAt),
         eq(categories.active, true),

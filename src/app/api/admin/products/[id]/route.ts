@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { getRequestId } from '@/server/observability/request-id';
 import {
   adminProductDeleteSchema,
+  adminProductImageDeleteSchema,
   adminProductUpdateSchema,
 } from '@/server/products/admin-contracts';
 import {
@@ -17,6 +18,8 @@ import {
   deleteAdminProduct,
   updateAdminProduct,
 } from '@/server/products/admin-products';
+import { removeProductImage } from '@/server/products/add-product-image';
+import { createObjectStorage } from '@/server/storage';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -101,16 +104,31 @@ export async function DELETE(
     requestBody(request),
   ]);
   const body = adminProductDeleteSchema.safeParse(rawBody);
-  if (!id.success || !body.success) {
+  const imageBody = adminProductImageDeleteSchema.safeParse(rawBody);
+  if (!id.success || (!body.success && !imageBody.success)) {
     return adminCatalogValidationError(requestId);
   }
   try {
-    const result = await deleteAdminProduct(
-      id.data,
-      body.data.expectedVersion,
-      request.headers,
-      requestId,
-    );
+    let result;
+    if (imageBody.success) {
+      result = await removeProductImage({
+        productId: id.data,
+        imageId: imageBody.data.imageId,
+        expectedVersion: imageBody.data.expectedVersion,
+        requestHeaders: request.headers,
+        requestId,
+        storage: createObjectStorage(),
+      });
+    } else if (body.success) {
+      result = await deleteAdminProduct(
+        id.data,
+        body.data.expectedVersion,
+        request.headers,
+        requestId,
+      );
+    } else {
+      return adminCatalogValidationError(requestId);
+    }
     return Response.json(result, {
       headers: privateAdminCatalogHeaders(requestId),
     });

@@ -108,13 +108,19 @@ export async function seedCatalog(databaseUrl: string, storage: ObjectStorage) {
             sortOrder: 0,
           })
           .onConflictDoUpdate({
-            target: productImages.storageKey,
+            target: productImages.id,
             set: {
               productId: product.id,
+              storageKey,
               mimeType: 'image/webp',
               width: IMAGE_DIMENSION,
               height: IMAGE_DIMENSION,
               sortOrder: 0,
+              removedAt: null,
+              cleanupPending: false,
+              cleanupAttempts: 0,
+              cleanupCompletedAt: null,
+              lastCleanupErrorCode: null,
             },
           });
         imageIndex += 1;
