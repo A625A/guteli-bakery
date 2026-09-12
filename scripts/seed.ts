@@ -10,6 +10,7 @@ import {
   catalogSeedCategories,
   catalogSeedProducts,
 } from '@/server/products/seed-data';
+import { acquireCatalogMutationLock } from '@/server/products/catalog-mutation-lock';
 import { LocalObjectStorage } from '@/server/storage/local-storage';
 import type { ObjectStorage } from '@/server/storage/types';
 
@@ -32,6 +33,7 @@ export async function seedCatalog(databaseUrl: string, storage: ObjectStorage) {
 
   try {
     await db.transaction(async (tx) => {
+      await acquireCatalogMutationLock(tx);
       for (const category of catalogSeedCategories) {
         await tx
           .insert(categories)

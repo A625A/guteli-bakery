@@ -237,7 +237,8 @@ export async function readProductImageMultipart(
 
   let buffered = Buffer.alloc(0);
   let totalBytes = 0;
-  let state: 'initial' | 'headers' | 'body' | 'delimiter' | 'done' = 'initial';
+  let state: 'initial' | 'headers' | 'body' | 'delimiter' | 'terminal' =
+    'initial';
   let current: ReturnType<typeof parsePartHeaders> | null = null;
   let currentChunks: Buffer[] = [];
   let currentBytes = 0;
@@ -289,7 +290,7 @@ export async function readProductImageMultipart(
   };
 
   try {
-    while (state !== 'done') {
+    while (true) {
       const { value, done } = await reader.read();
       if (value) {
         totalBytes += value.byteLength;
@@ -336,18 +337,27 @@ export async function readProductImageMultipart(
         if (state === 'delimiter' && buffered.length >= 2) {
           if (buffered.subarray(0, 2).equals(Buffer.from('--'))) {
             buffered = buffered.subarray(2);
-            state = 'done';
+            state = 'terminal';
           } else if (buffered.subarray(0, 2).equals(Buffer.from('\r\n'))) {
             buffered = buffered.subarray(2);
             state = 'headers';
           } else invalid();
           progressed = true;
         }
+        if (state === 'terminal') {
+          const terminal = Buffer.from('\r\n');
+          if (
+            buffered.length > terminal.length ||
+            !terminal.subarray(0, buffered.length).equals(buffered)
+          ) {
+            invalid();
+          }
+        }
       }
       if (done) break;
     }
     if (
-      state !== 'done' ||
+      state !== 'terminal' ||
       (buffered.length && !buffered.equals(Buffer.from('\r\n')))
     )
       invalid();

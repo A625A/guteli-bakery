@@ -10,6 +10,7 @@ vi.mock('server-only', () => ({}));
 
 import {
   MAX_IMAGE_BYTES,
+  MAX_MULTIPART_BYTES,
   ProductImageValidationError,
   readProductImageMultipart,
   validateAndTransformProductImage,
@@ -42,14 +43,13 @@ async function fixture(
   return image[format]().toBuffer();
 }
 
-function multipartRequest(
+function multipartBody(
   parts: readonly Readonly<{
     name: string;
     value: string | Buffer;
     filename?: string;
     contentType?: string;
   }>[],
-  chunkSize = Number.POSITIVE_INFINITY,
 ) {
   const boundary = 'guteli-test-boundary';
   const buffers = parts.flatMap((part) => {
@@ -69,7 +69,14 @@ function multipartRequest(
     ];
   });
   buffers.push(Buffer.from(`--${boundary}--\r\n`));
-  const body = Buffer.concat(buffers);
+  return { boundary, body: Buffer.concat(buffers) } as const;
+}
+
+function multipartRequest(
+  parts: Parameters<typeof multipartBody>[0],
+  chunkSize = Number.POSITIVE_INFINITY,
+) {
+  const { boundary, body } = multipartBody(parts);
   const chunks: Buffer[] = [];
   for (let offset = 0; offset < body.length; offset += chunkSize) {
     chunks.push(body.subarray(offset, offset + chunkSize));
@@ -87,6 +94,18 @@ function multipartRequest(
     duplex: 'half',
   } as RequestInit & { duplex: 'half' });
 }
+
+const validMultipartParts = (bytes: Buffer) =>
+  [
+    { name: 'productId', value: '123e4567-e89b-42d3-a456-426614174000' },
+    { name: 'expectedVersion', value: '7' },
+    {
+      name: 'file',
+      value: bytes,
+      filename: 'product.png',
+      contentType: 'image/png',
+    },
+  ] as const;
 
 afterEach(async () => {
   await Promise.all(
@@ -197,19 +216,7 @@ describe('product image validation', () => {
   it('streams one multipart file with bounded metadata fields', async () => {
     const bytes = await fixture('png');
     const parsed = await readProductImageMultipart(
-      multipartRequest(
-        [
-          { name: 'productId', value: '123e4567-e89b-42d3-a456-426614174000' },
-          { name: 'expectedVersion', value: '7' },
-          {
-            name: 'file',
-            value: bytes,
-            filename: 'product.png',
-            contentType: 'image/png',
-          },
-        ],
-        17,
-      ),
+      multipartRequest(validMultipartParts(bytes), 17),
     );
 
     expect(parsed).toMatchObject({
@@ -219,6 +226,56 @@ describe('product image validation', () => {
       declaredMimeType: 'image/png',
     });
     expect(parsed.bytes.equals(bytes)).toBe(true);
+  });
+
+  it('accepts a terminal multipart CRLF split across chunks', async () => {
+    const bytes = await fixture('png');
+    const { boundary, body } = multipartBody(validMultipartParts(bytes));
+    const chunks = [body.subarray(0, -1), body.subarray(-1)];
+    const request = new Request('http://localhost/api/admin/uploads', {
+      method: 'POST',
+      headers: { 'content-type': `multipart/form-data; boundary=${boundary}` },
+      body: new ReadableStream({
+        pull(controller) {
+          const next = chunks.shift();
+          if (next) controller.enqueue(next);
+          else controller.close();
+        },
+      }),
+      duplex: 'half',
+    } as RequestInit & { duplex: 'half' });
+
+    await expect(readProductImageMultipart(request)).resolves.toMatchObject({
+      productId: '123e4567-e89b-42d3-a456-426614174000',
+      expectedVersion: 7,
+    });
+  });
+
+  it('reads through bounded EOF and cancels an oversized tail after the closing delimiter', async () => {
+    const bytes = await fixture('png');
+    const { boundary, body } = multipartBody(validMultipartParts(bytes));
+    const chunks = [body, Buffer.alloc(MAX_MULTIPART_BYTES)];
+    let cancelled = false;
+    const request = new Request('http://localhost/api/admin/uploads', {
+      method: 'POST',
+      headers: { 'content-type': `multipart/form-data; boundary=${boundary}` },
+      body: new ReadableStream({
+        pull(controller) {
+          const next = chunks.shift();
+          if (next) controller.enqueue(next);
+          else controller.close();
+        },
+        cancel() {
+          cancelled = true;
+        },
+      }),
+      duplex: 'half',
+    } as RequestInit & { duplex: 'half' });
+
+    await expect(readProductImageMultipart(request)).rejects.toMatchObject({
+      code: 'IMAGE_TOO_LARGE',
+    });
+    expect(cancelled).toBe(true);
   });
 
   it('rejects multiple files and aborts an oversized chunked envelope', async () => {

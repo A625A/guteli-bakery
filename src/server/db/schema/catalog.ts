@@ -119,3 +119,21 @@ export const productImages = pgTable(
     index('product_images_storage_key_idx').on(table.storageKey),
   ],
 );
+
+export const imageCleanupJobs = pgTable(
+  'image_cleanup_jobs',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    storageKey: varchar('storage_key', { length: 512 }).notNull().unique(),
+    cleanupAttempts: integer('cleanup_attempts').notNull().default(0),
+    lastCleanupErrorCode: varchar('last_cleanup_error_code', { length: 100 }),
+    ...timestamps,
+  },
+  (table) => [
+    check(
+      'image_cleanup_jobs_attempts_nonnegative',
+      sql`${table.cleanupAttempts} >= 0`,
+    ),
+    index('image_cleanup_jobs_updated_idx').on(table.updatedAt),
+  ],
+);

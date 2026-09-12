@@ -2,13 +2,9 @@ import 'server-only';
 
 import { randomUUID } from 'node:crypto';
 
-import { and, asc, eq, gt, inArray, isNull, sql } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNull, sql } from 'drizzle-orm';
 
-import {
-  AuthorizationError,
-  requireAdmin,
-  type AuthorizedActor,
-} from '@/server/auth/authorize';
+import { requireAdmin } from '@/server/auth/authorize';
 import {
   assertRecentReauthentication,
   MAX_REAUTHENTICATION_AGE_SECONDS,
@@ -17,22 +13,25 @@ import { db } from '@/server/db/client';
 import {
   auditLogs,
   categories,
+  imageCleanupJobs,
   productImages,
   products,
-  session,
-  user,
 } from '@/server/db/schema';
 import { createHmacSubject } from '@/server/security/client-subject';
 import { consumeFixedWindowRateLimit } from '@/server/security/rate-limit';
 import { requireTrustedMutationOrigin } from '@/server/security/origin';
 import type { ObjectStorage } from '@/server/storage';
 
-import { AdminProductError, type AdminProductDto } from './admin-products';
+import {
+  AdminProductError,
+  revalidateCatalogActorAfterLock,
+  type AdminProductDto,
+} from './admin-products';
+import { acquireCatalogMutationLock } from './catalog-mutation-lock';
 
 type CatalogTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 type CleanupRecord = Readonly<{ id: string; storageKey: string }>;
 
-const CATALOG_MUTATION_LOCK = 4_728_519_206;
 const UPLOAD_LIMIT = 10;
 const UPLOAD_WINDOW_MS = 15 * 60 * 1000;
 
@@ -72,44 +71,6 @@ const productSelection = {
 type ProductRow = Omit<AdminProductDto, 'deletedAt' | 'images'> & {
   deletedAt: Date | null;
 };
-
-async function acquireCatalogMutationLock(transaction: CatalogTransaction) {
-  await transaction.execute(
-    sql`SELECT pg_advisory_xact_lock(${CATALOG_MUTATION_LOCK})`,
-  );
-}
-
-async function revalidateActor(
-  transaction: CatalogTransaction,
-  actor: AuthorizedActor,
-) {
-  const now = new Date();
-  const [current] = await transaction
-    .select({ role: user.role, mfaVerifiedAt: session.mfaVerifiedAt })
-    .from(user)
-    .innerJoin(
-      session,
-      and(eq(session.id, actor.sessionId), eq(session.userId, user.id)),
-    )
-    .where(
-      and(
-        eq(user.id, actor.userId),
-        eq(user.active, true),
-        inArray(user.role, ['OWNER', 'ADMIN']),
-        gt(session.expiresAt, now),
-      ),
-    )
-    .limit(1);
-  if (!current?.mfaVerifiedAt) throw new AuthorizationError('FORBIDDEN');
-  return {
-    actor: {
-      ...actor,
-      role: current.role,
-      mfaVerifiedAt: current.mfaVerifiedAt,
-    },
-    now,
-  } as const;
-}
 
 async function lockProduct(transaction: CatalogTransaction, productId: string) {
   const [product] = await transaction
@@ -217,6 +178,95 @@ async function persistCleanupFailure(record: CleanupRecord) {
     .catch(() => undefined);
 }
 
+async function enqueueCompensationCleanup(storageKey: string) {
+  const now = new Date();
+  await db
+    .insert(imageCleanupJobs)
+    .values({
+      storageKey,
+      cleanupAttempts: 1,
+      lastCleanupErrorCode: 'OBJECT_DELETE_FAILED',
+      createdAt: now,
+      updatedAt: now,
+    })
+    .onConflictDoUpdate({
+      target: imageCleanupJobs.storageKey,
+      set: {
+        cleanupAttempts: sql`${imageCleanupJobs.cleanupAttempts} + 1`,
+        lastCleanupErrorCode: 'OBJECT_DELETE_FAILED',
+        updatedAt: now,
+      },
+    });
+}
+
+export async function retryPendingImageCleanup(
+  storage: ObjectStorage,
+  limit = 5,
+) {
+  const boundedLimit = Math.min(Math.max(Math.trunc(limit), 0), 25);
+  if (boundedLimit === 0) return { completed: 0, failed: 0 } as const;
+  const pending = await db
+    .select({ id: imageCleanupJobs.id })
+    .from(imageCleanupJobs)
+    .orderBy(asc(imageCleanupJobs.updatedAt), asc(imageCleanupJobs.id))
+    .limit(boundedLimit);
+  let completed = 0;
+  let failed = 0;
+
+  for (const candidate of pending) {
+    const outcome = await db.transaction(async (transaction) => {
+      await acquireCatalogMutationLock(transaction);
+      const [job] = await transaction
+        .select({
+          id: imageCleanupJobs.id,
+          storageKey: imageCleanupJobs.storageKey,
+        })
+        .from(imageCleanupJobs)
+        .where(eq(imageCleanupJobs.id, candidate.id))
+        .for('update')
+        .limit(1);
+      if (!job) return 'missing' as const;
+      const [activeReference] = await transaction
+        .select({ id: productImages.id })
+        .from(productImages)
+        .where(
+          and(
+            eq(productImages.storageKey, job.storageKey),
+            isNull(productImages.removedAt),
+          ),
+        )
+        .for('update')
+        .limit(1);
+      if (activeReference) {
+        await transaction
+          .delete(imageCleanupJobs)
+          .where(eq(imageCleanupJobs.id, job.id));
+        return 'completed' as const;
+      }
+      try {
+        await storage.delete(job.storageKey);
+      } catch {
+        await transaction
+          .update(imageCleanupJobs)
+          .set({
+            cleanupAttempts: sql`${imageCleanupJobs.cleanupAttempts} + 1`,
+            lastCleanupErrorCode: 'OBJECT_DELETE_FAILED',
+            updatedAt: new Date(),
+          })
+          .where(eq(imageCleanupJobs.id, job.id));
+        return 'failed' as const;
+      }
+      await transaction
+        .delete(imageCleanupJobs)
+        .where(eq(imageCleanupJobs.id, job.id));
+      return 'completed' as const;
+    });
+    if (outcome === 'completed') completed += 1;
+    if (outcome === 'failed') failed += 1;
+  }
+  return { completed, failed } as const;
+}
+
 export async function cleanupRemovedProductImages(
   records: readonly CleanupRecord[],
   storage: ObjectStorage,
@@ -314,12 +364,16 @@ export async function addProductImage(
 ) {
   requireTrustedMutationOrigin(input.requestHeaders);
   const initialActor = await requireAdmin(input.requestHeaders);
+  await retryPendingImageCleanup(input.storage);
   const object = await newObject(input.storage, input.image.body);
   try {
     const result = await db.transaction(async (transaction) => {
       await acquireCatalogMutationLock(transaction);
       const current = await lockProduct(transaction, input.productId);
-      const { actor, now } = await revalidateActor(transaction, initialActor);
+      const { actor, now } = await revalidateCatalogActorAfterLock(
+        transaction,
+        initialActor,
+      );
       if (current.version !== input.expectedVersion) {
         throw new AdminProductError('STALE_PRODUCT');
       }
@@ -395,8 +449,13 @@ export async function addProductImage(
     await cleanupRemovedProductImages(result.cleanup, input.storage);
     return { product: result.product } as const;
   } catch (error) {
-    if (object.created)
-      await input.storage.delete(object.storageKey).catch(() => undefined);
+    if (object.created) {
+      try {
+        await input.storage.delete(object.storageKey);
+      } catch {
+        await enqueueCompensationCleanup(object.storageKey);
+      }
+    }
     throw error;
   }
 }
@@ -413,6 +472,7 @@ export async function removeProductImage(
 ) {
   requireTrustedMutationOrigin(input.requestHeaders);
   const initialActor = await requireAdmin(input.requestHeaders);
+  await retryPendingImageCleanup(input.storage);
   const result = await db.transaction(async (transaction) => {
     await acquireCatalogMutationLock(transaction);
     const current = await lockProduct(transaction, input.productId);
@@ -429,7 +489,10 @@ export async function removeProductImage(
       .for('update')
       .limit(1);
     if (!image) throw new ProductImageError('PRODUCT_IMAGE_NOT_FOUND');
-    const { actor, now } = await revalidateActor(transaction, initialActor);
+    const { actor, now } = await revalidateCatalogActorAfterLock(
+      transaction,
+      initialActor,
+    );
     if (current.version !== input.expectedVersion) {
       throw new AdminProductError('STALE_PRODUCT');
     }

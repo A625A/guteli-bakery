@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { and, asc, count, eq, gt, inArray, isNull, sql } from 'drizzle-orm';
+import { and, asc, count, eq, gt, inArray, isNull } from 'drizzle-orm';
 
 import {
   AuthorizationError,
@@ -27,6 +27,7 @@ import type {
   AdminProductUpdateInput,
 } from './admin-contracts';
 import { parseAdminCatalogPagination } from './admin-contracts';
+import { acquireCatalogMutationLock } from './catalog-mutation-lock';
 
 type CatalogTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
@@ -71,8 +72,6 @@ export type AdminProductDto = Readonly<{
     sortOrder: number;
   }>[];
 }>;
-
-const CATALOG_MUTATION_LOCK = 4_728_519_206;
 
 const productSelection = {
   id: products.id,
@@ -153,12 +152,6 @@ function productValues(input: AdminProductCreateInput) {
 async function initialActor(requestHeaders: Headers) {
   requireTrustedMutationOrigin(requestHeaders);
   return requireAdmin(requestHeaders);
-}
-
-async function acquireCatalogMutationLock(transaction: CatalogTransaction) {
-  await transaction.execute(
-    sql`SELECT pg_advisory_xact_lock(${CATALOG_MUTATION_LOCK})`,
-  );
 }
 
 export async function revalidateCatalogActorAfterLock(

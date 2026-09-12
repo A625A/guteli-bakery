@@ -57,6 +57,13 @@
       "when": 1789101833836,
       "tag": "0007_tough_wolfpack",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1789185453093,
+      "tag": "0008_glossy_hardball",
+      "breakpoints": true
     }
   ]
 }

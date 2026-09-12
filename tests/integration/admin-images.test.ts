@@ -29,11 +29,21 @@ import { GET as GET_MEDIA } from '@/app/api/media/[...key]/route';
 import { POST as AUTH_POST } from '@/app/api/auth/[...all]/route';
 import { auth } from '@/server/auth/auth';
 import { provisionOwner } from '@/server/auth/provision-owner';
-import { categories, productImages, products } from '@/server/db/schema';
+import {
+  categories,
+  imageCleanupJobs,
+  productImages,
+  products,
+} from '@/server/db/schema';
 import { LocalObjectStorage } from '@/server/storage/local-storage';
 import type { ObjectStorage } from '@/server/storage';
-import { addProductImage } from '@/server/products/add-product-image';
+import {
+  addProductImage,
+  cleanupRemovedProductImages,
+  retryPendingImageCleanup,
+} from '@/server/products/add-product-image';
 import { requireTestDatabaseUrl } from '@/test/database-url';
+import { seedCatalog } from '../../scripts/seed';
 
 const databaseUrl = requireTestDatabaseUrl(
   process.env.DATABASE_URL_TEST,
@@ -405,6 +415,107 @@ describe('secure admin product images', () => {
     expect(await readdir(uploadsRoot)).toEqual([]);
   });
 
+  it('durably records and retries compensation when metadata and object deletion both fail', async () => {
+    const jar = await enrolledOwner();
+    const product = await productFixture();
+    const baseStorage = new LocalObjectStorage(uploadsRoot);
+    let deleteAttempts = 0;
+    let createdKey = '';
+    let failDelete = true;
+    const storage: ObjectStorage = {
+      putIfMissing: async (key, body) => {
+        createdKey = key;
+        return baseStorage.putIfMissing(key, body);
+      },
+      read: (key) => baseStorage.read(key),
+      delete: async (key) => {
+        deleteAttempts += 1;
+        if (failDelete) throw new Error('forced object deletion failure');
+        return baseStorage.delete(key);
+      },
+      publicUrl: (key) => baseStorage.publicUrl(key),
+    };
+    await pool.query(`
+      CREATE FUNCTION reject_image_audit_and_compensate() RETURNS trigger AS $$
+      BEGIN
+        IF NEW.action = 'PRODUCT_IMAGE_ADDED' THEN RAISE EXCEPTION 'forced image audit failure'; END IF;
+        RETURN NEW;
+      END;
+      $$ LANGUAGE plpgsql;
+      CREATE TRIGGER reject_image_audit_and_compensate BEFORE INSERT ON audit_logs
+      FOR EACH ROW EXECUTE FUNCTION reject_image_audit_and_compensate();
+    `);
+
+    try {
+      await expect(
+        addProductImage({
+          productId: product.id,
+          expectedVersion: 1,
+          image: {
+            body: await sharp(await pngFixture())
+              .webp()
+              .toBuffer(),
+            mimeType: 'image/webp',
+            width: 40,
+            height: 30,
+          },
+          requestHeaders: jar.headers(),
+          requestId: randomUUID(),
+          storage,
+        }),
+      ).rejects.toThrow();
+    } finally {
+      await pool.query(
+        'DROP TRIGGER reject_image_audit_and_compensate ON audit_logs',
+      );
+      await pool.query('DROP FUNCTION reject_image_audit_and_compensate()');
+    }
+
+    expect(deleteAttempts).toBe(1);
+    expect(await db.select().from(productImages)).toHaveLength(0);
+    const [job] = await db.select().from(imageCleanupJobs);
+    expect(job).toMatchObject({
+      storageKey: createdKey,
+      cleanupAttempts: 1,
+      lastCleanupErrorCode: 'OBJECT_DELETE_FAILED',
+    });
+    expect(await baseStorage.read(createdKey)).not.toBeNull();
+
+    failDelete = false;
+    await retryPendingImageCleanup(storage, 1);
+    expect(deleteAttempts).toBe(2);
+    expect(await db.select().from(imageCleanupJobs)).toHaveLength(0);
+    expect(await baseStorage.read(createdKey)).toBeNull();
+  });
+
+  it('drops a compensation retry without deleting an object that became actively referenced', async () => {
+    const product = await productFixture();
+    const baseStorage = new LocalObjectStorage(uploadsRoot);
+    const storageKey = `products/${randomUUID()}.webp`;
+    await baseStorage.putIfMissing(storageKey, Buffer.from('shared'));
+    await db.insert(productImages).values({
+      productId: product.id,
+      storageKey,
+      mimeType: 'image/webp',
+      width: 40,
+      height: 30,
+    });
+    await db.insert(imageCleanupJobs).values({ storageKey });
+    const guardedStorage: ObjectStorage = {
+      putIfMissing: (key, body) => baseStorage.putIfMissing(key, body),
+      read: (key) => baseStorage.read(key),
+      delete: async () => {
+        throw new Error('active shared object must not be deleted');
+      },
+      publicUrl: (key) => baseStorage.publicUrl(key),
+    };
+
+    await retryPendingImageCleanup(guardedStorage, 1);
+
+    expect(await db.select().from(imageCleanupJobs)).toHaveLength(0);
+    expect(await baseStorage.read(storageKey)).toEqual(Buffer.from('shared'));
+  });
+
   it('soft-removes metadata before cleanup and retains durable pending state when deletion fails', async () => {
     const jar = await enrolledOwner();
     const product = await productFixture();
@@ -484,6 +595,68 @@ describe('secure admin product images', () => {
       cleanupAttempts: 0,
     });
   });
+
+  it('serializes seeded image reactivation with cleanup through the catalog lock', async () => {
+    const baseStorage = new LocalObjectStorage(uploadsRoot);
+    await seedCatalog(databaseUrl, baseStorage);
+    const imageId = '00000000-0000-4000-8000-000000001001';
+    const [image] = await db
+      .update(productImages)
+      .set({ removedAt: new Date(), cleanupPending: true })
+      .where(eq(productImages.id, imageId))
+      .returning({
+        id: productImages.id,
+        storageKey: productImages.storageKey,
+      });
+    let notifyDeleteStarted!: () => void;
+    const deleteStarted = new Promise<void>((resolve) => {
+      notifyDeleteStarted = resolve;
+    });
+    let releaseDelete!: () => void;
+    const deleteReleased = new Promise<void>((resolve) => {
+      releaseDelete = resolve;
+    });
+    let targetPutStarted = false;
+    const cleanupStorage: ObjectStorage = {
+      putIfMissing: (key, body) => baseStorage.putIfMissing(key, body),
+      read: (key) => baseStorage.read(key),
+      delete: async (key) => {
+        if (key === image.storageKey) {
+          notifyDeleteStarted();
+          await deleteReleased;
+        }
+        return baseStorage.delete(key);
+      },
+      publicUrl: (key) => baseStorage.publicUrl(key),
+    };
+    const seedStorage: ObjectStorage = {
+      putIfMissing: async (key, body) => {
+        if (key === image.storageKey) targetPutStarted = true;
+        return baseStorage.putIfMissing(key, body);
+      },
+      read: (key) => baseStorage.read(key),
+      delete: (key) => baseStorage.delete(key),
+      publicUrl: (key) => baseStorage.publicUrl(key),
+    };
+    const cleanup = cleanupRemovedProductImages([image], cleanupStorage);
+    await deleteStarted;
+    const seeding = seedCatalog(databaseUrl, seedStorage);
+
+    try {
+      await waitForCatalogMutationToBlock();
+      expect(targetPutStarted).toBe(false);
+    } finally {
+      releaseDelete();
+      await Promise.all([cleanup, seeding]);
+    }
+
+    const [reactivated] = await db
+      .select({ removedAt: productImages.removedAt })
+      .from(productImages)
+      .where(eq(productImages.id, imageId));
+    expect(reactivated.removedAt).toBeNull();
+    expect(await baseStorage.read(image.storageKey)).not.toBeNull();
+  }, 15_000);
 
   it('never compensates an existing object when every randomized key collides', async () => {
     const jar = await enrolledOwner();
