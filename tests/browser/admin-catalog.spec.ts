@@ -6,7 +6,7 @@ import { expect, test } from '@playwright/test';
 import { Pool } from 'pg';
 import sharp from 'sharp';
 
-import { adminAuthFixture } from '../support/admin-auth-fixture';
+import { adminCatalogAuthFixture } from '../support/admin-auth-fixture';
 import { requireTestDatabaseUrl } from '../../src/test/database-url';
 
 test.describe.configure({ mode: 'serial' });
@@ -52,13 +52,19 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
 }) => {
   test.setTimeout(120_000);
   await page.goto('/admin/login');
-  await page.getByLabel('Correo electrónico').fill(adminAuthFixture.email);
-  await page.getByLabel('Contraseña').fill(adminAuthFixture.setupPassword);
+  await page
+    .getByLabel('Correo electrónico')
+    .fill(adminCatalogAuthFixture.email);
+  await page
+    .getByLabel('Contraseña')
+    .fill(adminCatalogAuthFixture.setupPassword);
   await page.getByRole('button', { name: 'Ingresar' }).click();
   await page
     .getByLabel('Contraseña actual')
-    .fill(adminAuthFixture.setupPassword);
-  await page.getByLabel('Nueva contraseña').fill(adminAuthFixture.password);
+    .fill(adminCatalogAuthFixture.setupPassword);
+  await page
+    .getByLabel('Nueva contraseña')
+    .fill(adminCatalogAuthFixture.password);
   const passwordChangeResponse = page.waitForResponse((response) =>
     response.url().includes('/api/auth/change-password'),
   );
@@ -67,7 +73,9 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
   await expect(
     page.getByRole('heading', { name: 'Configura tu autenticador' }),
   ).toBeVisible();
-  await page.getByLabel('Contraseña actual').fill(adminAuthFixture.password);
+  await page
+    .getByLabel('Contraseña actual')
+    .fill(adminCatalogAuthFixture.password);
   const enableResponse = page.waitForResponse((response) =>
     response.url().includes('/api/auth/two-factor/enable'),
   );
@@ -181,9 +189,19 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
       response.request().method() === 'PATCH' &&
       /\/api\/admin\/products\/[0-9a-f-]+$/.test(response.url()),
   );
+  const editRefreshResponse = page.waitForResponse((response) => {
+    const url = new URL(response.url());
+    return (
+      url.pathname === `/admin/products/${firstCreated.product.id}` &&
+      url.searchParams.has('_rsc')
+    );
+  });
   await page.getByRole('button', { name: 'Guardar producto' }).click();
   expect((await editResponse).status()).toBe(200);
   await expect(page.getByRole('status')).toHaveText('Producto actualizado.');
+  const refreshedEditedProduct = await editRefreshResponse;
+  expect(refreshedEditedProduct.status()).toBe(200);
+  expect(await refreshedEditedProduct.finished()).toBeNull();
 
   const browserImage = await sharp({
     create: {
@@ -205,24 +223,30 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
       response.request().method() === 'POST' &&
       response.url().endsWith('/api/admin/uploads'),
   );
+  const uploadRefreshResponse = page.waitForResponse((response) => {
+    const url = new URL(response.url());
+    return (
+      url.pathname === `/admin/products/${firstCreated.product.id}` &&
+      url.searchParams.has('_rsc')
+    );
+  });
   await page.getByRole('button', { name: 'Cargar imagen' }).click();
   expect((await uploadResponse).status()).toBe(201);
   await expect(page.getByRole('status')).toHaveText('Imagen actualizada.');
-  await expect(
-    page.getByAltText('Vista previa de Primero navegador editado'),
-  ).toBeVisible();
-
-  const removeImageResponse = page.waitForResponse(
-    (response) =>
-      response.request().method() === 'DELETE' &&
-      response.url().endsWith(`/api/admin/products/${firstCreated.product.id}`),
+  const refreshedUploadedProduct = await uploadRefreshResponse;
+  expect(refreshedUploadedProduct.status()).toBe(200);
+  expect(await refreshedUploadedProduct.finished()).toBeNull();
+  const activePreview = page.getByAltText(
+    'Vista previa de Primero navegador editado',
   );
-  await page.getByRole('button', { name: 'Eliminar imagen' }).click();
-  expect((await removeImageResponse).status()).toBe(200);
-  await expect(page.getByRole('status')).toHaveText('Imagen eliminada.');
-  await expect(
-    page.getByAltText('Vista previa de Primero navegador editado'),
-  ).toHaveCount(0);
+  await expect(activePreview).toBeVisible();
+  await expect
+    .poll(() =>
+      activePreview.evaluate(
+        (image: HTMLImageElement) => image.complete && image.naturalWidth > 0,
+      ),
+    )
+    .toBe(true);
 
   await page.goto('/menu');
   await expect(
@@ -265,9 +289,19 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
       response.request().method() === 'PATCH' &&
       response.url().endsWith(`/api/admin/products/${firstCreated.product.id}`),
   );
+  const deactivateRefreshResponse = page.waitForResponse((response) => {
+    const url = new URL(response.url());
+    return (
+      url.pathname === `/admin/products/${firstCreated.product.id}` &&
+      url.searchParams.has('_rsc')
+    );
+  });
   await page.getByRole('button', { name: 'Desactivar producto' }).click();
   expect((await deactivateResponse).status()).toBe(200);
   await expect(page.getByRole('status')).toHaveText('Producto desactivado.');
+  const refreshedDeactivatedProduct = await deactivateRefreshResponse;
+  expect(refreshedDeactivatedProduct.status()).toBe(200);
+  expect(await refreshedDeactivatedProduct.finished()).toBeNull();
   await page
     .getByLabel('Nombre del producto')
     .fill('Primero navegador editado inactivo');
@@ -276,9 +310,54 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
       response.request().method() === 'PATCH' &&
       response.url().endsWith(`/api/admin/products/${firstCreated.product.id}`),
   );
+  const inactiveEditRefreshResponse = page.waitForResponse((response) => {
+    const url = new URL(response.url());
+    return (
+      url.pathname === `/admin/products/${firstCreated.product.id}` &&
+      url.searchParams.has('_rsc')
+    );
+  });
   await page.getByRole('button', { name: 'Guardar producto' }).click();
   expect((await inactiveEditResponse).status()).toBe(200);
   await expect(page.getByRole('status')).toHaveText('Producto actualizado.');
+  const refreshedInactiveProduct = await inactiveEditRefreshResponse;
+  expect(refreshedInactiveProduct.status()).toBe(200);
+  expect(await refreshedInactiveProduct.finished()).toBeNull();
+  const inactivePreview = page.getByAltText(
+    /Vista previa de Primero navegador editado/,
+  );
+  await expect(inactivePreview).toBeVisible();
+  await expect
+    .poll(() =>
+      inactivePreview.evaluate(
+        (image: HTMLImageElement) => image.complete && image.naturalWidth > 0,
+      ),
+    )
+    .toBe(true);
+  const inactivePreviewSource = await inactivePreview.getAttribute('src');
+  expect(inactivePreviewSource).not.toBeNull();
+  expect(new URL(inactivePreviewSource!, page.url()).pathname).toMatch(
+    /^\/api\/admin\/media\//,
+  );
+  const removeImageResponse = page.waitForResponse(
+    (response) =>
+      response.request().method() === 'DELETE' &&
+      response.url().endsWith(`/api/admin/products/${firstCreated.product.id}`),
+  );
+  const removeRefreshResponse = page.waitForResponse((response) => {
+    const url = new URL(response.url());
+    return (
+      url.pathname === `/admin/products/${firstCreated.product.id}` &&
+      url.searchParams.has('_rsc')
+    );
+  });
+  await page.getByRole('button', { name: 'Eliminar imagen' }).click();
+  expect((await removeImageResponse).status()).toBe(200);
+  await expect(page.getByRole('status')).toHaveText('Imagen eliminada.');
+  await expect(inactivePreview).toHaveCount(0);
+  const refreshedProduct = await removeRefreshResponse;
+  expect(refreshedProduct.status()).toBe(200);
+  expect(await refreshedProduct.finished()).toBeNull();
 
   await page.goto('/menu');
   await expect(
@@ -334,6 +413,13 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
         .url()
         .endsWith(`/api/admin/products/${overflowCreated.product.id}`),
   );
+  const overflowRefreshResponse = page.waitForResponse((response) => {
+    const url = new URL(response.url());
+    return (
+      url.pathname === `/admin/products/${overflowCreated.product.id}` &&
+      url.searchParams.has('_rsc')
+    );
+  });
   await page.getByRole('button', { name: 'Guardar producto' }).click();
   const overflowUpdatedResponse = await overflowEditResponse;
   expect(overflowUpdatedResponse.status()).toBe(200);
@@ -347,4 +433,7 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
   await expect(page.getByLabel('Categoría', { exact: true })).toHaveValue(
     overflowCategory.id,
   );
+  const refreshedOverflowProduct = await overflowRefreshResponse;
+  expect(refreshedOverflowProduct.status()).toBe(200);
+  expect(await refreshedOverflowProduct.finished()).toBeNull();
 });

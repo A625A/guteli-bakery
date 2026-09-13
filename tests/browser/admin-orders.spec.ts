@@ -4,7 +4,7 @@ import { expect, test } from '@playwright/test';
 import { Pool } from 'pg';
 
 import { requireTestDatabaseUrl } from '../../src/test/database-url';
-import { adminAuthFixture } from '../support/admin-auth-fixture';
+import { adminOrdersAuthFixture } from '../support/admin-auth-fixture';
 
 test.describe.configure({ mode: 'serial' });
 
@@ -53,16 +53,22 @@ test('an owner sees operational detail, quotes delivery, and advances an order w
 }) => {
   test.setTimeout(90_000);
   await page.goto('/admin/login');
-  await page.getByLabel('Correo electrónico').fill(adminAuthFixture.email);
-  await page.getByLabel('Contraseña').fill(adminAuthFixture.setupPassword);
+  await page
+    .getByLabel('Correo electrónico')
+    .fill(adminOrdersAuthFixture.email);
+  await page
+    .getByLabel('Contraseña')
+    .fill(adminOrdersAuthFixture.setupPassword);
   await page.getByRole('button', { name: 'Ingresar' }).click();
   await expect(
     page.getByRole('heading', { name: 'Cambia tu contraseña' }),
   ).toBeVisible();
   await page
     .getByLabel('Contraseña actual')
-    .fill(adminAuthFixture.setupPassword);
-  await page.getByLabel('Nueva contraseña').fill(adminAuthFixture.password);
+    .fill(adminOrdersAuthFixture.setupPassword);
+  await page
+    .getByLabel('Nueva contraseña')
+    .fill(adminOrdersAuthFixture.password);
   const passwordChangeResponse = page.waitForResponse((response) =>
     response.url().includes('/api/auth/change-password'),
   );
@@ -71,7 +77,9 @@ test('an owner sees operational detail, quotes delivery, and advances an order w
   await expect(
     page.getByRole('heading', { name: 'Configura tu autenticador' }),
   ).toBeVisible();
-  await page.getByLabel('Contraseña actual').fill(adminAuthFixture.password);
+  await page
+    .getByLabel('Contraseña actual')
+    .fill(adminOrdersAuthFixture.password);
   const enableResponse = page.waitForResponse((response) =>
     response.url().includes('/api/auth/two-factor/enable'),
   );

@@ -26,7 +26,14 @@ import { auth } from '@/server/auth/auth';
 import { provisionOwner } from '@/server/auth/provision-owner';
 import { requireRecentReauthentication } from '@/server/auth/reauth';
 import { getAdminDashboard } from '@/server/admin/dashboard';
-import { orders, outboxEvents, session, user } from '@/server/db/schema';
+import {
+  categories,
+  orders,
+  outboxEvents,
+  products,
+  session,
+  user,
+} from '@/server/db/schema';
 import { requireTestDatabaseUrl } from '@/test/database-url';
 import { eq } from 'drizzle-orm';
 
@@ -254,5 +261,124 @@ describe('authoritative admin authorization DAL', () => {
     expect(serialized).not.toContain('Ubicación privada');
     expect(serialized).not.toContain('Nombre privado');
     expect(serialized).not.toContain('Nota privada');
+  });
+
+  it('reports the Guatemala-local day and explicit actionable, availability, low-stock, and failed-notification metrics', async () => {
+    const jar = await enrollOwner();
+    const [activeCategory] = await db
+      .insert(categories)
+      .values({ name: 'Activa', slug: 'dashboard-active' })
+      .returning();
+    const [inactiveCategory] = await db
+      .insert(categories)
+      .values({ name: 'Inactiva', slug: 'dashboard-inactive', active: false })
+      .returning();
+    await db.insert(products).values([
+      {
+        categoryId: activeCategory.id,
+        name: 'Agotado',
+        slug: 'dashboard-zero',
+        priceMinor: 100,
+        stockQuantity: 0,
+      },
+      {
+        categoryId: activeCategory.id,
+        name: 'Sin seguimiento',
+        slug: 'dashboard-null',
+        priceMinor: 100,
+        stockQuantity: null,
+      },
+      {
+        categoryId: activeCategory.id,
+        name: 'Stock uno',
+        slug: 'dashboard-one',
+        priceMinor: 100,
+        stockQuantity: 1,
+      },
+      {
+        categoryId: activeCategory.id,
+        name: 'Stock cinco',
+        slug: 'dashboard-five',
+        priceMinor: 100,
+        stockQuantity: 5,
+      },
+      {
+        categoryId: activeCategory.id,
+        name: 'Stock seis',
+        slug: 'dashboard-six',
+        priceMinor: 100,
+        stockQuantity: 6,
+      },
+      {
+        categoryId: activeCategory.id,
+        name: 'Producto inactivo',
+        slug: 'dashboard-product-inactive',
+        priceMinor: 100,
+        stockQuantity: 1,
+        active: false,
+      },
+      {
+        categoryId: inactiveCategory.id,
+        name: 'Categoría inactiva',
+        slug: 'dashboard-category-inactive',
+        priceMinor: 100,
+        stockQuantity: 1,
+      },
+    ]);
+
+    const orderValues = [
+      ['GT-DAY-BEFORE', '2026-09-12T05:59:59.999Z', 'RECEIVED', 'b'],
+      ['GT-DAY-START', '2026-09-12T06:00:00.000Z', 'RECEIVED', 'c'],
+      ['GT-DAY-END', '2026-09-13T05:59:59.999Z', 'PREPARING', 'd'],
+      ['GT-DAY-AFTER', '2026-09-13T06:00:00.000Z', 'COMPLETED', 'e'],
+    ] as const;
+    const insertedOrders = await db
+      .insert(orders)
+      .values(
+        orderValues.map(([publicId, createdAt, orderStatus, hash]) => ({
+          publicId,
+          customerName: 'Privado',
+          phone: '+50200000000',
+          fulfillment: 'PICKUP' as const,
+          requestedDate: '2026-09-20',
+          subtotalMinor: 100,
+          shippingMinor: 0,
+          totalMinor: 100,
+          orderStatus,
+          terminalAt:
+            orderStatus === 'COMPLETED'
+              ? new Date('2026-09-13T06:00:00.000Z')
+              : null,
+          receiptTokenHash: hash.repeat(64),
+          createdAt: new Date(createdAt),
+          updatedAt: new Date(createdAt),
+        })),
+      )
+      .returning({ id: orders.id });
+    await db.insert(outboxEvents).values([
+      {
+        eventType: 'OWNER_ORDER_CREATED',
+        payload: { orderId: insertedOrders[0].id, requestId: 'failed-owner' },
+        state: 'FAILED',
+      },
+      {
+        eventType: 'UNRELATED_FAILED_WORK',
+        payload: { orderId: insertedOrders[0].id, requestId: 'failed-other' },
+        state: 'FAILED',
+      },
+    ]);
+
+    const dashboard = await getAdminDashboard(
+      jar.headers(),
+      new Date('2026-09-12T12:00:00.000Z'),
+    );
+    expect(dashboard).toMatchObject({
+      ordersReceivedTodayCount: 2,
+      actionableOrderCount: 3,
+      activeProductCount: 5,
+      unavailableProductCount: 1,
+      lowStockProductCount: 2,
+      failedNotificationCount: 1,
+    });
   });
 });

@@ -19,6 +19,7 @@ appendFileSync(uploadsStateFile, `${uploadsRoot}\n`, { mode: 0o600 });
 export default defineConfig({
   testDir: './tests/browser',
   fullyParallel: true,
+  workers: 1,
   retries: process.env.CI ? 2 : 0,
   reporter: 'list',
   metadata: { guteliUploadsRoot: uploadsRoot, uploadsStateFile },
@@ -43,5 +44,17 @@ export default defineConfig({
     url: 'http://127.0.0.1:3000',
     reuseExistingServer: false,
   },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  projects: [
+    {
+      name: 'storefront',
+      testIgnore: /admin-(auth|catalog|orders|shell|users)\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'admin',
+      testMatch: /admin-(auth|catalog|orders|shell|users)\.spec\.ts/,
+      dependencies: ['storefront'],
+      use: { ...devices['Desktop Chrome'] },
+    },
+  ],
 });

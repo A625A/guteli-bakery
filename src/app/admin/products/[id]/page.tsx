@@ -58,8 +58,8 @@ export default async function AdminProductPage({
           <p className="eyebrow">Catálogo persistente</p>
           <h1>Editar {product.name}</h1>
           <p>
-            Versión {product.version}. Las imágenes actuales son informativas en
-            esta fase.
+            Versión {product.version}. Las imágenes actuales se muestran solo a
+            administradores autenticados.
           </p>
         </div>
         <Link href="/admin/products">Volver a productos</Link>

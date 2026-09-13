@@ -1,4 +1,5 @@
 import { SessionActions } from '@/components/admin/SessionActions';
+import { DashboardRefresh } from '@/components/admin/DashboardRefresh';
 import { requireVerifiedAdminSession } from '@/server/auth/admin-page-access';
 import { getAdminDashboard } from '@/server/admin/dashboard';
 
@@ -15,6 +16,7 @@ export default async function AdminPage() {
   const dashboard = await getAdminDashboard();
   return (
     <main className="admin-dashboard" id="main-content" tabIndex={-1}>
+      <DashboardRefresh />
       <header className="admin-dashboard__heading">
         <div>
           <p className="eyebrow">Operación diaria</p>
@@ -34,8 +36,38 @@ export default async function AdminPage() {
             </article>
           ))}
           <article className="admin-dashboard__card">
-            <span>Notificaciones pendientes</span>
+            <span>Pedidos recibidos hoy (Guatemala)</span>
+            <strong>{dashboard.ordersReceivedTodayCount}</strong>
+          </article>
+          <article className="admin-dashboard__card">
+            <span>Pedidos accionables (no terminales)</span>
+            <strong>{dashboard.actionableOrderCount}</strong>
+          </article>
+          <article className="admin-dashboard__card">
+            <span>Notificaciones pendientes de envío</span>
             <strong>{dashboard.pendingNotificationCount}</strong>
+          </article>
+          <article className="admin-dashboard__card">
+            <span>Notificaciones fallidas que requieren atención</span>
+            <strong>{dashboard.failedNotificationCount}</strong>
+          </article>
+        </div>
+      </section>
+
+      <section aria-labelledby="catalog-summary-title">
+        <h2 id="catalog-summary-title">Estado del catálogo</h2>
+        <div className="admin-dashboard__cards">
+          <article className="admin-dashboard__card">
+            <span>Productos activos en categorías activas</span>
+            <strong>{dashboard.activeProductCount}</strong>
+          </article>
+          <article className="admin-dashboard__card">
+            <span>Productos activos agotados (stock 0)</span>
+            <strong>{dashboard.unavailableProductCount}</strong>
+          </article>
+          <article className="admin-dashboard__card">
+            <span>Productos activos con stock bajo (1–5)</span>
+            <strong>{dashboard.lowStockProductCount}</strong>
           </article>
         </div>
       </section>

@@ -29,7 +29,7 @@ const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 const IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
 function imageUrl(storageKey: string) {
-  return `/api/media/${storageKey.split('/').map(encodeURIComponent).join('/')}`;
+  return `/api/admin/media/${storageKey.split('/').map(encodeURIComponent).join('/')}`;
 }
 
 export function ProductForm({

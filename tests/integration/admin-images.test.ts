@@ -24,6 +24,7 @@ vi.hoisted(() => {
 vi.mock('server-only', () => ({}));
 
 import { DELETE as DELETE_PRODUCT_IMAGE } from '@/app/api/admin/products/[id]/route';
+import { GET as GET_ADMIN_MEDIA } from '@/app/api/admin/media/[...key]/route';
 import { POST as POST_UPLOAD } from '@/app/api/admin/uploads/route';
 import { GET as GET_MEDIA } from '@/app/api/media/[...key]/route';
 import { POST as AUTH_POST } from '@/app/api/auth/[...all]/route';
@@ -34,6 +35,8 @@ import {
   imageCleanupJobs,
   productImages,
   products,
+  session,
+  user,
 } from '@/server/db/schema';
 import { LocalObjectStorage } from '@/server/storage/local-storage';
 import type { ObjectStorage } from '@/server/storage';
@@ -556,6 +559,69 @@ describe('secure admin product images', () => {
       { params: Promise.resolve({ key: image.storageKey.split('/') }) },
     );
     expect(media.status).toBe(404);
+  });
+
+  it('serves unremoved images through the protected preview regardless of catalog activity', async () => {
+    const jar = await enrolledOwner();
+    const product = await productFixture();
+    const createdResponse = await POST_UPLOAD(
+      uploadRequest(jar, product.id, 1, await pngFixture()),
+    );
+    const created = (await createdResponse.json()) as {
+      product: {
+        images: readonly { id: string; storageKey: string }[];
+      };
+    };
+    const image = created.product.images[0];
+    const preview = (headers: Headers) =>
+      GET_ADMIN_MEDIA(
+        new Request(
+          `http://localhost:3000/api/admin/media/${image.storageKey}`,
+          { headers },
+        ),
+        { params: Promise.resolve({ key: image.storageKey.split('/') }) },
+      );
+
+    const response = await preview(jar.headers());
+    expect(response.status).toBe(200);
+    expect(response.headers.get('cache-control')).toBe('private, no-store');
+    expect(response.headers.get('x-content-type-options')).toBe('nosniff');
+
+    await db
+      .update(products)
+      .set({ active: false })
+      .where(eq(products.id, product.id));
+    await db
+      .update(categories)
+      .set({ active: false })
+      .where(eq(categories.id, product.categoryId));
+    expect(
+      (
+        await GET_MEDIA(
+          new Request(`http://localhost:3000/api/media/${image.storageKey}`),
+          { params: Promise.resolve({ key: image.storageKey.split('/') }) },
+        )
+      ).status,
+    ).toBe(404);
+    expect((await preview(jar.headers())).status).toBe(200);
+
+    await db.update(user).set({ role: 'ADMIN' });
+    expect((await preview(jar.headers())).status).toBe(200);
+    await db
+      .update(productImages)
+      .set({ removedAt: new Date() })
+      .where(eq(productImages.id, image.id));
+    expect((await preview(jar.headers())).status).toBe(404);
+    await db
+      .update(productImages)
+      .set({ removedAt: null })
+      .where(eq(productImages.id, image.id));
+    await db.update(session).set({ mfaVerifiedAt: null });
+    expect((await preview(jar.headers())).status).toBe(401);
+    await db.update(session).set({ mfaVerifiedAt: new Date() });
+    await db.update(user).set({ active: false });
+    expect((await preview(jar.headers())).status).toBe(401);
+    expect((await preview(new Headers())).status).toBe(401);
   });
 
   it('never deletes an object that still has another active image reference', async () => {
