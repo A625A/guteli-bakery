@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 
 import { base32 } from '@better-auth/utils/base32';
+import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { Pool } from 'pg';
@@ -17,7 +18,44 @@ vi.hoisted(() => {
   process.env.TRUSTED_PROXY_HOPS = '1';
 });
 
+const pageTransport = vi.hoisted(() => ({
+  requestHeaders: new Headers(),
+  redirect(destination: string): never {
+    throw Object.assign(new Error('Test navigation redirect.'), {
+      pageNavigationKind: 'redirect' as const,
+      destination,
+    });
+  },
+  notFound(): never {
+    throw Object.assign(new Error('Test navigation not found.'), {
+      pageNavigationKind: 'not-found' as const,
+    });
+  },
+}));
+
 vi.mock('server-only', () => ({}));
+vi.mock('next/headers', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('next/headers')>()),
+  headers: async () => pageTransport.requestHeaders,
+}));
+vi.mock('next/navigation', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('next/navigation')>()),
+  redirect: pageTransport.redirect,
+  notFound: pageTransport.notFound,
+}));
+
+import MissingAdminPage from '@/app/admin/[...missing]/page';
+import AdminCategoriesPage from '@/app/admin/categories/page';
+import ChangePasswordPage from '@/app/admin/change-password/page';
+import EnrollMfaPage from '@/app/admin/enroll-mfa/page';
+import AdminLoginPage from '@/app/admin/login/page';
+import AdminOrderDetailPage from '@/app/admin/orders/[id]/page';
+import AdminOrdersPage from '@/app/admin/orders/page';
+import AdminPage from '@/app/admin/page';
+import AdminProductPage from '@/app/admin/products/[id]/page';
+import AdminProductsPage from '@/app/admin/products/page';
+import AdminUsersPage from '@/app/admin/users/page';
+import VerifyMfaPage from '@/app/admin/verify-mfa/page';
 
 import {
   DELETE as DELETE_CATEGORY,
@@ -171,7 +209,14 @@ async function enrolledOwner() {
   expect((await authPost('two-factor/verify-totp', code, jar)).status).toBe(
     200,
   );
-  return jar;
+  const [identity] = await db
+    .select({ userId: user.id, sessionId: session.id })
+    .from(user)
+    .innerJoin(session, eq(session.userId, user.id))
+    .where(eq(user.email, email))
+    .limit(1);
+  expect(identity).toBeDefined();
+  return { jar, userId: identity!.userId, sessionId: identity!.sessionId };
 }
 
 function jsonRequest(
@@ -191,9 +236,18 @@ function jsonRequest(
 type MatrixRoute = Readonly<{
   name: string;
   mutation: boolean;
+  allowedStatus: number;
   ownerOnly?: boolean;
   call: (headers: Headers) => Promise<Response>;
 }>;
+
+function expectAuthorizedStatus(
+  status: number,
+  expectedStatus: number,
+  label: string,
+) {
+  expect(status, label).toBe(expectedStatus);
+}
 
 const categoryInput = {
   name: 'Matrix category',
@@ -222,6 +276,7 @@ function routeMatrix(headersFor: () => Headers): MatrixRoute[] {
     {
       name: 'GET /api/admin/categories',
       mutation: false,
+      allowedStatus: 200,
       call: () =>
         GET_CATEGORIES(
           new Request('http://localhost:3000/api/admin/categories', {
@@ -232,6 +287,7 @@ function routeMatrix(headersFor: () => Headers): MatrixRoute[] {
     {
       name: 'POST /api/admin/categories',
       mutation: true,
+      allowedStatus: 201,
       call: () =>
         POST_CATEGORY(
           jsonRequest(
@@ -245,6 +301,7 @@ function routeMatrix(headersFor: () => Headers): MatrixRoute[] {
     {
       name: 'GET /api/admin/categories/:id',
       mutation: false,
+      allowedStatus: 404,
       call: () =>
         GET_CATEGORY(
           new Request(
@@ -259,6 +316,7 @@ function routeMatrix(headersFor: () => Headers): MatrixRoute[] {
     {
       name: 'PATCH /api/admin/categories/:id',
       mutation: true,
+      allowedStatus: 404,
       call: () =>
         PATCH_CATEGORY(
           jsonRequest(
@@ -273,6 +331,7 @@ function routeMatrix(headersFor: () => Headers): MatrixRoute[] {
     {
       name: 'DELETE /api/admin/categories/:id',
       mutation: true,
+      allowedStatus: 404,
       call: () =>
         DELETE_CATEGORY(
           jsonRequest(
@@ -287,6 +346,7 @@ function routeMatrix(headersFor: () => Headers): MatrixRoute[] {
     {
       name: 'GET /api/admin/orders',
       mutation: false,
+      allowedStatus: 200,
       call: () =>
         GET_ORDERS(
           new Request('http://localhost:3000/api/admin/orders', {
@@ -297,6 +357,7 @@ function routeMatrix(headersFor: () => Headers): MatrixRoute[] {
     {
       name: 'GET /api/admin/orders/:id',
       mutation: false,
+      allowedStatus: 404,
       call: () =>
         GET_ORDER(
           new Request(
@@ -311,6 +372,7 @@ function routeMatrix(headersFor: () => Headers): MatrixRoute[] {
     {
       name: 'PATCH /api/admin/orders/:id/delivery-quote',
       mutation: true,
+      allowedStatus: 404,
       call: () =>
         PATCH_DELIVERY_QUOTE(
           jsonRequest(
@@ -325,6 +387,7 @@ function routeMatrix(headersFor: () => Headers): MatrixRoute[] {
     {
       name: 'PATCH /api/admin/orders/:id/status',
       mutation: true,
+      allowedStatus: 404,
       call: () =>
         PATCH_ORDER_STATUS(
           jsonRequest(
@@ -339,6 +402,7 @@ function routeMatrix(headersFor: () => Headers): MatrixRoute[] {
     {
       name: 'GET /api/admin/products',
       mutation: false,
+      allowedStatus: 200,
       call: () =>
         GET_PRODUCTS(
           new Request('http://localhost:3000/api/admin/products', {
@@ -349,6 +413,7 @@ function routeMatrix(headersFor: () => Headers): MatrixRoute[] {
     {
       name: 'POST /api/admin/products',
       mutation: true,
+      allowedStatus: 409,
       call: () =>
         POST_PRODUCT(
           jsonRequest(
@@ -362,6 +427,7 @@ function routeMatrix(headersFor: () => Headers): MatrixRoute[] {
     {
       name: 'GET /api/admin/products/:id',
       mutation: false,
+      allowedStatus: 404,
       call: () =>
         GET_PRODUCT(
           new Request(`http://localhost:3000/api/admin/products/${missingId}`, {
@@ -373,6 +439,7 @@ function routeMatrix(headersFor: () => Headers): MatrixRoute[] {
     {
       name: 'PATCH /api/admin/products/:id',
       mutation: true,
+      allowedStatus: 404,
       call: () =>
         PATCH_PRODUCT(
           jsonRequest(
@@ -387,6 +454,7 @@ function routeMatrix(headersFor: () => Headers): MatrixRoute[] {
     {
       name: 'DELETE /api/admin/products/:id',
       mutation: true,
+      allowedStatus: 404,
       call: () =>
         DELETE_PRODUCT(
           jsonRequest(
@@ -401,6 +469,7 @@ function routeMatrix(headersFor: () => Headers): MatrixRoute[] {
     {
       name: 'POST /api/admin/products/:id/duplicate',
       mutation: true,
+      allowedStatus: 404,
       call: () =>
         POST_DUPLICATE(
           jsonRequest(
@@ -419,6 +488,7 @@ function routeMatrix(headersFor: () => Headers): MatrixRoute[] {
     {
       name: 'POST /api/admin/uploads',
       mutation: true,
+      allowedStatus: 400,
       call: () => {
         const body = new FormData();
         body.set('productId', missingId);
@@ -441,6 +511,7 @@ function routeMatrix(headersFor: () => Headers): MatrixRoute[] {
     {
       name: 'GET /api/admin/media/:key',
       mutation: false,
+      allowedStatus: 404,
       call: () =>
         GET_ADMIN_MEDIA(
           new Request(
@@ -455,6 +526,7 @@ function routeMatrix(headersFor: () => Headers): MatrixRoute[] {
     {
       name: 'GET /api/admin/users',
       mutation: false,
+      allowedStatus: 200,
       ownerOnly: true,
       call: () =>
         GET_USERS(
@@ -466,6 +538,7 @@ function routeMatrix(headersFor: () => Headers): MatrixRoute[] {
     {
       name: 'POST /api/admin/users',
       mutation: true,
+      allowedStatus: 201,
       ownerOnly: true,
       call: () =>
         POST_USER(
@@ -480,6 +553,7 @@ function routeMatrix(headersFor: () => Headers): MatrixRoute[] {
     {
       name: 'PATCH /api/admin/users/:id',
       mutation: true,
+      allowedStatus: 404,
       ownerOnly: true,
       call: () =>
         PATCH_USER(
@@ -494,9 +568,202 @@ function routeMatrix(headersFor: () => Headers): MatrixRoute[] {
   ];
 }
 
+type PageCallerState =
+  | 'anonymous'
+  | 'expired'
+  | 'inactive'
+  | 'forced-password-change'
+  | 'pre-MFA'
+  | 'ADMIN'
+  | 'OWNER';
+
+type PageOutcome = 'render' | 'not-found' | `redirect:${string}`;
+
+type PageLoader = Readonly<{
+  name: string;
+  ownerOnly?: boolean;
+  allowedOutcome: Extract<PageOutcome, 'render' | 'not-found'>;
+  call: () => Promise<unknown>;
+}>;
+
+const operationalPages: readonly PageLoader[] = [
+  {
+    name: 'GET /admin',
+    allowedOutcome: 'render',
+    call: () => AdminPage(),
+  },
+  {
+    name: 'GET /admin/orders',
+    allowedOutcome: 'render',
+    call: () => AdminOrdersPage({ searchParams: Promise.resolve({}) }),
+  },
+  {
+    name: 'GET /admin/orders/:id',
+    allowedOutcome: 'not-found',
+    call: () =>
+      AdminOrderDetailPage({
+        params: Promise.resolve({ id: missingPublicId }),
+      }),
+  },
+  {
+    name: 'GET /admin/products',
+    allowedOutcome: 'render',
+    call: () => AdminProductsPage({ searchParams: Promise.resolve({}) }),
+  },
+  {
+    name: 'GET /admin/products/:id',
+    allowedOutcome: 'not-found',
+    call: () =>
+      AdminProductPage({ params: Promise.resolve({ id: missingId }) }),
+  },
+  {
+    name: 'GET /admin/categories',
+    allowedOutcome: 'render',
+    call: () => AdminCategoriesPage({ searchParams: Promise.resolve({}) }),
+  },
+  {
+    name: 'GET /admin/users',
+    ownerOnly: true,
+    allowedOutcome: 'render',
+    call: () => AdminUsersPage({ searchParams: Promise.resolve({}) }),
+  },
+  {
+    name: 'GET /admin/unknown',
+    allowedOutcome: 'not-found',
+    call: () => MissingAdminPage(),
+  },
+  {
+    name: 'GET /admin/private.css',
+    allowedOutcome: 'not-found',
+    call: () => MissingAdminPage(),
+  },
+] as const;
+
+const authPages = [
+  { name: 'GET /admin/login', call: () => AdminLoginPage() },
+  {
+    name: 'GET /admin/change-password',
+    call: () => ChangePasswordPage(),
+  },
+  { name: 'GET /admin/enroll-mfa', call: () => EnrollMfaPage() },
+  { name: 'GET /admin/verify-mfa', call: () => VerifyMfaPage() },
+] as const;
+
+async function pageHeadersFor(state: PageCallerState) {
+  if (state === 'anonymous') return new Headers();
+  const caller = await enrolledOwner();
+  switch (state) {
+    case 'expired':
+      await db
+        .update(session)
+        .set({ expiresAt: new Date(Date.now() - 1) })
+        .where(eq(session.id, caller.sessionId));
+      break;
+    case 'inactive':
+      await db
+        .update(user)
+        .set({ active: false })
+        .where(eq(user.id, caller.userId));
+      break;
+    case 'forced-password-change':
+      await db
+        .update(user)
+        .set({ mustChangePassword: true })
+        .where(eq(user.id, caller.userId));
+      break;
+    case 'pre-MFA':
+      await db
+        .update(user)
+        .set({ twoFactorEnabled: false })
+        .where(eq(user.id, caller.userId));
+      await db
+        .update(session)
+        .set({ mfaVerifiedAt: null })
+        .where(eq(session.id, caller.sessionId));
+      break;
+    case 'ADMIN':
+    case 'OWNER':
+      await db
+        .update(user)
+        .set({ role: state })
+        .where(eq(user.id, caller.userId));
+      break;
+  }
+  return caller.jar.headers();
+}
+
+async function observePage(call: () => Promise<unknown>): Promise<PageOutcome> {
+  try {
+    await call();
+    return 'render';
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      'pageNavigationKind' in error &&
+      error.pageNavigationKind === 'not-found'
+    ) {
+      return 'not-found';
+    }
+    if (
+      error instanceof Error &&
+      'pageNavigationKind' in error &&
+      error.pageNavigationKind === 'redirect' &&
+      'destination' in error &&
+      typeof error.destination === 'string'
+    ) {
+      return `redirect:${error.destination}`;
+    }
+    throw error;
+  }
+}
+
+function operationalPageExpectation(
+  state: PageCallerState,
+  page: PageLoader,
+): PageOutcome {
+  switch (state) {
+    case 'anonymous':
+    case 'expired':
+    case 'inactive':
+      return 'redirect:/admin/login';
+    case 'forced-password-change':
+      return 'redirect:/admin/change-password';
+    case 'pre-MFA':
+      return 'redirect:/admin/enroll-mfa';
+    case 'ADMIN':
+      return page.ownerOnly ? 'not-found' : page.allowedOutcome;
+    case 'OWNER':
+      return page.allowedOutcome;
+  }
+}
+
+function authPageExpectation(
+  state: PageCallerState,
+  pageName: (typeof authPages)[number]['name'],
+): PageOutcome {
+  if (state === 'ADMIN' || state === 'OWNER') return 'redirect:/admin';
+  if (state === 'forced-password-change') {
+    return pageName === 'GET /admin/change-password'
+      ? 'render'
+      : 'redirect:/admin/change-password';
+  }
+  if (state === 'pre-MFA') {
+    return pageName === 'GET /admin/enroll-mfa'
+      ? 'render'
+      : 'redirect:/admin/enroll-mfa';
+  }
+  return pageName === 'GET /admin/login' || pageName === 'GET /admin/verify-mfa'
+    ? 'render'
+    : 'redirect:/admin/login';
+}
+
 describe('complete admin route authorization matrix', () => {
   beforeEach(resetDatabase);
   afterAll(() => pool.end());
+
+  it('fails closed when an allowed-role route returns a server error', () => {
+    expect(() => expectAuthorizedStatus(500, 200, 'synthetic route')).toThrow();
+  });
 
   it('denies every method to anonymous, expired, inactive, forced-password-change, and pre-MFA callers and admits the intended active roles', async () => {
     const deniedStates = [
@@ -508,15 +775,28 @@ describe('complete admin route authorization matrix', () => {
     ] as const;
     for (const state of deniedStates) {
       await resetDatabase();
-      const jar = state === 'anonymous' ? null : await enrolledOwner();
+      const caller = state === 'anonymous' ? null : await enrolledOwner();
+      const jar = caller?.jar;
       if (state === 'expired') {
-        await db.update(session).set({ expiresAt: new Date(Date.now() - 1) });
+        await db
+          .update(session)
+          .set({ expiresAt: new Date(Date.now() - 1) })
+          .where(eq(session.id, caller!.sessionId));
       } else if (state === 'inactive') {
-        await db.update(user).set({ active: false });
+        await db
+          .update(user)
+          .set({ active: false })
+          .where(eq(user.id, caller!.userId));
       } else if (state === 'forced-password-change') {
-        await db.update(user).set({ mustChangePassword: true });
+        await db
+          .update(user)
+          .set({ mustChangePassword: true })
+          .where(eq(user.id, caller!.userId));
       } else if (state === 'pre-MFA') {
-        await db.update(session).set({ mfaVerifiedAt: null });
+        await db
+          .update(session)
+          .set({ mfaVerifiedAt: null })
+          .where(eq(session.id, caller!.sessionId));
       }
       for (const route of routeMatrix(
         () =>
@@ -531,14 +811,19 @@ describe('complete admin route authorization matrix', () => {
 
     for (const role of ['ADMIN', 'OWNER'] as const) {
       await resetDatabase();
-      const jar = await enrolledOwner();
-      await db.update(user).set({ role });
+      const caller = await enrolledOwner();
+      const { jar } = caller;
+      await db.update(user).set({ role }).where(eq(user.id, caller.userId));
       for (const route of routeMatrix(() => jar.headers())) {
         const status = (await route.call(jar.headers())).status;
         if (role === 'ADMIN' && route.ownerOnly) {
           expect(status, `${role}: ${route.name}`).toBe(403);
         } else {
-          expect([401, 403], `${role}: ${route.name}`).not.toContain(status);
+          expectAuthorizedStatus(
+            status,
+            route.allowedStatus,
+            `${role}: ${route.name}`,
+          );
         }
       }
     }
@@ -547,7 +832,7 @@ describe('complete admin route authorization matrix', () => {
   it('rejects missing and forged Origin on every cookie-authenticated mutation', async () => {
     for (const origin of [null, 'https://forged.example'] as const) {
       await resetDatabase();
-      const jar = await enrolledOwner();
+      const { jar } = await enrolledOwner();
       for (const route of routeMatrix(() => jar.headers(origin)).filter(
         ({ mutation }) => mutation,
       )) {
@@ -557,4 +842,31 @@ describe('complete admin route authorization matrix', () => {
       }
     }
   }, 60_000);
+
+  it('runs every admin page loader against the complete real session-state matrix', async () => {
+    const states: readonly PageCallerState[] = [
+      'anonymous',
+      'expired',
+      'inactive',
+      'forced-password-change',
+      'pre-MFA',
+      'ADMIN',
+      'OWNER',
+    ];
+    for (const state of states) {
+      for (const page of [...operationalPages, ...authPages]) {
+        await resetDatabase();
+        pageTransport.requestHeaders = await pageHeadersFor(state);
+        const expected = operationalPages.includes(page as PageLoader)
+          ? operationalPageExpectation(state, page as PageLoader)
+          : authPageExpectation(
+              state,
+              page.name as (typeof authPages)[number]['name'],
+            );
+        expect(await observePage(page.call), `${state}: ${page.name}`).toBe(
+          expected,
+        );
+      }
+    }
+  }, 180_000);
 });
