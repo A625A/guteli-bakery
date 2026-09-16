@@ -625,11 +625,31 @@ describe('owner-only administrator management', () => {
     expect(
       (
         await db
-          .select({ mustChangePassword: user.mustChangePassword })
+          .select({
+            mustChangePassword: user.mustChangePassword,
+            setupCredentialExpiresAt: user.setupCredentialExpiresAt,
+          })
           .from(user)
           .where(eq(user.id, created.user.id))
       )[0],
-    ).toEqual({ mustChangePassword: false });
+    ).toEqual({
+      mustChangePassword: false,
+      setupCredentialExpiresAt: null,
+    });
+
+    const originalCredential = new CookieJar();
+    expect(
+      (
+        await authPost(
+          'sign-in/email',
+          {
+            email: created.user.email,
+            password: created.setupCredential,
+          },
+          originalCredential,
+        )
+      ).status,
+    ).toBe(401);
 
     const enabled = await authPost(
       'two-factor/enable',

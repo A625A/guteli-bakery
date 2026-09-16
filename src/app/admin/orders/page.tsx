@@ -7,6 +7,7 @@ import { requireVerifiedAdminSession } from '@/server/auth/admin-page-access';
 import {
   adminListOrders,
   parseAdminOrderFilters,
+  type AdminOrderListDto,
 } from '@/server/orders/admin-list-orders';
 
 export const dynamic = 'force-dynamic';
@@ -41,6 +42,17 @@ function filtersFrom(parameters: Awaited<SearchParams>) {
 
 function money(value: number | null) {
   return value === null ? 'Pendiente' : `Q${(value / 100).toFixed(2)}`;
+}
+
+function paymentStatus(status: AdminOrderListDto['paymentStatus']) {
+  const labels = {
+    UNPAID: 'No pagado',
+    PENDING: 'Pendiente',
+    PAID: 'Pagado',
+    FAILED: 'Fallido',
+    REFUNDED: 'Reembolsado',
+  } as const;
+  return labels[status];
 }
 
 export default async function AdminOrdersPage({
@@ -116,8 +128,11 @@ export default async function AdminOrdersPage({
             <tr>
               <th scope="col">Pedido</th>
               <th scope="col">Cliente</th>
+              <th scope="col">Fecha solicitada</th>
               <th scope="col">Entrega</th>
               <th scope="col">Estado</th>
+              <th scope="col">Subtotal</th>
+              <th scope="col">Pago</th>
               <th scope="col">Total</th>
               <th scope="col">Detalle</th>
             </tr>
@@ -127,10 +142,13 @@ export default async function AdminOrdersPage({
               <tr key={order.publicId}>
                 <th scope="row">{order.publicId}</th>
                 <td>{order.customerName}</td>
+                <td>{order.requestedDate}</td>
                 <td>
                   {order.fulfillment === 'DELIVERY' ? 'Entrega' : 'Recoger'}
                 </td>
                 <td>{order.orderStatus}</td>
+                <td>{money(order.subtotalMinor)}</td>
+                <td>{paymentStatus(order.paymentStatus)}</td>
                 <td>{money(order.totalMinor)}</td>
                 <td>
                   <Link href={`/admin/orders/${order.publicId}`}>

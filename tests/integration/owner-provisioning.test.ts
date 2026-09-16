@@ -82,7 +82,11 @@ function enableMfa(cookie: string, password: string) {
   );
 }
 
-function changePassword(cookie: string, currentPassword: string) {
+function changePassword(
+  cookie: string,
+  currentPassword: string,
+  newPassword: string,
+) {
   return POST(
     new Request('http://localhost:3000/api/auth/change-password', {
       method: 'POST',
@@ -94,7 +98,7 @@ function changePassword(cookie: string, currentPassword: string) {
       },
       body: JSON.stringify({
         currentPassword,
-        newPassword: 'a-new-password-that-is-at-least-14-characters',
+        newPassword,
         revokeOtherSessions: true,
       }),
     }),
@@ -267,6 +271,69 @@ describe('owner provisioning and credential protection', () => {
     await expect(db.select().from(twoFactor)).resolves.toHaveLength(0);
   });
 
+  it.each([
+    ['the current setup password', null, 'PASSWORD_MUST_BE_DIFFERENT'],
+    ['a distinct 13-character password', '1234567890123', 'PASSWORD_TOO_SHORT'],
+  ] as const)(
+    'rejects %s without changing credential, setup, or session state',
+    async (_label, requestedPassword, expectedCode) => {
+      const password = 'a-password-that-is-at-least-14-characters';
+      await provisionOwner({
+        email: 'owner@example.test',
+        name: 'Propietaria',
+        password,
+      });
+      const firstFactor = await signIn('owner@example.test', password);
+      const cookie = cookieHeader(firstFactor);
+      const [beforeUser] = await db
+        .select({
+          id: user.id,
+          mustChangePassword: user.mustChangePassword,
+          setupCredentialExpiresAt: user.setupCredentialExpiresAt,
+        })
+        .from(user)
+        .where(eq(user.email, 'owner@example.test'));
+      const [beforeCredential] = await db
+        .select({ password: account.password })
+        .from(account)
+        .where(eq(account.userId, beforeUser!.id));
+      const beforeSessions = await db
+        .select({ id: session.id, token: session.token })
+        .from(session)
+        .where(eq(session.userId, beforeUser!.id));
+
+      const changed = await changePassword(
+        cookie,
+        password,
+        requestedPassword ?? password,
+      );
+      const [afterUser] = await db
+        .select({
+          mustChangePassword: user.mustChangePassword,
+          setupCredentialExpiresAt: user.setupCredentialExpiresAt,
+        })
+        .from(user)
+        .where(eq(user.id, beforeUser!.id));
+      const [afterCredential] = await db
+        .select({ password: account.password })
+        .from(account)
+        .where(eq(account.userId, beforeUser!.id));
+      const afterSessions = await db
+        .select({ id: session.id, token: session.token })
+        .from(session)
+        .where(eq(session.userId, beforeUser!.id));
+
+      expect(changed.status).toBe(400);
+      expect(await changed.json()).toMatchObject({ code: expectedCode });
+      expect(afterUser).toEqual({
+        mustChangePassword: true,
+        setupCredentialExpiresAt: beforeUser!.setupCredentialExpiresAt,
+      });
+      expect(afterCredential).toEqual(beforeCredential);
+      expect(afterSessions).toEqual(beforeSessions);
+    },
+  );
+
   it('counts a setup-expired generic credential rejection', async () => {
     const password = 'a-password-that-is-at-least-14-characters';
     await provisionOwner({
@@ -302,7 +369,11 @@ describe('owner provisioning and credential protection', () => {
       .set({ setupCredentialExpiresAt: new Date(Date.now() - 1) })
       .where(eq(user.email, 'owner@example.test'));
 
-    const changed = await changePassword(cookieHeader(firstFactor), password);
+    const changed = await changePassword(
+      cookieHeader(firstFactor),
+      password,
+      'a-new-password-that-is-at-least-14-characters',
+    );
 
     expect(changed.status).toBe(401);
     expect(await changed.json()).toMatchObject({

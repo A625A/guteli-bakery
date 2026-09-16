@@ -74,6 +74,13 @@ function invalidCredentials() {
   });
 }
 
+function passwordMustBeDifferent() {
+  return new APIError('BAD_REQUEST', {
+    code: 'PASSWORD_MUST_BE_DIFFERENT',
+    message: 'New password must be different',
+  });
+}
+
 function requestContext(ctx: { body?: unknown; request?: Request }) {
   const body = ctx.body as { email?: unknown } | undefined;
   const email = normalizeEmail(body?.email);
@@ -281,6 +288,20 @@ export function loginProtectionPlugin(): BetterAuthPlugin {
     id: 'guteli-login-protection',
     hooks: {
       before: [
+        {
+          matcher: (ctx) => ctx.path === '/change-password',
+          handler: createAuthMiddleware(async (ctx) => {
+            const body = ctx.body as
+              { currentPassword?: unknown; newPassword?: unknown } | undefined;
+            if (
+              typeof body?.currentPassword === 'string' &&
+              typeof body.newPassword === 'string' &&
+              body.currentPassword === body.newPassword
+            ) {
+              throw passwordMustBeDifferent();
+            }
+          }),
+        },
         {
           matcher: (ctx) => ctx.path === '/sign-in/email',
           handler: createAuthMiddleware(async (ctx) => {

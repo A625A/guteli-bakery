@@ -102,7 +102,20 @@ test('an owner sees operational detail, quotes delivery, and advances an order w
     .click();
   const row = page.getByRole('row', { name: new RegExp(publicId) });
   await expect(row).toBeVisible();
+  await expect(
+    page.getByRole('columnheader', { name: 'Fecha solicitada' }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('columnheader', { name: 'Subtotal' }),
+  ).toBeVisible();
+  await expect(page.getByRole('columnheader', { name: 'Pago' })).toBeVisible();
+  await expect(row).toContainText('2026-09-20');
+  await expect(row).toContainText('Q75.00');
+  await expect(row).toContainText('No pagado');
   await expect(row).not.toContainText('+50255558888');
+  await expect(row).not.toContainText('Zona 14, portón blanco');
+  await expect(row).not.toContainText('Llamar al llegar');
+  await expect(row.getByRole('button')).toHaveCount(0);
   await row.getByRole('link', { name: `Ver ${publicId}` }).click();
   await expect(
     page.getByRole('heading', { name: `Pedido ${publicId}` }),
