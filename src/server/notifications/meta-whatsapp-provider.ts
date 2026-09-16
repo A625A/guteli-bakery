@@ -9,6 +9,7 @@ import type {
 const DEFAULT_CONNECT_TIMEOUT_MS = 5_000;
 const DEFAULT_RESPONSE_TIMEOUT_MS = 5_000;
 const DEFAULT_MAX_RESPONSE_BYTES = 64 * 1024;
+const MAX_OUTBOUND_REQUEST_BYTES = 64 * 1024;
 
 export type MetaWhatsAppSettings = Readonly<{
   apiBaseUrl: string;
@@ -18,6 +19,7 @@ export type MetaWhatsAppSettings = Readonly<{
   ownerDestination: string;
   templateName: string;
   templateLanguage: string;
+  templateBodyMaxCharacters: number;
   publicAdminBaseUrl: string;
 }>;
 
@@ -50,6 +52,15 @@ function isRepresentableMessage(
   message: OwnerOrderMessage,
   settings: MetaWhatsAppSettings,
 ) {
+  if (
+    !Number.isSafeInteger(settings.templateBodyMaxCharacters) ||
+    settings.templateBodyMaxCharacters <= 0 ||
+    settings.templateBodyMaxCharacters > 65_536 ||
+    message.bodyText.length > settings.templateBodyMaxCharacters
+  ) {
+    return false;
+  }
+
   const expectedAdminUrl = expectedAdminOrderUrl(
     settings.publicAdminBaseUrl,
     message.publicOrderId,
@@ -191,6 +202,14 @@ export class MetaWhatsAppProvider implements NotificationProvider {
         },
       });
     } catch {
+      return failure(
+        { kind: 'permanent_failure', code: 'PAYLOAD_UNREPRESENTABLE' },
+        this.#options.log,
+      );
+    }
+    if (
+      new TextEncoder().encode(body).byteLength > MAX_OUTBOUND_REQUEST_BYTES
+    ) {
       return failure(
         { kind: 'permanent_failure', code: 'PAYLOAD_UNREPRESENTABLE' },
         this.#options.log,

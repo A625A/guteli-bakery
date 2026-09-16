@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 vi.mock('server-only', () => ({}));
 
 import { buildOwnerOrderMessage } from '@/server/notifications/build-owner-message';
+import { MetaWhatsAppProvider } from '@/server/notifications/meta-whatsapp-provider';
 import {
   createNotificationProviderFromEnv,
   OWNER_ORDER_TEMPLATE_CONTRACT_VERSION,
@@ -26,6 +27,7 @@ const readyEnv = {
   OWNER_WHATSAPP_DESTINATION: '50255550199',
   WHATSAPP_APPROVED_TEMPLATE_NAME: 'guteli_owner_order_created_v1',
   WHATSAPP_APPROVED_TEMPLATE_LANGUAGE: 'es_GT',
+  WHATSAPP_TEMPLATE_BODY_MAX_CHARACTERS: '65536',
   WHATSAPP_APP_SECRET: 'synthetic-app-secret-never-live',
   WHATSAPP_VERIFY_TOKEN: 'synthetic-verify-token-never-live',
   PUBLIC_ADMIN_BASE_URL: 'https://admin.guteli.test',
@@ -55,6 +57,12 @@ function response(body: string, status: number) {
   });
 }
 
+function acceptedFetch(messageId = 'wamid.unexpected-send') {
+  return vi
+    .fn<typeof fetch>()
+    .mockResolvedValue(response(`{"messages":[{"id":"${messageId}"}]}`, 200));
+}
+
 describe('owner WhatsApp provider selection', () => {
   it('defaults disabled and makes zero network calls', async () => {
     const fetchImpl = vi.fn<typeof fetch>();
@@ -82,8 +90,28 @@ describe('owner WhatsApp provider selection', () => {
     ['missing token', { WHATSAPP_ACCESS_TOKEN: undefined }],
     ['invalid destination', { OWNER_WHATSAPP_DESTINATION: '+502 5555 0199' }],
     ['unsafe API base', { WHATSAPP_API_BASE_URL: 'https://example.com' }],
+    [
+      'missing externally verified template character ceiling',
+      { WHATSAPP_TEMPLATE_BODY_MAX_CHARACTERS: undefined },
+    ],
+    [
+      'zero template character ceiling',
+      { WHATSAPP_TEMPLATE_BODY_MAX_CHARACTERS: '0' },
+    ],
+    [
+      'fractional template character ceiling',
+      { WHATSAPP_TEMPLATE_BODY_MAX_CHARACTERS: '1.5' },
+    ],
+    [
+      'template character ceiling above the configured maximum',
+      { WHATSAPP_TEMPLATE_BODY_MAX_CHARACTERS: '65537' },
+    ],
+    [
+      'unverified template character placeholder',
+      { WHATSAPP_TEMPLATE_BODY_MAX_CHARACTERS: 'EXTERNALLY_VERIFIED' },
+    ],
   ])('stays disabled for %s', async (_label, overrides) => {
-    const fetchImpl = vi.fn<typeof fetch>();
+    const fetchImpl = acceptedFetch();
     const provider = createNotificationProviderFromEnv(
       { ...readyEnv, ...overrides },
       { fetchImpl },
@@ -98,6 +126,42 @@ describe('owner WhatsApp provider selection', () => {
 });
 
 describe('Meta owner WhatsApp adapter', () => {
+  it.each([
+    ['missing', undefined],
+    ['zero', 0],
+    ['fractional', 1.5],
+    ['above maximum', 65_537],
+  ])(
+    'fails closed for a %s direct-adapter template character ceiling',
+    async (_label, templateBodyMaxCharacters) => {
+      const fetchImpl = vi
+        .fn<typeof fetch>()
+        .mockResolvedValue(
+          response('{"messages":[{"id":"wamid.must-not-send"}]}', 200),
+        );
+      const provider = new MetaWhatsAppProvider(
+        {
+          apiBaseUrl: readyEnv.WHATSAPP_API_BASE_URL,
+          apiVersion: readyEnv.WHATSAPP_API_VERSION,
+          phoneNumberId: readyEnv.WHATSAPP_PHONE_NUMBER_ID,
+          accessToken: readyEnv.WHATSAPP_ACCESS_TOKEN,
+          ownerDestination: readyEnv.OWNER_WHATSAPP_DESTINATION,
+          templateName: readyEnv.WHATSAPP_APPROVED_TEMPLATE_NAME,
+          templateLanguage: readyEnv.WHATSAPP_APPROVED_TEMPLATE_LANGUAGE,
+          publicAdminBaseUrl: readyEnv.PUBLIC_ADMIN_BASE_URL,
+          templateBodyMaxCharacters: templateBodyMaxCharacters as never,
+        },
+        { fetchImpl },
+      );
+
+      await expect(provider.sendOwnerOrderCreated(message)).resolves.toEqual({
+        kind: 'permanent_failure',
+        code: 'PAYLOAD_UNREPRESENTABLE',
+      });
+      expect(fetchImpl).not.toHaveBeenCalled();
+    },
+  );
+
   it('accepts only a 2xx response with a documented wamid and uses the server destination', async () => {
     const fetchImpl = vi
       .fn<typeof fetch>()
@@ -140,6 +204,72 @@ describe('Meta owner WhatsApp adapter', () => {
         ],
       },
     });
+  });
+
+  it('accepts a body exactly at the externally configured character ceiling', async () => {
+    const fetchImpl = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(
+        response('{"messages":[{"id":"wamid.exact-character-limit"}]}', 200),
+      );
+    const provider = createNotificationProviderFromEnv(
+      {
+        ...readyEnv,
+        WHATSAPP_TEMPLATE_BODY_MAX_CHARACTERS: String(message.bodyText.length),
+      },
+      { fetchImpl },
+    );
+
+    await expect(provider.sendOwnerOrderCreated(message)).resolves.toEqual({
+      kind: 'accepted',
+      code: 'PROVIDER_ACCEPTED',
+      providerMessageId: 'wamid.exact-character-limit',
+    });
+    expect(fetchImpl).toHaveBeenCalledOnce();
+    expect(
+      new TextEncoder().encode(String(fetchImpl.mock.calls[0][1]?.body))
+        .byteLength,
+    ).toBeLessThanOrEqual(64 * 1024);
+  });
+
+  it('rejects a body above the configured character ceiling without truncating or calling HTTP', async () => {
+    const fetchImpl = acceptedFetch();
+    const originalBody = message.bodyText;
+    const provider = createNotificationProviderFromEnv(
+      {
+        ...readyEnv,
+        WHATSAPP_TEMPLATE_BODY_MAX_CHARACTERS: String(
+          message.bodyText.length - 1,
+        ),
+      },
+      { fetchImpl },
+    );
+
+    await expect(provider.sendOwnerOrderCreated(message)).resolves.toEqual({
+      kind: 'permanent_failure',
+      code: 'PAYLOAD_UNREPRESENTABLE',
+    });
+    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(message.bodyText).toBe(originalBody);
+  });
+
+  it('rejects serialized JSON above 64 KiB with multibyte and escaped content before HTTP', async () => {
+    const fetchImpl = acceptedFetch();
+    const originalBody = `${'😀"\\\n'.repeat(10_000)}\nAdministrar: ${message.adminOrderUrl}`;
+    expect(originalBody.length).toBeLessThanOrEqual(65_536);
+    const oversizedMessage = { ...message, bodyText: originalBody };
+    const provider = createNotificationProviderFromEnv(readyEnv, {
+      fetchImpl,
+    });
+
+    await expect(
+      provider.sendOwnerOrderCreated(oversizedMessage),
+    ).resolves.toEqual({
+      kind: 'permanent_failure',
+      code: 'PAYLOAD_UNREPRESENTABLE',
+    });
+    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(oversizedMessage.bodyText).toBe(originalBody);
   });
 
   it.each([

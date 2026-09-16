@@ -48,6 +48,13 @@ const publicAdminBaseSchema = z
     );
   });
 
+const externallyVerifiedTemplateBodyMaximumSchema = z
+  .string()
+  .regex(/^[1-9]\d*$/)
+  .transform(Number)
+  .refine(Number.isSafeInteger)
+  .refine((value) => value <= 65_536);
+
 const enabledSettingsSchema = z.object({
   WHATSAPP_NOTIFICATIONS_ENABLED: z.literal(true),
   WHATSAPP_ACCOUNT_READY: z.literal(true),
@@ -67,6 +74,8 @@ const enabledSettingsSchema = z.object({
   WHATSAPP_APPROVED_TEMPLATE_LANGUAGE: z
     .string()
     .regex(/^[a-z]{2,3}(?:_[A-Z]{2})?$/),
+  WHATSAPP_TEMPLATE_BODY_MAX_CHARACTERS:
+    externallyVerifiedTemplateBodyMaximumSchema,
   WHATSAPP_APP_SECRET: z.string().min(1),
   WHATSAPP_VERIFY_TOKEN: z.string().min(1),
   PUBLIC_ADMIN_BASE_URL: publicAdminBaseSchema,
@@ -95,6 +104,8 @@ export function createNotificationProviderFromEnv(
       ownerDestination: readiness.data.OWNER_WHATSAPP_DESTINATION,
       templateName: readiness.data.WHATSAPP_APPROVED_TEMPLATE_NAME,
       templateLanguage: readiness.data.WHATSAPP_APPROVED_TEMPLATE_LANGUAGE,
+      templateBodyMaxCharacters:
+        readiness.data.WHATSAPP_TEMPLATE_BODY_MAX_CHARACTERS,
       publicAdminBaseUrl: readiness.data.PUBLIC_ADMIN_BASE_URL,
     },
     options,

@@ -27,6 +27,7 @@ const schema = z.object({
   OWNER_WHATSAPP_DESTINATION: z.string().optional(),
   WHATSAPP_APPROVED_TEMPLATE_NAME: z.string().optional(),
   WHATSAPP_APPROVED_TEMPLATE_LANGUAGE: z.string().optional(),
+  WHATSAPP_TEMPLATE_BODY_MAX_CHARACTERS: z.string().optional(),
   WHATSAPP_APP_SECRET: z.string().optional(),
   WHATSAPP_VERIFY_TOKEN: z.string().optional(),
   PUBLIC_ADMIN_BASE_URL: z.string().optional(),
