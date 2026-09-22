@@ -10,7 +10,7 @@ The repository evidence for this runtime foundation was refreshed on 2026-08-28.
 
 ## Local requirements and commands
 
-- Node.js `^20.9.0 || >=22.0.0`
+- Node.js `>=20.19.0` (matching `package.json`)
 - npm `>=10.0.0`
 
 Install dependencies with `npm install`, then use these verified commands:
