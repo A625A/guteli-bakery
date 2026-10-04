@@ -6,7 +6,7 @@ Spanish-first, mobile-first bakery catalog and order-request experience for Güt
 
 Milestone 1 storefront behavior remains intact, and the backend foundation now runs as a standalone Next.js 16 server with a PostgreSQL-backed `/health` route. This plan establishes runtime, health, and Docker foundations only; product/catalog/order migrations begin in Plan 02.
 
-The repository evidence for this runtime foundation was refreshed on 2026-08-28. Public deployment remains out of scope.
+The repository evidence for this runtime foundation was refreshed on 2026-08-28. Public deployment remains out of scope
 
 ## Local requirements and commands
 
