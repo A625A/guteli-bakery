@@ -1,12 +1,80 @@
-# Güteli Bakery Full-Stack Foundation
+<div align="center">
 
-Spanish-first, mobile-first bakery catalog and order-request experience for Güteli Bakery in Guatemala, now prepared to run as a standalone Next.js server with PostgreSQL.
+# Güteli Bakery
 
-## Current status
+**Full-stack bakery ordering experience built with Next.js, TypeScript, PostgreSQL, and Docker.**
 
-Milestone 1 storefront behavior remains intact, and the backend foundation now runs as a standalone Next.js 16 server with a PostgreSQL-backed `/health` route. This plan establishes runtime, health, and Docker foundations only; product/catalog/order migrations begin in Plan 02.
+A Spanish-first, mobile-first storefront for browsing baked goods, building an order, validating pickup/delivery details, and handing the request to the bakery for human confirmation.
 
-The repository evidence for this runtime foundation was refreshed on 2026-08-28. Public deployment remains out of scope
+![Güteli Bakery storefront](artifacts/screenshots/desktop/milestone-3-homepage.png)
+
+![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=nextdotjs)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-persistent%20data-4169E1?logo=postgresql&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
+![Playwright](https://img.shields.io/badge/Playwright-E2E-2EAD33?logo=playwright&logoColor=white)
+![Vitest](https://img.shields.io/badge/Vitest-tests-6E9F18?logo=vitest&logoColor=white)
+
+</div>
+
+## Portfolio Snapshot
+
+Güteli started as a storefront MVP and evolved into a full-stack application with persistent catalog/order foundations and protected administrative workflows.
+
+| Area | What is implemented |
+| --- | --- |
+| Storefront | Responsive home, menu, cart, order, confirmation, and contact flows |
+| Commerce UX | GTQ cart totals, editable quantities, pickup/delivery selection, date validation, and Spanish order summaries |
+| Backend | Next.js server routes, PostgreSQL, Drizzle ORM, validation, health checks, and persistent order/catalog boundaries |
+| Admin | Protected order, product, category, user, and media-management routes |
+| Integrations | User-controlled WhatsApp handoff plus a bounded owner-notification provider boundary |
+| Quality | Vitest, integration tests, Playwright E2E coverage, linting, type checking, formatting, and isolated test database |
+
+Public deployment is not currently provided from this repository; the screenshots below were captured from the running application and are kept as implementation evidence.
+
+## Product Walkthrough
+
+<table>
+  <tr>
+    <td width="50%" align="center">
+      <a href="artifacts/screenshots/desktop/milestone-3-homepage.png"><img src="artifacts/screenshots/desktop/milestone-3-homepage.png" height="250" alt="Güteli Bakery homepage"></a><br>
+      <strong>Storefront</strong><br>
+      Branded Spanish-first landing experience with a clear ordering journey.
+    </td>
+    <td width="50%" align="center">
+      <a href="artifacts/screenshots/desktop/milestone-3-cart.png"><img src="artifacts/screenshots/desktop/milestone-3-cart.png" height="250" alt="Güteli Bakery cart and order form"></a><br>
+      <strong>Cart & order request</strong><br>
+      Editable products, GTQ subtotal, fulfillment selection, and customer details.
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <a href="artifacts/screenshots/desktop/milestone-3-confirmation.png"><img src="artifacts/screenshots/desktop/milestone-3-confirmation.png" height="250" alt="Güteli Bakery order confirmation"></a><br>
+      <strong>Order confirmation</strong><br>
+      Private receipt-style confirmation with order status and requested products.
+    </td>
+    <td align="center">
+      <a href="artifacts/screenshots/mobile/milestone-3-homepage.png"><img src="artifacts/screenshots/mobile/milestone-3-homepage.png" height="250" alt="Güteli Bakery mobile homepage"></a><br>
+      <strong>Mobile-first UX</strong><br>
+      The same ordering experience verified on a narrow mobile viewport.
+    </td>
+  </tr>
+</table>
+
+## Architecture at a Glance
+
+```mermaid
+flowchart LR
+    CUSTOMER[Customer] --> UI[Next.js storefront]
+    UI --> API[Server routes]
+    API --> DB[(PostgreSQL)]
+    API --> ORDER[Order workflow]
+    ORDER --> WA[WhatsApp handoff]
+    ADMIN[Protected admin] --> API
+    ADMIN --> MEDIA[Product media]
+```
+
+The application keeps the customer journey simple while maintaining separate persistence, administrative, and integration boundaries behind it.
 
 ## Local requirements and commands
 
