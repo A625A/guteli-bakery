@@ -21,6 +21,7 @@ import {
 } from '@/domain/order';
 import { getMinimumOrderDate } from '@/lib/date';
 import { submitOrder } from '@/lib/order-api';
+import { checkoutSession } from '@/lib/checkout-session';
 
 const initialValues: OrderFormValues = {
   name: '',
@@ -40,11 +41,6 @@ const fieldLabels: Record<keyof OrderFormValues, string> = {
   notes: 'Notas opcionales',
 };
 
-type OrderAttempt = Readonly<{
-  idempotencyKey: string;
-  serializedRequest: string;
-}>;
-
 export function OrderRequest({ embedded = false }: { embedded?: boolean }) {
   const router = useRouter();
   const { clearCart, hydrated, lines } = useCart();
@@ -58,7 +54,7 @@ export function OrderRequest({ embedded = false }: { embedded?: boolean }) {
     getMinimumOrderDate(new Date(), siteConfig.advanceDays),
   );
   const errorSummaryRef = useRef<HTMLDivElement>(null);
-  const attemptRef = useRef<OrderAttempt | null>(null);
+  const submittedKeyRef = useRef<string | null>(null);
   const inFlightRef = useRef(false);
   const acceptedRef = useRef(false);
   const cartFingerprint = lines
@@ -70,8 +66,7 @@ export function OrderRequest({ embedded = false }: { embedded?: boolean }) {
     if (errorFocusRequest > 0) errorSummaryRef.current?.focus();
   }, [errorFocusRequest]);
 
-  const invalidateAttempt = useCallback(() => {
-    attemptRef.current = null;
+  const resetError = useCallback(() => {
     setCheckoutState((currentState) =>
       currentState.kind === 'SUBMITTING' || currentState.kind === 'SUCCESS'
         ? currentState
@@ -83,22 +78,22 @@ export function OrderRequest({ embedded = false }: { embedded?: boolean }) {
     if (previousCartFingerprintRef.current === cartFingerprint) return;
 
     previousCartFingerprintRef.current = cartFingerprint;
-    invalidateAttempt();
-  }, [cartFingerprint, invalidateAttempt]);
+    resetError();
+  }, [cartFingerprint, resetError]);
 
   function setField<Key extends keyof OrderFormValues>(
     field: Key,
     value: OrderFormValues[Key],
   ) {
     setValues((currentValues) => ({ ...currentValues, [field]: value }));
-    invalidateAttempt();
+    resetError();
   }
 
   function changeFulfillment(fulfillment: OrderFormValues['fulfillment']) {
     const nextValues = { ...values, fulfillment };
 
     setValues(nextValues);
-    invalidateAttempt();
+    resetError();
     setErrors((currentErrors) =>
       Object.keys(currentErrors).length > 0
         ? validateOrder(nextValues, minimumDate)
@@ -125,26 +120,25 @@ export function OrderRequest({ embedded = false }: { embedded?: boolean }) {
     }
 
     const request = buildCreateOrderRequest(values, lines);
-    const serializedRequest = JSON.stringify(request);
-    const existingAttempt = attemptRef.current;
-    const idempotencyKey =
-      existingAttempt?.serializedRequest === serializedRequest
-        ? existingAttempt.idempotencyKey
-        : crypto.randomUUID();
-
-    attemptRef.current = { idempotencyKey, serializedRequest };
     inFlightRef.current = true;
     setErrors({});
-    setCheckoutState({ kind: 'SUBMITTING', idempotencyKey });
+    setCheckoutState({ kind: 'SUBMITTING' });
 
     try {
-      const result = await submitOrder(request, idempotencyKey);
+      const prepared = await checkoutSession('prepare');
+      if (
+        submittedKeyRef.current &&
+        submittedKeyRef.current !== prepared.idempotencyKey
+      ) {
+        throw new Error('Checkout changed in another tab');
+      }
+      submittedKeyRef.current = prepared.idempotencyKey!;
+      // The existing server hash check rejects edits after a saved submission.
+      const result = await submitOrder(request, prepared.idempotencyKey!);
 
       if (!result.ok) {
-        if (!result.canRetryUnchanged) attemptRef.current = null;
         setCheckoutState({
           kind: 'ERROR',
-          idempotencyKey,
           message: result.message,
         });
         return;
@@ -160,6 +154,12 @@ export function OrderRequest({ embedded = false }: { embedded?: boolean }) {
       router.push(
         `/order/confirmation/${encodeURIComponent(result.order.receiptToken)}/`,
       );
+    } catch {
+      setCheckoutState({
+        kind: 'ERROR',
+        message:
+          'No pudimos comprobar tu pedido guardado. Inténtalo de nuevo antes de enviar otra solicitud.',
+      });
     } finally {
       inFlightRef.current = false;
     }

@@ -75,7 +75,7 @@ export async function acquireIdempotencyLock(
 }
 
 export async function findIdempotentOrder(
-  transaction: OrdersTransaction,
+  transaction: Pick<OrdersTransaction, 'select'>,
   operation: string,
   subject: string,
   key: string,

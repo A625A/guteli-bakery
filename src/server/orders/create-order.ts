@@ -17,6 +17,7 @@ import {
 import type { LockedProduct, PersistedOrder } from './repository';
 import { hashCreateOrderRequest } from './request-hash';
 import { consumeFixedWindowRateLimit } from '@/server/security/rate-limit';
+import { createHmacSubject } from '@/server/security/client-subject';
 import type {
   CreateOrderInput,
   CreateOrderResult,
@@ -238,7 +239,10 @@ function isIdempotencyRace(error: unknown) {
 function createResult(
   kind: CreateOrderResult['kind'],
   order: PersistedOrder,
-  input: CreateOrderInput,
+  input: Pick<
+    CreateOrderInput,
+    'idempotencyKey' | 'idempotencySubject' | 'receiptTokenSecret'
+  >,
 ): CreateOrderResult {
   const receiptToken = deriveReceiptToken(order.id, input);
   if (!safeEquals(hashReceiptToken(receiptToken), order.receiptTokenHash)) {
@@ -257,6 +261,32 @@ function createResult(
       totalMinor: order.totalMinor,
     },
   };
+}
+
+/** Recovery requires a verified checkout cookie; never expose this by a public ID. */
+export async function recoverCreatedOrder(
+  idempotencyKey: string,
+  receiptTokenSecret: string,
+  database?: OrdersDatabase,
+): Promise<CreateOrderResult['order'] | null> {
+  const idempotencySubject = createHmacSubject(
+    receiptTokenSecret,
+    'public-order-idempotency',
+    'public-storefront',
+  );
+  const existing = await findIdempotentOrder(
+    await getDatabase(database),
+    CREATE_ORDER_OPERATION,
+    idempotencySubject,
+    idempotencyKey,
+  );
+  return existing
+    ? createResult('replayed', existing, {
+        idempotencyKey,
+        idempotencySubject,
+        receiptTokenSecret,
+      }).order
+    : null;
 }
 
 async function persistOrder(

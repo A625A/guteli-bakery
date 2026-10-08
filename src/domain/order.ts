@@ -15,9 +15,9 @@ export type OrderErrors = Partial<Record<keyof OrderFormValues, string>>;
 
 export type CheckoutState =
   | { kind: 'EDITING' }
-  | { kind: 'SUBMITTING'; idempotencyKey: string }
+  | { kind: 'SUBMITTING' }
   | { kind: 'SUCCESS'; publicId: string; receiptToken: string }
-  | { kind: 'ERROR'; idempotencyKey: string; message: string };
+  | { kind: 'ERROR'; message: string };
 
 export const orderFieldLimits = {
   name: 100,

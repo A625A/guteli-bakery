@@ -16,7 +16,7 @@ const publicOrderErrorCodeSchema = z.enum([
 ]);
 
 const moneySchema = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
-const acceptedOrderSchema = z
+export const acceptedOrderSchema = z
   .object({
     publicId: z.string().min(1).max(32),
     receiptToken: z.string().regex(/^[A-Za-z0-9_-]{43}$/),

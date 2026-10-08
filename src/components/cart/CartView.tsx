@@ -1,15 +1,17 @@
 'use client';
 
 import Link from 'next/link';
-import type { ChangeEvent } from 'react';
+import { useState, type ChangeEvent } from 'react';
 
 import { useCart } from '@/components/cart/CartProvider';
 import { ProductArtwork } from '@/components/menu/ProductArtwork';
+import { CheckoutRecovery } from '@/components/order/CheckoutRecovery';
 import { OrderRequest } from '@/components/order/OrderRequest';
 import { operationalCopy } from '@/content/business';
 import { formatGTQ } from '@/lib/money';
 
 export function CartView() {
+  const [checkoutAvailable, setCheckoutAvailable] = useState(false);
   const { hydrated, lines, subtotal, removeItem, updateQuantity } = useCart();
 
   function changeQuantity(
@@ -34,6 +36,7 @@ export function CartView() {
         </p>
       </header>
 
+      <CheckoutRecovery onAvailable={setCheckoutAvailable} />
       {!hydrated ? (
         <p className="request-page__loading" role="status">
           Cargando tu carrito…
@@ -134,7 +137,7 @@ export function CartView() {
               </a>
             </aside>
           </div>
-          <OrderRequest embedded />
+          {checkoutAvailable ? <OrderRequest embedded /> : null}
         </>
       )}
     </main>

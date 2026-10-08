@@ -14,6 +14,16 @@ describe('parseServerEnv', () => {
     ).toBe('test');
   });
 
+  it('refuses to enable payments while provider verification is blocked', () => {
+    expect(() =>
+      parseServerEnv({
+        NODE_ENV: 'production',
+        DATABASE_URL: 'postgresql://guteli:secret@database:5432/guteli',
+        PAYMENTS_ENABLED: 'true',
+      }),
+    ).toThrow('Invalid server environment');
+  });
+
   it('rejects an invalid database URL', () => {
     expect(() =>
       parseServerEnv({ NODE_ENV: 'test', DATABASE_URL: 'not-a-url' }),

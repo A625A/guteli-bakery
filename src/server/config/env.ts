@@ -16,7 +16,8 @@ const schema = z.object({
   DATABASE_URL: z.string().url().startsWith('postgresql://'),
   UPLOADS_ROOT: uploadsRootValueSchema.optional(),
   WHATSAPP_NOTIFICATIONS_ENABLED: disabledByDefaultFlag,
-  PAYMENTS_ENABLED: disabledByDefaultFlag,
+  // No payment provider is verified or implemented. A flag must not imply one.
+  PAYMENTS_ENABLED: disabledByDefaultFlag.refine((enabled) => !enabled),
   WHATSAPP_ACCOUNT_READY: disabledByDefaultFlag,
   WHATSAPP_OWNER_CONSENT_CONFIRMED: disabledByDefaultFlag,
   WHATSAPP_TEMPLATE_CONTRACT_ACK: z.string().optional(),

@@ -344,7 +344,7 @@ test('retains form and cart after a 500 and reuses the same key unchanged', asyn
   expect(idempotencyKeys[1]).toBe(idempotencyKeys[0]);
 });
 
-test('rotates the key after a non-retryable idempotency conflict', async ({
+test('keeps the recovery key after a conflict instead of silently creating another order', async ({
   page,
 }) => {
   const idempotencyKeys: string[] = [];
@@ -372,10 +372,10 @@ test('rotates the key after a non-retryable idempotency conflict', async ({
   await page.getByRole('button', { name: 'Intentar de nuevo' }).click();
 
   await expect.poll(() => idempotencyKeys.length).toBe(2);
-  expect(idempotencyKeys[1]).not.toBe(idempotencyKeys[0]);
+  expect(idempotencyKeys[1]).toBe(idempotencyKeys[0]);
 });
 
-test('rotates the retry key after a form edit and a cart quantity change', async ({
+test('keeps the recovery key after edits while a failed submission may still exist', async ({
   page,
 }) => {
   const submissions: Array<{ key: string; body: Record<string, unknown> }> = [];
@@ -406,14 +406,14 @@ test('rotates the retry key after a form edit and a cart quantity change', async
   await page.getByRole('button', { name: 'Enviar pedido' }).click();
   await expect.poll(() => submissions.length).toBe(2);
   await expect(page.locator('.order-submit-error')).toBeVisible();
-  expect(submissions[1].key).not.toBe(submissions[0].key);
+  expect(submissions[1].key).toBe(submissions[0].key);
 
   await page
     .getByLabel('Cantidad de Originales, Pretzels en el carrito')
     .fill('3');
   await page.getByRole('button', { name: 'Enviar pedido' }).click();
   await expect.poll(() => submissions.length).toBe(3);
-  expect(submissions[2].key).not.toBe(submissions[1].key);
+  expect(submissions[2].key).toBe(submissions[1].key);
   expect(submissions[2].body).toMatchObject({
     customerName: 'Ana Pérez',
     items: [{ productId: pretzelOriginalId, quantity: 3 }],
@@ -647,4 +647,176 @@ test('describes the 99 cap as applying to each menu option', async ({
       exact: true,
     }),
   ).toBeVisible();
+});
+
+test('recovers a saved order after a lost response and reload without resubmitting', async ({
+  page,
+}) => {
+  let submissions = 0;
+  let savedPublicId = '';
+  await page.route('**/api/orders', async (route) => {
+    submissions += 1;
+    const response = await route.fetch();
+    const body = await response.json();
+    savedPublicId = body.order.publicId;
+    await route.abort('failed');
+  });
+  await openOrderWithSavedCart(page);
+  await completeRequiredOrderFields(page, 'Recogida');
+  await page.getByLabel('Teléfono').fill('43001199');
+  await page.getByRole('button', { name: 'Enviar pedido' }).click();
+  await expect(page.locator('.order-submit-error')).toBeVisible();
+  await page.reload();
+  const recovery = page.getByRole('region', { name: 'Pedido guardado' });
+  await expect(recovery).toContainText(savedPublicId);
+  await recovery.getByRole('link', { name: 'Ver mi pedido guardado' }).click();
+  await expect(page.getByText(savedPublicId, { exact: true })).toBeVisible();
+  expect(submissions).toBe(1);
+  const storage = await page.evaluate(() =>
+    JSON.stringify({
+      local: { ...localStorage },
+      session: { ...sessionStorage },
+    }),
+  );
+  expect(storage).not.toContain('Ana López');
+  expect(storage).not.toContain('43001199');
+  const cookies = await page.context().cookies();
+  expect(cookies.find(({ name }) => name === 'guteli-checkout')).toMatchObject({
+    httpOnly: true,
+    sameSite: 'Lax',
+  });
+});
+
+test('does not submit customer data when the browser cannot retain its recovery credential', async ({
+  page,
+}) => {
+  let submissions = 0;
+  await page.route('**/api/checkout-session', async (route) => {
+    const response = await route.fetch();
+    const headers = { ...response.headers() };
+    delete headers['set-cookie'];
+    await page.context().clearCookies();
+    await route.fulfill({ response, headers });
+  });
+  await page.route('**/api/orders', async (route) => {
+    submissions += 1;
+    await route.abort();
+  });
+  await openOrderWithSavedCart(page);
+  await completeRequiredOrderFields(page, 'Recogida');
+  await page.getByRole('button', { name: 'Enviar pedido' }).click();
+  await expect(page.locator('.order-submit-error')).toContainText(
+    'No pudimos comprobar tu pedido guardado',
+  );
+  expect(submissions).toBe(0);
+});
+
+test('concurrent tabs share one recoverable checkout instead of creating two orders', async ({
+  context,
+  playwright,
+}) => {
+  const first = await context.newPage();
+  const second = await context.newPage();
+  const keys: string[] = [];
+  const orderIds: string[] = [];
+  let preparations = 0;
+  await context.route('**/api/checkout-session', async (route) => {
+    if (route.request().method() !== 'POST') return route.continue();
+    const number = ++preparations;
+    // Keep each in-flight request's cookie snapshot; delay installation of
+    // the first response cookie to reproduce two initially empty tabs.
+    const api = await playwright.request.newContext();
+    try {
+      const response = await api.post(route.request().url(), {
+        headers: {
+          ...route.request().headers(),
+          cookie: route.request().headers().cookie ?? '',
+        },
+      });
+      if (number === 1)
+        await new Promise((resolve) => setTimeout(resolve, 750));
+      await route.fulfill({ response });
+    } finally {
+      await api.dispose();
+    }
+  });
+  await context.route('**/api/orders', async (route) => {
+    keys.push(route.request().headers()['idempotency-key']);
+    const response = await route.fetch();
+    orderIds.push((await response.json()).order.publicId);
+    await route.fulfill({ response });
+  });
+  await Promise.all(
+    [first, second].map(async (tab) => {
+      await openOrderWithSavedCart(tab);
+      await completeRequiredOrderFields(tab, 'Recogida');
+      await tab.getByLabel('Teléfono').fill('43001200');
+    }),
+  );
+  await Promise.all(
+    [first, second].map((tab) =>
+      tab
+        .locator('.order-form')
+        .evaluate((form) => (form as HTMLFormElement).requestSubmit()),
+    ),
+  );
+  await Promise.all(
+    [first, second].map((tab) =>
+      expect(tab).toHaveURL(/\/order\/confirmation\//),
+    ),
+  );
+  expect(new Set(keys).size).toBe(1);
+  expect(new Set(orderIds).size).toBe(1);
+});
+
+test('rejects edited details when retrying an order whose response was lost', async ({
+  page,
+}) => {
+  let submissions = 0;
+  await page.route('**/api/orders', async (route) => {
+    submissions += 1;
+    const response = await route.fetch();
+    if (submissions === 1) await route.abort('failed');
+    else await route.fulfill({ response });
+  });
+  await openOrderWithSavedCart(page);
+  await completeRequiredOrderFields(page, 'Recogida');
+  await page.getByLabel('Teléfono').fill('43001201');
+  await page.getByRole('button', { name: 'Enviar pedido' }).click();
+  await expect(page.locator('.order-submit-error')).toBeVisible();
+  await page
+    .getByLabel('Notas opcionales')
+    .fill('These edits were not accepted');
+  await page.getByRole('button', { name: 'Enviar pedido' }).click();
+  await expect(page.locator('.order-submit-error')).toContainText(
+    'Los datos del pedido cambiaron',
+  );
+  expect(submissions).toBe(2);
+  await expect(page).toHaveURL(/\/cart\//);
+});
+
+test('does not retry an older form as a new order after another tab starts over', async ({
+  page,
+  context,
+}) => {
+  let submissions = 0;
+  await page.route('**/api/orders', async (route) => {
+    submissions += 1;
+    await route.fetch();
+    await route.abort('failed');
+  });
+  await openOrderWithSavedCart(page);
+  await completeRequiredOrderFields(page, 'Recogida');
+  await page.getByLabel('Teléfono').fill('43001202');
+  await page.getByRole('button', { name: 'Enviar pedido' }).click();
+  await expect(page.locator('.order-submit-error')).toBeVisible();
+  const other = await context.newPage();
+  await other.goto('/cart/');
+  await other.getByRole('button', { name: 'Quiero crear otro pedido' }).click();
+  await expect(other.getByLabel('Nombre completo')).toBeVisible();
+  await page.getByRole('button', { name: 'Intentar de nuevo' }).click();
+  await expect(page.locator('.order-submit-error')).toContainText(
+    'comprobar tu pedido guardado',
+  );
+  expect(submissions).toBe(1);
 });
