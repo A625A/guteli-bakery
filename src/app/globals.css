@@ -2203,3 +2203,17 @@ button:disabled,
   width: min(34rem, 100%);
   margin: 0 auto;
 }
+.product-price {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.6rem;
+}
+.product-price del {
+  font-size: 0.95rem;
+}
+.product-promotion {
+  flex-basis: 100%;
+  font-size: 0.9rem;
+  font-weight: 600;
+}

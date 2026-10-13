@@ -236,6 +236,7 @@ export function createPostOrderHandler(
       );
 
       const result = await createOrder({
+        clock: dependencies.now,
         request: parsedRequest.data,
         idempotencyKey: idempotencyKey.toLowerCase(),
         idempotencySubject: createHmacSubject(

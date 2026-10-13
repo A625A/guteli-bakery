@@ -7,13 +7,13 @@
 
 **Scope:** Run current local/staging isolated verification first; public deployment/DNS/paid resources/live payments remain separate explicit gates.
 
-**Blocked by:** 01–13; separate owner approval required for deployment and any real-money test.
+**Blocked by:** Required tickets01–13, excluding skipped03; separate owner approval required for deployment and any real-money test.
 
 ## Acceptance criteria
 
 - [ ] Candidate SHA/config/source provenance recorded; no dirty notification WIP is silently included. Documentation updated to actual behavior.
 - [ ] Lint/type/unit/build, isolated DB integration, full customer/admin E2E and production TLS security checks pass; failures remain visible.
-- [ ] Capacity/payment races, duplicate/reordered webhooks, provider outage, refund/unknown/late-payment scenarios and browser-closed success all have evidence.
+- [ ] Payment/expiry races, duplicate/reordered webhooks, provider outage, refund/unknown/late-payment scenarios and browser-closed success all have evidence.
 - [ ] Restart and isolated restore drill pass with measured RPO/RTO evidence and owner operational walkthrough.
 - [ ] Dependency/advisory review and final standards/spec/security review have no unresolved launch blocker.
 - [ ] Provider account/method/terminality contract and owner policies are approved; ACH live verification, if necessary, has separate capped authorization.

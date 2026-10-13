@@ -126,6 +126,8 @@ describe('GET /api/order-status/[receiptToken]', () => {
     expect(body).toEqual({
       receipt: {
         publicId: expect.stringMatching(/^GUT-26-/),
+        pricedAt: expect.any(String),
+        validUntil: null,
         fulfillment: 'delivery',
         requestedDate: '2026-08-31',
         orderStatus: 'RECEIVED',

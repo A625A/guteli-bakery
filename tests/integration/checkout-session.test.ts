@@ -6,6 +6,7 @@ import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('server-only', () => ({}));
 
+import { createCheckoutReviewHandlers } from '@/app/api/checkout-review/route';
 import { createCheckoutSessionHandlers } from '@/app/api/checkout-session/route';
 import { createPostOrderHandler } from '@/app/api/orders/route';
 import { categories, products } from '@/server/db/schema';
@@ -123,6 +124,51 @@ describe('customer checkout recovery', () => {
     });
     expect(await (await handlers().GET(request('GET'))).json()).toEqual({
       order: null,
+    });
+    const reviewHandlers = createCheckoutReviewHandlers({
+      database,
+      now: () => now,
+      getOrderSecuritySettings: () => settings,
+      applicationOrigin: origin,
+      secureCookies: true,
+    });
+    expect((await reviewHandlers.GET(request('GET'))).status).toBe(404);
+    const review = (
+      await (await reviewHandlers.GET(request('GET', cookie))).json()
+    ).review;
+    const acceptance = (publicId: string, suppliedOrigin = origin) =>
+      new Request(`${origin}/api/checkout-review`, {
+        method: 'POST',
+        headers: {
+          cookie,
+          origin: suppliedOrigin,
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({ publicId, revisionId: review.revisionId }),
+      });
+    expect((await reviewHandlers.POST(acceptance('GUT-26-OTHER'))).status).toBe(
+      404,
+    );
+    expect(
+      (
+        await reviewHandlers.POST(
+          acceptance(savedBody.order.publicId, 'https://hostile.example'),
+        )
+      ).status,
+    ).toBe(403);
+    const accepted = await reviewHandlers.POST(
+      acceptance(savedBody.order.publicId),
+    );
+    expect(accepted.status).toBe(200);
+    expect((await accepted.json()).review.accepted).toBe(true);
+    await database.update(products).set({ priceMinor: 7000 });
+    const staleAcceptance = await reviewHandlers.POST(
+      acceptance(savedBody.order.publicId),
+    );
+    expect(staleAcceptance.status).toBe(409);
+    expect((await staleAcceptance.json()).review).toMatchObject({
+      accepted: false,
+      totalMinor: 14000,
     });
     const newRequest = request('POST', cookie);
     newRequest.headers.set('x-checkout-action', 'new');

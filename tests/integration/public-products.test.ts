@@ -126,7 +126,7 @@ describe('public product repository', () => {
       productsResult.every(
         (product) =>
           Object.keys(product).sort().join(',') ===
-          'category,id,imageUrl,name,priceMinor,saleUnit,slug,stockAvailable',
+          'category,id,imageUrl,name,originalPriceMinor,priceMinor,pricedAt,pricingValidUntil,promotion,saleUnit,slug,stockAvailable',
       ),
     ).toBe(true);
     expect(productsResult.find(({ slug }) => slug === 'nuditos')).toMatchObject(

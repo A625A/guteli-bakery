@@ -44,6 +44,12 @@ vi.mock('next/navigation', async (importOriginal) => ({
   notFound: pageTransport.notFound,
 }));
 
+import AdminPromotionsPage from '@/app/admin/promotions/page';
+import {
+  GET as GET_PROMOTIONS,
+  POST as POST_PROMOTION,
+} from '@/app/api/admin/promotions/route';
+import { PATCH as PATCH_PROMOTION } from '@/app/api/admin/promotions/[id]/route';
 import MissingAdminPage from '@/app/admin/[...missing]/page';
 import AdminCategoriesPage from '@/app/admin/categories/page';
 import ChangePasswordPage from '@/app/admin/change-password/page';
@@ -272,7 +278,56 @@ const productInput = {
 function routeMatrix(headersFor: () => Headers): MatrixRoute[] {
   const context = { params: Promise.resolve({ id: missingId }) };
   const orderContext = { params: Promise.resolve({ id: missingPublicId }) };
+  const promotionInput = {
+    name: 'Oferta',
+    scope: 'CATALOG',
+    productIds: [],
+    discountPercent: 10,
+    startsAtLocal: '2026-10-01T00:00',
+    endsAtLocal: '2026-10-31T00:00',
+    enabled: false,
+  };
   return [
+    {
+      name: 'GET /api/admin/promotions',
+      mutation: false,
+      allowedStatus: 200,
+      call: () =>
+        GET_PROMOTIONS(
+          new Request('http://localhost:3000/api/admin/promotions', {
+            headers: headersFor(),
+          }),
+        ),
+    },
+    {
+      name: 'POST /api/admin/promotions',
+      mutation: true,
+      allowedStatus: 201,
+      call: () =>
+        POST_PROMOTION(
+          jsonRequest(
+            '/api/admin/promotions',
+            'POST',
+            headersFor(),
+            promotionInput,
+          ),
+        ),
+    },
+    {
+      name: 'PATCH /api/admin/promotions/:id',
+      mutation: true,
+      allowedStatus: 404,
+      call: () =>
+        PATCH_PROMOTION(
+          jsonRequest(
+            `/api/admin/promotions/${missingId}`,
+            'PATCH',
+            headersFor(),
+            { ...promotionInput, expectedVersion: 1 },
+          ),
+          context,
+        ),
+    },
     {
       name: 'GET /api/admin/categories',
       mutation: false,
@@ -587,6 +642,11 @@ type PageLoader = Readonly<{
 }>;
 
 const operationalPages: readonly PageLoader[] = [
+  {
+    name: 'GET /admin/promotions',
+    allowedOutcome: 'render',
+    call: () => AdminPromotionsPage(),
+  },
   {
     name: 'GET /admin',
     allowedOutcome: 'render',

@@ -22,6 +22,8 @@ export type LockedProduct = Readonly<{
   saleUnit: string | null;
   stockQuantity: number | null;
   categoryLabel: string;
+  version: number;
+  available: boolean;
 }>;
 
 export type PersistedOrder = Readonly<{
@@ -109,11 +111,14 @@ export async function findIdempotentOrder(
 export async function lockRequestedProducts(
   transaction: OrdersTransaction,
   productIds: readonly string[],
+  includeUnavailable = false,
 ): Promise<readonly LockedProduct[]> {
   return transaction
     .select({
       id: products.id,
       name: products.name,
+      version: products.version,
+      available: sql<boolean>`${products.active} AND ${products.deletedAt} IS NULL AND ${categories.active}`,
       priceMinor: products.priceMinor,
       saleUnit: products.saleUnit,
       stockQuantity: products.stockQuantity,
@@ -124,9 +129,9 @@ export async function lockRequestedProducts(
     .where(
       and(
         inArray(products.id, productIds),
-        eq(products.active, true),
-        isNull(products.deletedAt),
-        eq(categories.active, true),
+        includeUnavailable ? undefined : eq(products.active, true),
+        includeUnavailable ? undefined : isNull(products.deletedAt),
+        includeUnavailable ? undefined : eq(categories.active, true),
       ),
     )
     .orderBy(asc(products.id))
@@ -236,6 +241,7 @@ export type LockedAdminOrder = Readonly<{
   publicId: string;
   fulfillment: 'PICKUP' | 'DELIVERY';
   orderStatus: OrderStatus;
+  paymentStatus: PaymentStatus;
   subtotalMinor: number;
   shippingMinor: number | null;
   totalMinor: number | null;
@@ -252,6 +258,7 @@ export async function lockAdminOrderByPublicId(
       publicId: orders.publicId,
       fulfillment: orders.fulfillment,
       orderStatus: orders.orderStatus,
+      paymentStatus: orders.paymentStatus,
       subtotalMinor: orders.subtotalMinor,
       shippingMinor: orders.shippingMinor,
       totalMinor: orders.totalMinor,

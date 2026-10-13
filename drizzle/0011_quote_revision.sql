@@ -1,0 +1,1 @@
+ALTER TABLE "order_pricing_state" ADD COLUMN "quote_version" integer DEFAULT 0 NOT NULL;

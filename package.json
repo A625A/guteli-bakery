@@ -28,7 +28,8 @@
     "test:e2e:install": "playwright install chromium",
     "build": "next build",
     "build:sites": "node scripts/build-sites.mjs",
-    "start": "next start"
+    "start": "next start",
+    "production:check": "node --conditions=react-server --import tsx scripts/check-production-runtime.ts"
   },
   "dependencies": {
     "better-auth": "^1.7.2",

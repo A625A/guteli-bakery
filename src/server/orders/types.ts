@@ -18,6 +18,7 @@ export type CreateOrderInput = Readonly<{
   receiptTokenSecret: string;
   successfulOrderRateLimitSubject?: string;
   now: Date;
+  clock?: () => Date;
   database?: OrdersDatabase;
   createOrderId?: () => string;
   createPublicId?: (now: Date) => string;

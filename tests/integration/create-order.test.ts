@@ -15,6 +15,8 @@ import {
   vi,
 } from 'vitest';
 
+vi.mock('server-only', () => ({}));
+
 import { createOrderRequestSchema } from '@/domain/order-contract';
 import {
   auditLogs,

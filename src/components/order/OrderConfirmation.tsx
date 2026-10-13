@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { CheckoutPriceReview, useCheckoutReview } from './CheckoutPriceReview';
 
 import { formatGTQ } from '@/lib/money';
 import type { PublicReceipt } from '@/server/orders/get-receipt';
@@ -28,7 +31,15 @@ function formatRequestedDate(requestedDate: string) {
   }).format(new Date(`${requestedDate}T12:00:00-06:00`));
 }
 
-export function OrderConfirmation({ receipt }: { receipt: PublicReceipt }) {
+export function OrderConfirmation({
+  receipt: initialReceipt,
+  receiptToken,
+}: {
+  receipt: PublicReceipt;
+  receiptToken?: string;
+}) {
+  const reviewState = useCheckoutReview(initialReceipt, receiptToken);
+  const receipt = reviewState.data.receipt;
   const fulfillmentLabel =
     receipt.fulfillment === 'pickup' ? 'Recogida' : 'Envío';
 
@@ -125,6 +136,7 @@ export function OrderConfirmation({ receipt }: { receipt: PublicReceipt }) {
         )}
       </section>
 
+      <CheckoutPriceReview state={reviewState} />
       <nav
         className="order-confirmation__actions"
         aria-label="Después de confirmar el pedido"

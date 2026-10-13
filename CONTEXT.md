@@ -1,6 +1,6 @@
 # Güteli Bakery
 
-Vocabulary for the bakery's order workflow. Payment and capacity terms describe the proposed commercial workflow; their implementation and business policies await approval.
+Vocabulary for the bakery's order workflow. Payment terms describe the proposed commercial workflow. Automated production-capacity management was excluded by the owner; existing requested-date scheduling remains.
 
 ## Language
 
@@ -9,7 +9,7 @@ _Avoid_: Paid order, confirmed order
 
 **Order**: The durable record of requested products, customer details, fulfillment arrangements, amounts, and operational progress.
 
-**Confirmed order**: An order accepted for production. In the proposed prepaid workflow, confirmation requires verified payment and committed production capacity.
+**Confirmed order**: An order accepted for production. In the proposed prepaid workflow, confirmation requires verified payment; automated production-capacity reservation is not part of the current scope.
 
 **Verified payment**: A payment whose provider record establishes the correct order association, amount, currency, and successful collection. A payment link, screenshot, or customer message is not verification.
 
@@ -17,14 +17,20 @@ _Avoid_: Paid order, confirmed order
 
 **Sale unit**: The purchasable quantity of a product, such as a bag of five pretzels. One sale unit need not equal one individual baked piece.
 
-**Production unit**: A proposed measure of the work needed to produce a sale unit. Its weight is a bakery decision, not a price or a physical stock count.
-
-**Production date**: The date against which the bakery budgets production capacity. Whether it equals the requested fulfillment date remains an owner decision.
-
-**Capacity reservation**: A temporary claim against a production date while checkout or payment is unresolved. It becomes a committed allocation on confirmation or is released only when release is safe.
-
-**Closed date**: A date on which the bakery accepts no new production allocations. Closing a date does not silently cancel existing commitments.
+**Requested fulfillment date**: The date the customer requests pickup or delivery, subject to the existing advance-order rule. It does not reserve a production slot or consume a daily capacity budget.
 
 **Delivery quote**: The bakery's proposed delivery charge and resulting complete order total, awaiting customer acceptance before payment.
 
+**Promotion**: A percentage discount valid only for its defined interval in the bakery's Guatemala business timezone. An unpaid request does not preserve an expired promotion.
+
+**Promotion scope**: Either the entire catalog or an explicit set of one or more products. If multiple enabled promotions are valid for a product, only the highest discount applies.
+
+**Current checkout price**: The current catalog and active promotion amount for an unpaid request's quantities, plus applicable delivery. A changed amount needs renewed customer acceptance.
+
+**Paid pricing snapshot**: The exact amount and item-level pricing supported by a successfully verified payment. Later catalog changes, promotions or refunds do not rewrite it.
+
 **WhatsApp handoff**: Opening a chat with a prepared order message. The customer must press Send; opening the chat does not establish message delivery or payment.
+
+## Current Ticket02 implementation
+
+The provider-independent dynamic pricing and customer acceptance slice is implemented locally and verified. Pricing revisions preserve history while unpaid orders reprice; paid/refunded markers remain immutable. Promotions support catalog-wide and selected-product scopes, Guatemala schedules, and highest-discount selection. See `docs/implementation/2026-10-07-checkout-progress.md` for evidence and `.scratch/production-readiness/ticket02-checkpoint.md` for the small continuation checkpoint. Ticket01 remains blocked; payment-dependent verification is not implemented. No commits or pushes are authorized for this slice.

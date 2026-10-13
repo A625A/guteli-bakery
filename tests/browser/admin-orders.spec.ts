@@ -110,7 +110,7 @@ test('an owner sees operational detail, quotes delivery, and advances an order w
   ).toBeVisible();
   await expect(page.getByRole('columnheader', { name: 'Pago' })).toBeVisible();
   await expect(row).toContainText('2026-09-20');
-  await expect(row).toContainText('Q75.00');
+  await expect(row).toContainText('Q180.00');
   await expect(row).toContainText('No pagado');
   await expect(row).not.toContainText('+50255558888');
   await expect(row).not.toContainText('Zona 14, portón blanco');
@@ -126,7 +126,7 @@ test('an owner sees operational detail, quotes delivery, and advances an order w
   await page.getByLabel('Envío (centavos)').fill('500');
   await page.getByRole('button', { name: 'Guardar cotización' }).click();
   await expect(page.getByRole('status')).toHaveText(
-    'Cotización guardada. Total Q80.00.',
+    'Cotización guardada. Total Q185.00.',
   );
   await page.getByLabel('Nuevo estado').selectOption('CONFIRMED');
   await page.getByRole('button', { name: 'Actualizar estado' }).click();
@@ -135,4 +135,87 @@ test('an owner sees operational detail, quotes delivery, and advances an order w
       .getByRole('status')
       .filter({ hasText: 'Estado actualizado a Confirmado.' }),
   ).toHaveText('Estado actualizado a Confirmado.');
+
+  await test.step('owner manages a nonstacking promotion and the storefront shows both prices', async () => {
+    await page.getByRole('link', { name: 'Promociones', exact: true }).click();
+    const form = page.getByRole('form', { name: 'Nueva promoción' });
+    await form.getByLabel('Nombre de la promoción').fill('Oferta de prueba');
+    await form.getByLabel('Descuento (%)').fill('70');
+    await form
+      .getByLabel('Inicio (hora de Guatemala)')
+      .fill('2026-01-01T00:00');
+    await form.getByLabel('Fin (hora de Guatemala)').fill('2099-01-01T00:00');
+    await form.getByLabel('Alcance').selectOption('CATALOG');
+    await form.getByRole('button', { name: 'Guardar promoción' }).click();
+    await expect(form.getByRole('status')).toContainText('Promoción guardada');
+    try {
+      await page.goto('/menu/');
+      const card = page
+        .getByTestId('product-card')
+        .filter({
+          has: page.getByRole('heading', { name: 'Originales', exact: true }),
+        })
+        .first();
+      await expect(card.getByText('Oferta de prueba · 70%')).toBeVisible();
+      await expect(card.locator('del')).toHaveText('Q60');
+      await expect(card.getByText('Q18', { exact: true })).toBeVisible();
+    } finally {
+      await page.goto('/admin/promotions');
+      const edit = page.getByRole('form', { name: 'Editar Oferta de prueba' });
+      await edit.getByLabel('Promoción habilitada').uncheck();
+      await edit.getByRole('button', { name: 'Guardar promoción' }).click();
+      await expect(edit.getByRole('status')).toContainText(
+        'Promoción guardada',
+      );
+    }
+    await page.goto(`/admin/orders/${publicId}`);
+  });
+
+  await test.step('paid pricing stays immutable after catalog changes', async () => {
+    // Synthetic persisted payment status: no provider call or payment is made.
+    const pool = new Pool({
+      connectionString: requireTestDatabaseUrl(
+        process.env.DATABASE_URL_TEST,
+        'paid pricing browser fixture',
+      ),
+    });
+    const originalPrices = await pool.query<{
+      id: string;
+      price_minor: number;
+    }>(
+      'SELECT products.id, products.price_minor FROM products WHERE id IN (SELECT source_product_id FROM order_items JOIN orders ON orders.id = order_items.order_id WHERE orders.public_id = $1)',
+      [publicId],
+    );
+    try {
+      await pool.query(
+        "UPDATE orders SET payment_status = 'PAID' WHERE public_id = $1",
+        [publicId],
+      );
+      await pool.query(
+        'UPDATE products SET price_minor = 50000 WHERE id IN (SELECT source_product_id FROM order_items JOIN orders ON orders.id = order_items.order_id WHERE orders.public_id = $1)',
+        [publicId],
+      );
+      await page.reload();
+      await expect(
+        page.getByRole('button', { name: 'Guardar cotización' }),
+      ).toHaveCount(0);
+      await expect(
+        page.getByText('Subtotal: Q180.00', { exact: true }),
+      ).toBeVisible();
+      await expect(
+        page.getByText('Total: Q185.00', { exact: true }),
+      ).toBeVisible();
+      await expect(
+        page.getByText('3 × Pretzel histórico (Snapshot) — Q180.00'),
+      ).toBeVisible();
+    } finally {
+      for (const row of originalPrices.rows) {
+        await pool.query('UPDATE products SET price_minor = $1 WHERE id = $2', [
+          row.price_minor,
+          row.id,
+        ]);
+      }
+      await pool.end();
+    }
+  });
 });

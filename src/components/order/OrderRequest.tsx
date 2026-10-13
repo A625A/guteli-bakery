@@ -43,7 +43,7 @@ const fieldLabels: Record<keyof OrderFormValues, string> = {
 
 export function OrderRequest({ embedded = false }: { embedded?: boolean }) {
   const router = useRouter();
-  const { clearCart, hydrated, lines } = useCart();
+  const { clearCart, hydrated, lines, items, pricingAvailable } = useCart();
   const [values, setValues] = useState<OrderFormValues>(initialValues);
   const [errors, setErrors] = useState<OrderErrors>({});
   const [checkoutState, setCheckoutState] = useState<CheckoutState>({
@@ -103,7 +103,7 @@ export function OrderRequest({ embedded = false }: { embedded?: boolean }) {
 
   async function sendOrder(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (inFlightRef.current || acceptedRef.current) return;
+    if (inFlightRef.current || acceptedRef.current || !pricingAvailable) return;
 
     const currentMinimumDate = getMinimumOrderDate(
       new Date(),
@@ -194,7 +194,7 @@ export function OrderRequest({ embedded = false }: { embedded?: boolean }) {
         <p className="request-page__loading" role="status">
           Cargando tu carrito…
         </p>
-      ) : lines.length === 0 && checkoutState.kind !== 'SUCCESS' ? (
+      ) : items.length === 0 && checkoutState.kind !== 'SUCCESS' ? (
         <section className="request-empty" aria-labelledby="empty-order-title">
           <p className="request-empty__number" aria-hidden="true">
             00
@@ -213,6 +213,12 @@ export function OrderRequest({ embedded = false }: { embedded?: boolean }) {
       ) : (
         <div className="order-layout order-layout--submission">
           <form className="order-form" noValidate onSubmit={sendOrder}>
+            {!pricingAvailable ? (
+              <p role="status">
+                Actualizando precios y disponibilidad. Tu información se
+                conserva.
+              </p>
+            ) : null}
             {Object.keys(errors).length > 0 ? (
               <div
                 className="order-errors"
@@ -400,7 +406,11 @@ export function OrderRequest({ embedded = false }: { embedded?: boolean }) {
             <button
               className="order-form__submit"
               type="submit"
-              disabled={submitting || checkoutState.kind === 'SUCCESS'}
+              disabled={
+                submitting ||
+                !pricingAvailable ||
+                checkoutState.kind === 'SUCCESS'
+              }
             >
               {submitting
                 ? 'Enviando pedido…'

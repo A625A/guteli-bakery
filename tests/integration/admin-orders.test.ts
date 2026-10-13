@@ -36,6 +36,8 @@ import {
   session,
   user,
 } from '@/server/db/schema';
+import { reviewOrderPricing } from '@/server/orders/review-pricing';
+import { orderPricingState } from '@/server/db/schema';
 import { requireTestDatabaseUrl } from '@/test/database-url';
 
 const databaseUrl = requireTestDatabaseUrl(
@@ -584,6 +586,8 @@ describe('protected admin order operations', () => {
   it('quotes only nonterminal delivery orders with exact checked math and one version increment', async () => {
     const actor = await enrolledActor();
     const delivery = await orderFixture({ subtotalMinor: 2_147_483_000 });
+    // Current catalog pricing must match this overflow boundary fixture.
+    await db.update(products).set({ priceMinor: 1_073_741_500 });
     const quoted = await mutationRequest(
       'delivery-quote',
       delivery.publicId,
@@ -634,6 +638,121 @@ describe('protected admin order operations', () => {
     expect(await terminalQuote.json()).toMatchObject({
       error: { code: 'TERMINAL_ORDER' },
     });
+  });
+
+  it('invalidates customer acceptance immediately even when a delivery requote has the same amount', async () => {
+    const actor = await enrolledActor();
+    const order = await orderFixture({ requestedDate: '2099-12-31' });
+    const initial = await reviewOrderPricing(order.id, db);
+    expect(initial?.canAccept).toBe(false);
+    const quoted = await mutationRequest(
+      'delivery-quote',
+      order.publicId,
+      actor.jar,
+      { shippingMinor: 500, expectedVersion: 1 },
+    );
+    expect(quoted.status).toBe(200);
+    const review = await reviewOrderPricing(order.id, db);
+    expect(
+      (await reviewOrderPricing(order.id, db, undefined, review!.revisionId!))
+        ?.accepted,
+    ).toBe(true);
+    const [current] = await db
+      .select()
+      .from(orders)
+      .where(eq(orders.id, order.id));
+    const requote = await mutationRequest(
+      'delivery-quote',
+      order.publicId,
+      actor.jar,
+      { shippingMinor: 500, expectedVersion: current.version },
+    );
+    expect(requote.status).toBe(200);
+    const [state] = await db
+      .select()
+      .from(orderPricingState)
+      .where(eq(orderPricingState.orderId, order.id));
+    expect(state.acceptedRevisionId).toBeNull();
+    expect(
+      await reviewOrderPricing(order.id, db, undefined, review!.revisionId!),
+    ).toMatchObject({ totalMinor: 3000, accepted: false, conflict: true });
+  });
+
+  it.each(['PAID', 'REFUNDED'] as const)(
+    'preserves %s item pricing and totals when an owner attempts a delivery requote',
+    async (paymentStatus) => {
+      const actor = await enrolledActor();
+      // Persisted-state fixture only; this is not provider verification evidence.
+      const order = await orderFixture({
+        paymentStatus,
+        shippingMinor: 500,
+        totalMinor: 3000,
+      });
+      const before = await (
+        await detailRequest(order.publicId, actor.jar)
+      ).json();
+      const response = await mutationRequest(
+        'delivery-quote',
+        order.publicId,
+        actor.jar,
+        {
+          shippingMinor: 1500,
+          expectedVersion: 1,
+        },
+      );
+      expect(response.status).toBe(409);
+      expect(await response.json()).toMatchObject({
+        error: { code: 'PAID_PRICING_IMMUTABLE' },
+      });
+      const after = await (
+        await detailRequest(order.publicId, actor.jar)
+      ).json();
+      expect(after).toEqual(before);
+    },
+  );
+
+  it('rechecks payment status after acquiring the order lock before a requote', async () => {
+    const actor = await enrolledActor();
+    const order = await orderFixture({ shippingMinor: 500, totalMinor: 3000 });
+    const blocker = await pool.connect();
+    let mutation: Promise<Response> | undefined;
+    try {
+      await blocker.query('BEGIN');
+      await blocker.query('SELECT id FROM orders WHERE id = $1 FOR UPDATE', [
+        order.id,
+      ]);
+      mutation = mutationRequest('delivery-quote', order.publicId, actor.jar, {
+        shippingMinor: 1500,
+        expectedVersion: 1,
+      });
+      await waitForOrderMutationLock();
+      // Simulate a concurrent persisted financial transition, not a provider call.
+      await blocker.query(
+        "UPDATE orders SET payment_status = 'PAID' WHERE id = $1",
+        [order.id],
+      );
+      await blocker.query('COMMIT');
+      const response = await mutation;
+      expect(response.status).toBe(409);
+      expect(await response.json()).toMatchObject({
+        error: { code: 'PAID_PRICING_IMMUTABLE' },
+      });
+      expect(
+        await (await detailRequest(order.publicId, actor.jar)).json(),
+      ).toMatchObject({
+        order: {
+          paymentStatus: 'PAID',
+          subtotalMinor: 2500,
+          shippingMinor: 500,
+          totalMinor: 3000,
+          version: 1,
+        },
+      });
+    } finally {
+      await blocker.query('ROLLBACK');
+      await mutation?.catch(() => undefined);
+      blocker.release();
+    }
   });
 
   it('rejects a simultaneous stale writer without side effects', async () => {

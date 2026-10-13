@@ -6,6 +6,8 @@ import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { Pool } from 'pg';
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
+vi.mock('server-only', () => ({}));
+
 import { createOrderRequestSchema } from '@/domain/order-contract';
 import {
   auditLogs,

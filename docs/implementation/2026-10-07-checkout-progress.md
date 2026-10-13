@@ -34,3 +34,43 @@ The server environment schema rejects `PAYMENTS_ENABLED=true` while no verified 
 ## Next business decision
 
 Before implementing final-total acceptance, establish whether a previously submitted order keeps its original item prices when the catalog changes, or must be repriced before customer approval. The current order implementation preserves item snapshots; either policy must keep historical records unchanged and require explicit acceptance of the final delivery charge. Ticket 03 still needs the owner's capacity measure, limits and date rules. Neither Ticket 02 nor Ticket 10 is complete.
+
+## Owner correction — dynamic pricing
+
+The owner has answered the pricing question: carts and unpaid orders reprice dynamically, including scheduled percentage promotions; only successfully verified payments freeze pricing permanently. The [2026-10-08 pricing specification](../superpowers/specs/2026-10-08-dynamic-pricing.md) supersedes the earlier recommendation. Related specification/ticket changes precede implementation. The latest instruction **withdraws commit/push authorization for new work** and excludes unrelated tickets; the previous published milestone remains unchanged. Ticket 01 stays blocked and payments remain disabled.
+
+### First correction slice: protect already-paid pricing
+
+Inspection found that the existing owner delivery-quote endpoint could overwrite totals on a paid order. Added a payment-status check inside its existing order row lock and a safe `409 PAID_PRICING_IMMUTABLE` response for `PAID` and `REFUNDED`. The admin page omits that pricing action for those states. Catalog changes still leave saved paid item amounts unchanged.
+
+TDD evidence: the two paid/refunded API regressions first returned 200 instead of 409; after the fix all 12 admin-order integration tests pass, including a two-connection race where payment status changes while the quote waits for the lock. The browser test first found the prohibited quote button; after the UI change the full owner-order journey passes, including unchanged paid totals after a catalog price increase. These are synthetic persisted-state fixtures, not actual provider verification. The browser fixture restores catalog prices in `finally`.
+
+Relevant unit tests: 14 passed (server environment, order state, admin authorization policy). ESLint, TypeScript and formatting of changed files pass. The repository-wide formatter flags the unchanged README imported in the prior milestone; it remains untouched. Independent spec and standards reviews have no remaining findings in this bounded slice.
+
+Promotions, live unpaid repricing and final-total acceptance are not implemented by this guard. Promotion-scope selection is the next owner decision before the promotion data model. No commits, pushes, migrations or real payments were performed for this correction.
+
+### Promotion-scope decision
+
+The owner approved both selected-product (one or multiple) and catalog-wide promotions, percentage/start/end/enable controls in the protected dashboard, storefront labels/original/discounted prices, Guatemala scheduling, automatic expiry, and highest-valid-discount selection without stacking. Continue Ticket 02 only; do not start another ticket, commit or push. Payments remain disabled under blocked Ticket 01. The specification and acceptance criteria were updated before this implementation phase.
+
+### Ticket02 provider-independent pricing milestone — 2026-10-08
+
+Implemented both promotion scopes, percentage/start/end/enabled controls in protected administration, Guatemala scheduling and highest-valid-discount selection. Storefront and carts show original/discounted prices and labels. Live refresh runs at server-reported boundaries, on foreground and periodically; failure disables continuation, and unavailable items require explicit removal without erasing form data.
+
+Unpaid creation/replay/recovery/receipt/admin reads resolve current pricing. Append-only pricing revisions retain original creation snapshots; an owner-cookie protected endpoint explicitly accepts the current complete total. Shared receipt tokens cannot accept it. Repricing, equal-total promotion changes and delivery requotes invalidate approval. Catalog → order → product locks serialize changes, and authoritative time is read after waits. Stock is allocated only once. PAID/REFUNDED records retain their stored prices. Pending payment markers block acceptance while still displaying current unpaid prices.
+
+Migrations0009–0011 were generated and tested only in the isolated local PostgreSQL database. No production migration, commit, push, public deployment, paid resource, external message or payment occurred. Ticket01 remains **BLOCKED — external provider verification required**. Provider success-time verification, payment-link terminality and immutable verified provider records remain gates under01/04/05; synthetic paid markers do not prove provider behavior.
+
+Verification:
+
+- 224 unit tests passed; the unchanged `docker-runtime.test.ts` file was excluded in the focused successful run because two README assertions fail on the existing README. The earlier full run also hit local socket sandbox restrictions; those socket tests pass with local test permission. README and its tests were not changed.
+- 78 distinct integration tests passed across the targeted nine-file suite and the order/receipt/delivery contract suite (overlapping admin tests counted once). The final pricing/owner-session rerun passed all9 tests after review fixes.
+- 44 storefront/browser cases and the separate final admin-order case passed (45 distinct cases). New browser evidence covers Q150→Q500 expiry in open carts, saved owned checkouts and shared receipts; renewed acceptance; unavailable refresh; preserved form data; protected promotion management and unchanged paid totals. An old admin fixture expectation was corrected from its unpaid historical Q75 to the current Q180 before the final admin run passed.
+- TypeScript, ESLint, scoped Prettier checks and a local production Next build pass. Build used disposable placeholders and payments disabled.
+- Independent reviews identified stale storefront display, form unmount on unavailable products, and missing expiry timing on shared receipts. These were corrected and browser-tested. The full independent review could not finish because its agent hit a usage limit; final local review was performed, without claiming independent sign-off.
+
+A small local harness and checkpoint under `.scratch/production-readiness/` keep full test logs at `/private/tmp/guteli-ticket02-harness/`, reducing repeated context reads. Existing products/ assets and other worktrees remain untouched. No unrelated ticket was started. Ticket02's provider-independent scope is implemented; payment-dependent acceptance criteria remain unchecked.
+
+### Owner decision — skip Ticket03 (2026-10-08)
+
+The owner declined automated production capacity because orders are scheduled and current volume does not require it. Ticket03 is skipped, not completed; no capacity code or migration was implemented. Updated the specification precedence note, glossary, dependency plan and affected payment tickets. Existing requested-date scheduling, advance-date validation, availability and finite stock remain. Payment-expiry and promotion-validity safeguards still apply, and Ticket01 stays blocked. This was a documentation-only update; no application tests, commits, pushes or deployments were needed or performed.

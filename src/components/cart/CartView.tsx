@@ -5,6 +5,7 @@ import { useState, type ChangeEvent } from 'react';
 
 import { useCart } from '@/components/cart/CartProvider';
 import { ProductArtwork } from '@/components/menu/ProductArtwork';
+import { ProductPrice } from '@/components/menu/ProductPrice';
 import { CheckoutRecovery } from '@/components/order/CheckoutRecovery';
 import { OrderRequest } from '@/components/order/OrderRequest';
 import { operationalCopy } from '@/content/business';
@@ -12,7 +13,16 @@ import { formatGTQ } from '@/lib/money';
 
 export function CartView() {
   const [checkoutAvailable, setCheckoutAvailable] = useState(false);
-  const { hydrated, lines, subtotal, removeItem, updateQuantity } = useCart();
+  const {
+    items,
+    hydrated,
+    lines,
+    subtotal,
+    removeItem,
+    updateQuantity,
+    unavailableItems,
+    pricingAvailable,
+  } = useCart();
 
   function changeQuantity(
     productId: (typeof lines)[number]['productId'],
@@ -37,11 +47,22 @@ export function CartView() {
       </header>
 
       <CheckoutRecovery onAvailable={setCheckoutAvailable} />
+      {!pricingAvailable ? (
+        <p role="status">Comprobando precios actuales antes de continuar.</p>
+      ) : null}
+      {unavailableItems.map((item) => (
+        <p key={item.productId}>
+          Un producto de tu carrito ya no está disponible.{' '}
+          <button type="button" onClick={() => removeItem(item.productId)}>
+            Quitar producto no disponible
+          </button>
+        </p>
+      ))}
       {!hydrated ? (
         <p className="request-page__loading" role="status">
           Cargando tu carrito…
         </p>
-      ) : lines.length === 0 ? (
+      ) : items.length === 0 ? (
         <section className="request-empty" aria-labelledby="empty-cart-title">
           <p className="request-empty__number" aria-hidden="true">
             00
@@ -81,6 +102,7 @@ export function CartView() {
                       <div className="cart-line__identity">
                         <p>{line.product.category.name}</p>
                         <h3>{line.product.name}</h3>
+                        <ProductPrice product={line.product} />
                         <span>
                           {line.product.saleUnit ??
                             operationalCopy.quantityUnknown}

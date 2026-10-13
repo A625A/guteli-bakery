@@ -191,7 +191,7 @@ test('expires legacy slug carts without guessing product identity', async ({
     .toEqual({ legacy: null, current: '[]' });
 });
 
-test('prunes a stale UUID from the badge, storage, and order summary', async ({
+test('retains an unavailable selection until the customer explicitly removes it', async ({
   page,
 }) => {
   await page.addInitScript(() => {
@@ -204,8 +204,15 @@ test('prunes a stale UUID from the badge, storage, and order summary', async ({
   await page.goto('/cart/');
 
   await expect(
-    page.getByRole('heading', { name: 'Tu carrito está vacío' }),
+    page.getByRole('button', { name: 'Quitar producto no disponible' }),
   ).toBeVisible();
+  await expect(page.getByLabel('Nombre completo')).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Enviar pedido' }),
+  ).toBeDisabled();
+  await page
+    .getByRole('button', { name: 'Quitar producto no disponible' })
+    .click();
   await expect(
     page.getByRole('link', { name: 'Carrito, 0 productos' }),
   ).toBeVisible();
@@ -819,4 +826,183 @@ test('does not retry an older form as a new order after another tab starts over'
     'comprobar tu pedido guardado',
   );
   expect(submissions).toBe(1);
+});
+
+test('refreshes an open cart when its promotion expires and keeps form data during a failed refresh', async ({
+  page,
+}) => {
+  const { Pool } = await import('pg');
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL_TEST });
+  const original = await pool.query(
+    'SELECT price_minor FROM products WHERE id = $1',
+    [pretzelOriginalId],
+  );
+  const promo = await pool.query(
+    `INSERT INTO promotions (name, scope, discount_bps, starts_at, ends_at) VALUES ('Oferta temporal', 'SELECTED', 7000, now() - interval '1 minute', now() + interval '6 seconds') RETURNING id`,
+  );
+  await pool.query(
+    'INSERT INTO promotion_products (promotion_id, product_id) VALUES ($1, $2)',
+    [promo.rows[0].id, pretzelOriginalId],
+  );
+  await pool.query('UPDATE products SET price_minor = 10000 WHERE id = $1', [
+    pretzelOriginalId,
+  ]);
+  try {
+    await page.addInitScript(
+      (id) =>
+        localStorage.setItem(
+          'guteli-cart-v2',
+          JSON.stringify([{ productId: id, quantity: 5 }]),
+        ),
+      pretzelOriginalId,
+    );
+    await page.goto('/cart/');
+    await expect(
+      page.getByText('Subtotal estimado: Q150', { exact: true }),
+    ).toBeVisible();
+    await page.getByLabel('Nombre completo').fill('Nombre conservado');
+    await expect(
+      page.getByText('Subtotal estimado: Q500', { exact: true }),
+    ).toBeVisible({ timeout: 12000 });
+    await expect(page.getByLabel('Nombre completo')).toHaveValue(
+      'Nombre conservado',
+    );
+    await page.route('**/api/products', (route) => route.abort());
+    await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+    await expect(
+      page.getByRole('button', { name: 'Enviar pedido' }),
+    ).toBeDisabled();
+    await expect(page.getByLabel('Nombre completo')).toHaveValue(
+      'Nombre conservado',
+    );
+    await page.unroute('**/api/products');
+    await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+    await expect(
+      page.getByRole('button', { name: 'Enviar pedido' }),
+    ).toBeEnabled();
+    await pool.query('UPDATE products SET active = false WHERE id = $1', [
+      pretzelOriginalId,
+    ]);
+    await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+    await expect(
+      page.getByRole('button', { name: 'Quitar producto no disponible' }),
+    ).toBeVisible();
+    await expect(page.getByLabel('Nombre completo')).toHaveValue(
+      'Nombre conservado',
+    );
+    await expect(
+      page.getByRole('button', { name: 'Enviar pedido' }),
+    ).toBeDisabled();
+    await pool.query('UPDATE products SET active = true WHERE id = $1', [
+      pretzelOriginalId,
+    ]);
+    await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+    await expect(
+      page.getByRole('button', { name: 'Enviar pedido' }),
+    ).toBeEnabled();
+    await page.reload();
+    await expect(
+      page.getByText('Subtotal estimado: Q500', { exact: true }),
+    ).toBeVisible();
+    await page.goto('/menu/');
+    await page.route('**/api/products', (route) => route.abort());
+    await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+    const card = page.getByTestId('product-card').first();
+    await expect(
+      card.getByText('Precio actual no disponible. Actualizando…'),
+    ).toBeVisible();
+    await expect(card.getByRole('button')).toBeDisabled();
+  } finally {
+    await pool.query(
+      'UPDATE products SET price_minor = $1, active = true WHERE id = $2',
+      [original.rows[0].price_minor, pretzelOriginalId],
+    );
+    await pool.query('UPDATE promotions SET enabled = false WHERE id = $1', [
+      promo.rows[0].id,
+    ]);
+    await pool.end();
+  }
+});
+
+test('requires explicit acceptance again when a saved unpaid promotional total expires', async ({
+  page,
+  browser,
+}) => {
+  const { Pool } = await import('pg');
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL_TEST });
+  const original = await pool.query(
+    'SELECT price_minor FROM products WHERE id = $1',
+    [pretzelOriginalId],
+  );
+  const promo = await pool.query(
+    `INSERT INTO promotions (name, scope, discount_bps, starts_at, ends_at) VALUES ('Oferta checkout', 'SELECTED', 7000, now() - interval '1 minute', now() + interval '9 seconds') RETURNING id`,
+  );
+  await pool.query(
+    'INSERT INTO promotion_products (promotion_id, product_id) VALUES ($1, $2)',
+    [promo.rows[0].id, pretzelOriginalId],
+  );
+  await pool.query('UPDATE products SET price_minor = 10000 WHERE id = $1', [
+    pretzelOriginalId,
+  ]);
+  const visitorContext = await browser.newContext();
+  const visitor = await visitorContext.newPage();
+  try {
+    const prepared = await page.request.post('/api/checkout-session', {
+      headers: { origin: 'http://127.0.0.1:3000' },
+    });
+    const { idempotencyKey } = await prepared.json();
+    const submitted = await page.request.post('/api/orders', {
+      headers: {
+        'idempotency-key': idempotencyKey,
+        'x-forwarded-for': '198.51.100.89',
+      },
+      data: {
+        customerName: 'Cliente promoción',
+        phone: '55551329',
+        fulfillment: 'pickup',
+        requestedDate: '2099-12-31',
+        items: [{ productId: pretzelOriginalId, quantity: 5 }],
+      },
+    });
+    expect(submitted.status()).toBe(201);
+    const { order } = await submitted.json();
+    await page.goto(`/order/confirmation/${order.receiptToken}/`);
+    await page
+      .getByRole('button', { name: 'Acepto el total de Q150', exact: true })
+      .click();
+    await expect(page.getByText(/Total aceptado: Q150/)).toBeVisible();
+    await visitor.goto(page.url());
+    await expect(
+      visitor.getByText('Total: Q150', { exact: true }),
+    ).toBeVisible();
+    await expect(
+      visitor.getByRole('button', { name: /Acepto el total/ }),
+    ).toHaveCount(0);
+    await expect(page.getByText('Total: Q500', { exact: true })).toBeVisible({
+      timeout: 15000,
+    });
+    await expect(visitor.getByText('Total: Q500', { exact: true })).toBeVisible(
+      { timeout: 5000 },
+    );
+    await expect(page.getByText(/Total aceptado: Q150/)).toHaveCount(0);
+    await page
+      .getByRole('button', { name: 'Acepto el total de Q500', exact: true })
+      .click();
+    await expect(page.getByText(/Total aceptado: Q500/)).toBeVisible();
+    await page.reload();
+    await expect(page.getByText(/Total aceptado: Q500/)).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: 'Pagar en línea — Próximamente' }),
+    ).toBeDisabled();
+  } finally {
+    await visitorContext.close();
+    await pool.query('UPDATE products SET price_minor = $1 WHERE id = $2', [
+      original.rows[0].price_minor,
+      pretzelOriginalId,
+    ]);
+    await pool.query('UPDATE promotions SET enabled = false WHERE id = $1', [
+      promo.rows[0].id,
+    ]);
+    await pool.end();
+  }
 });

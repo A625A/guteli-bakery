@@ -55,6 +55,10 @@ export function adminOrderErrorResponse(error: unknown, requestId: string) {
       readonly [number, string]
     > = {
       ORDER_NOT_FOUND: [404, 'No se encontró el pedido.'],
+      PAID_PRICING_IMMUTABLE: [
+        409,
+        'El precio de un pedido pagado no puede cambiar, incluso después de un reembolso.',
+      ],
       STALE_ORDER: [
         409,
         'El pedido cambió. Actualiza la página antes de intentar de nuevo.',

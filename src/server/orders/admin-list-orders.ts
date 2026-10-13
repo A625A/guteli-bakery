@@ -4,6 +4,7 @@ import { and, count, desc, eq } from 'drizzle-orm';
 
 import { requireAdmin } from '@/server/auth/authorize';
 import { db } from '@/server/db/client';
+import { reviewOrderPricing } from './review-pricing';
 import { orders } from '@/server/db/schema';
 import { orderStatuses, type OrderStatus } from '@/domain/order-state';
 
@@ -114,6 +115,7 @@ export async function adminListOrders(
   );
   const where = conditions.length === 0 ? undefined : and(...conditions);
   const selection = {
+    id: orders.id,
     publicId: orders.publicId,
     createdAt: orders.createdAt,
     requestedDate: orders.requestedDate,
@@ -136,12 +138,30 @@ export async function adminListOrders(
       .offset(parsed.offset),
     db.select({ value: count() }).from(orders).where(where),
   ]);
-  return {
-    orders: rows.map((order): AdminOrderListDto => ({
+  const current: AdminOrderListDto[] = [];
+  for (const { id, ...order } of rows) {
+    const review = await reviewOrderPricing(id, db);
+    const [latest] = await db
+      .select({ version: orders.version })
+      .from(orders)
+      .where(eq(orders.id, id));
+    current.push({
       ...order,
+      subtotalMinor: review?.subtotalMinor ?? order.subtotalMinor,
+      shippingMinor: review ? review.shippingMinor : order.shippingMinor,
+      totalMinor: review ? review.totalMinor : order.totalMinor,
+      paymentStatus: (review?.paymentStatus ??
+        order.paymentStatus) as AdminOrderListDto['paymentStatus'],
+      orderStatus: (review?.orderStatus ?? order.orderStatus) as OrderStatus,
+      version: latest?.version ?? order.version,
       createdAt: order.createdAt.toISOString(),
-      quoteState: quoteState(order),
-    })),
+      quoteState: quoteState(
+        review ? { ...order, shippingMinor: review.shippingMinor } : order,
+      ),
+    });
+  }
+  return {
+    orders: current,
     page: parsed.page,
     pageSize: parsed.pageSize,
     total,

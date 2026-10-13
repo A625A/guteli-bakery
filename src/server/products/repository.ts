@@ -4,6 +4,9 @@ import { categories, productImages, products } from '@/server/db/schema';
 import { createObjectStorage } from '@/server/storage';
 import type { ObjectStorage } from '@/server/storage';
 import type { PublicProductDto } from './types';
+import { priceProduct } from '@/domain/pricing';
+import { readPromotions } from './promotions';
+import { acquireCatalogMutationLock } from './catalog-mutation-lock';
 
 type CatalogDatabase = typeof import('@/server/db/client').db;
 
@@ -80,29 +83,52 @@ function mapRows(rows: PublicProductRow[], storage: ObjectStorage) {
 export async function findPublicProducts(
   database?: CatalogDatabase,
   storage: ObjectStorage = createObjectStorage(),
+  clock: () => Date = () => new Date(),
 ): Promise<readonly PublicProductDto[]> {
   const connection = await getDatabase(database);
-  const rows = await connection
-    .select(publicProductSelection)
-    .from(products)
-    .innerJoin(categories, eq(products.categoryId, categories.id))
-    .leftJoin(
-      productImages,
-      and(
-        eq(productImages.productId, products.id),
-        isNull(productImages.removedAt),
-      ),
-    )
-    .where(publicProductFilters)
-    .orderBy(
-      asc(categories.sortOrder),
-      asc(categories.id),
-      asc(products.sortOrder),
-      asc(products.id),
-      asc(productImages.sortOrder),
-      asc(productImages.id),
-    );
-  return mapRows(rows, storage);
+  return connection.transaction(async (transaction) => {
+    await acquireCatalogMutationLock(transaction);
+    const offers = await readPromotions(transaction);
+    const now = clock();
+    const rows = await transaction
+      .select(publicProductSelection)
+      .from(products)
+      .innerJoin(categories, eq(products.categoryId, categories.id))
+      .leftJoin(
+        productImages,
+        and(
+          eq(productImages.productId, products.id),
+          isNull(productImages.removedAt),
+        ),
+      )
+      .where(publicProductFilters)
+      .orderBy(
+        asc(categories.sortOrder),
+        asc(categories.id),
+        asc(products.sortOrder),
+        asc(products.id),
+        asc(productImages.sortOrder),
+        asc(productImages.id),
+      );
+    return mapRows(rows, storage).map((product) => {
+      const price = priceProduct(product.id, product.priceMinor, offers, now);
+      return {
+        ...product,
+        originalPriceMinor: product.priceMinor,
+        priceMinor: price.unitPriceMinor,
+        promotion: price.promotion
+          ? {
+              id: price.promotion.id,
+              name: price.promotion.name,
+              discountBps: price.promotion.discountBps,
+              endsAt: price.promotion.endsAt,
+            }
+          : null,
+        pricingValidUntil: price.nextChangeAt,
+        pricedAt: now.toISOString(),
+      };
+    });
+  });
 }
 
 export async function findPublicProductBySlug(
@@ -110,21 +136,11 @@ export async function findPublicProductBySlug(
   database?: CatalogDatabase,
   storage: ObjectStorage = createObjectStorage(),
 ): Promise<PublicProductDto | null> {
-  const connection = await getDatabase(database);
-  const rows = await connection
-    .select(publicProductSelection)
-    .from(products)
-    .innerJoin(categories, eq(products.categoryId, categories.id))
-    .leftJoin(
-      productImages,
-      and(
-        eq(productImages.productId, products.id),
-        isNull(productImages.removedAt),
-      ),
-    )
-    .where(and(publicProductFilters, eq(products.slug, slug)))
-    .orderBy(asc(productImages.sortOrder), asc(productImages.id));
-  return mapRows(rows, storage)[0] ?? null;
+  return (
+    (await findPublicProducts(database, storage)).find(
+      (product) => product.slug === slug,
+    ) ?? null
+  );
 }
 
 export type PublicMediaRecord = Readonly<{

@@ -1,5 +1,12 @@
 import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
 
+import { priceProduct } from '@/domain/pricing';
+import { acquireCatalogMutationLock } from '@/server/products/catalog-mutation-lock';
+import { readPromotions } from '@/server/products/promotions';
+import {
+  reviewOrderPricing,
+  reviewPricingInTransaction,
+} from './review-pricing';
 import type { CreateOrderRequest } from '@/domain/order-contract';
 import { createPublicOrderId, hashReceiptToken } from './identifiers';
 import {
@@ -280,12 +287,28 @@ export async function recoverCreatedOrder(
     idempotencySubject,
     idempotencyKey,
   );
+  const review = existing
+    ? await reviewOrderPricing(existing.id, database)
+    : null;
   return existing
-    ? createResult('replayed', existing, {
-        idempotencyKey,
-        idempotencySubject,
-        receiptTokenSecret,
-      }).order
+    ? createResult(
+        'replayed',
+        {
+          ...existing,
+          ...(review
+            ? {
+                subtotalMinor: review.subtotalMinor,
+                totalMinor: review.totalMinor,
+                shippingMinor: review.shippingMinor,
+              }
+            : {}),
+        },
+        {
+          idempotencyKey,
+          idempotencySubject,
+          receiptTokenSecret,
+        },
+      ).order
     : null;
 }
 
@@ -384,7 +407,20 @@ async function persistOrder(
     itemCount: pricedOrder.items.length,
   });
 
-  return createResult('created', order, input);
+  const review = await reviewPricingInTransaction(
+    transaction,
+    order.id,
+    input.clock,
+  );
+  return createResult(
+    'created',
+    {
+      ...order,
+      subtotalMinor: review!.subtotalMinor,
+      totalMinor: review!.totalMinor,
+    },
+    input,
+  );
 }
 
 async function createOrderInTransaction(
@@ -399,6 +435,7 @@ async function createOrderInTransaction(
       input.idempotencySubject,
       input.idempotencyKey,
     );
+    await acquireCatalogMutationLock(transaction);
     const existing = await findIdempotentOrder(
       transaction,
       CREATE_ORDER_OPERATION,
@@ -409,14 +446,41 @@ async function createOrderInTransaction(
       if (!safeEquals(existing.requestHash, requestHash)) {
         throw new CreateOrderError('IDEMPOTENCY_CONFLICT');
       }
-      return createResult('replayed', existing, input);
+      const review = await reviewPricingInTransaction(
+        transaction,
+        existing.id,
+        input.clock,
+      );
+      return createResult(
+        'replayed',
+        {
+          ...existing,
+          subtotalMinor: review!.subtotalMinor,
+          shippingMinor: review!.shippingMinor,
+          totalMinor: review!.totalMinor,
+        },
+        input,
+      );
     }
 
     const lockedProducts = await lockRequestedProducts(
       transaction,
       orderProductIds(input.request),
     );
-    const pricedOrder = priceOrder(input.request, lockedProducts);
+    const promotions = await readPromotions(transaction);
+    const pricingTime = input.clock?.() ?? new Date();
+    const pricedOrder = priceOrder(
+      input.request,
+      lockedProducts.map((product) => ({
+        ...product,
+        priceMinor: priceProduct(
+          product.id,
+          product.priceMinor,
+          promotions,
+          pricingTime,
+        ).unitPriceMinor,
+      })),
+    );
 
     if (input.successfulOrderRateLimitSubject) {
       const rateLimit = await consumeFixedWindowRateLimit(transaction, {

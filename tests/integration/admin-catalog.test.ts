@@ -40,6 +40,11 @@ import {
   POST as POST_PRODUCT,
 } from '@/app/api/admin/products/route';
 import { GET as GET_PUBLIC_PRODUCTS } from '@/app/api/products/route';
+import {
+  POST as POST_PROMOTION,
+  GET as GET_PROMOTIONS,
+} from '@/app/api/admin/promotions/route';
+import { PATCH as PATCH_PROMOTION } from '@/app/api/admin/promotions/[id]/route';
 import { createOrderRequestSchema } from '@/domain/order-contract';
 import { auth } from '@/server/auth/auth';
 import { provisionOwner } from '@/server/auth/provision-owner';
@@ -348,6 +353,87 @@ const productDtoKeys = [
 
 describe('protected catalog administration', () => {
   beforeEach(resetDatabase);
+  it('manages scheduled promotions with protected versioned writes and a disable toggle', async () => {
+    const actor = await enrolledActor();
+    const category = await createCategory(actor.jar);
+    const product = await createProduct(actor.jar, category.category.id);
+    const input = {
+      name: 'Semana especial',
+      scope: 'SELECTED',
+      productIds: [product.product.id],
+      discountPercent: 70,
+      startsAtLocal: '2026-10-08T00:00',
+      endsAtLocal: '2026-10-09T00:00',
+      enabled: true,
+    };
+    expect(
+      (
+        await GET_PROMOTIONS(
+          new Request('http://localhost:3000/api/admin/promotions'),
+        )
+      ).status,
+    ).toBe(401);
+    const response = await POST_PROMOTION(
+      jsonRequest(
+        'http://localhost:3000/api/admin/promotions',
+        'POST',
+        actor.jar,
+        input,
+      ),
+    );
+    expect(response.status).toBe(201);
+    const { promotion } = await response.json();
+    expect(promotion).toMatchObject({
+      discountBps: 7000,
+      startsAt: '2026-10-08T06:00:00.000Z',
+      endsAt: '2026-10-09T06:00:00.000Z',
+      version: 1,
+    });
+    const context = { params: Promise.resolve({ id: promotion.id }) };
+    const update = {
+      ...input,
+      scope: 'CATALOG',
+      productIds: [],
+      enabled: false,
+      expectedVersion: 1,
+    };
+    const saved = await PATCH_PROMOTION(
+      jsonRequest(
+        `http://localhost:3000/api/admin/promotions/${promotion.id}`,
+        'PATCH',
+        actor.jar,
+        update,
+      ),
+      context,
+    );
+    expect(saved.status).toBe(200);
+    expect(await saved.json()).toMatchObject({
+      promotion: {
+        scope: 'CATALOG',
+        enabled: false,
+        productIds: [],
+        version: 2,
+      },
+    });
+    const stale = await PATCH_PROMOTION(
+      jsonRequest(
+        `http://localhost:3000/api/admin/promotions/${promotion.id}`,
+        'PATCH',
+        actor.jar,
+        update,
+      ),
+      context,
+    );
+    expect(stale.status).toBe(409);
+    const hostile = jsonRequest(
+      'http://localhost:3000/api/admin/promotions',
+      'POST',
+      actor.jar,
+      input,
+    );
+    hostile.headers.set('origin', 'https://hostile.example');
+    expect((await POST_PROMOTION(hostile)).status).toBe(403);
+  });
   afterAll(() => pool.end());
 
   it('authorizes every list/detail use case for OWNER and ADMIN and protects private responses', async () => {

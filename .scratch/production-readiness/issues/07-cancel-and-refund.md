@@ -12,10 +12,10 @@
 ## Acceptance criteria
 
 - [ ] Cancellation requires role/Origin/version and recent reauthentication where sensitive; stop new payment attempts.
-- [ ] A payable/pending/unknown checkout cannot free capacity until the safe-release rule succeeds.
+- [ ] A payable/pending/unknown attempt must be reconciled and safely invalidated where supported; cancellation must not silently discard a payment or permit duplicate replacement collection.
 - [ ] Refund request has a stable key, bounded amount and verified provider identity; unknown result is reconciled without duplicate refund.
 - [ ] Only authoritative refund success updates refunded totals; partial refunds have an explicit state and never display full refund.
-- [ ] Operational status and allocation follow approved cutoff rules independently from money; completed production history stays intact.
+- [ ] Operational status follows approved cutoff rules independently from money; completed production history stays intact.
 - [ ] Late/unmatched funds, unsupported ACH refunds and disputes have an owner-visible documented manual resolution path; screenshot is not settlement proof.
 
 ## Tests and evidence

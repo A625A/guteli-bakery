@@ -15,7 +15,7 @@ export default async function OrderConfirmationPage({
   const receipt = await getReceipt(token);
 
   return receipt ? (
-    <OrderConfirmation receipt={receipt} />
+    <OrderConfirmation receipt={receipt} receiptToken={token} />
   ) : (
     <OrderConfirmationNotFound />
   );

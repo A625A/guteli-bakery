@@ -6,7 +6,7 @@ import { useCart } from '@/components/cart/CartProvider';
 import { ProductArtwork } from '@/components/menu/ProductArtwork';
 import { operationalCopy } from '@/content/business';
 import type { PublicProductDto } from '@/server/products/types';
-import { formatGTQ } from '@/lib/money';
+import { ProductPrice } from './ProductPrice';
 
 type ProductCardProps = {
   product: PublicProductDto;
@@ -31,7 +31,7 @@ function getAddedMessage(product: PublicProductDto, quantity: number): string {
 }
 
 export function ProductCard({ product, eager = false }: ProductCardProps) {
-  const { addItem, hydrated, items } = useCart();
+  const { addItem, hydrated, items, catalogAvailable } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [announcement, setAnnouncement] = useState<Announcement | null>(null);
   const inputId = `quantity-${product.id}`;
@@ -76,9 +76,11 @@ export function ProductCard({ product, eager = false }: ProductCardProps) {
         <p className="product-card__unit">
           {product.saleUnit ?? operationalCopy.quantityUnknown}
         </p>
-        <strong className="product-card__price">
-          {formatGTQ(product.priceMinor)}
-        </strong>
+        {catalogAvailable ? (
+          <ProductPrice product={product} />
+        ) : (
+          <p role="status">Precio actual no disponible. Actualizando…</p>
+        )}
         <div className="product-card__actions">
           <label className="visually-hidden" htmlFor={inputId}>
             Cantidad de {product.name}, {product.category.name}
@@ -91,7 +93,9 @@ export function ProductCard({ product, eager = false }: ProductCardProps) {
             inputMode="numeric"
             value={quantity}
             onChange={updateQuantity}
-            disabled={!hydrated || isAtCapacity || isUnavailable}
+            disabled={
+              !hydrated || !catalogAvailable || isAtCapacity || isUnavailable
+            }
             aria-describedby={
               isAtCapacity || isUnavailable ? capacityId : undefined
             }
@@ -99,7 +103,9 @@ export function ProductCard({ product, eager = false }: ProductCardProps) {
           <button
             type="button"
             onClick={addToCart}
-            disabled={!hydrated || isAtCapacity || isUnavailable}
+            disabled={
+              !hydrated || !catalogAvailable || isAtCapacity || isUnavailable
+            }
             aria-label={
               isUnavailable
                 ? `Producto no disponible: ${product.name} de ${product.category.name}`

@@ -1,27 +1,15 @@
-# 03: Reserve production on an available date
+# 03: Daily production capacity — skipped
 
-**Priority:** P0
-**Status:** PENDING — implementation conditionally authorized once Ticket 02 dependencies and owner-approved capacity rules allow it.
+**Status:** SKIPPED — explicitly removed from scope by the owner on 2026-10-08. Not implemented or marked completed.
 
-**What to build:** The owner sets a simple date budget/closed date and customers can reserve only available production.
+## Owner decision
 
-**Scope:** Daily order count OR approved weighted sale units, plus only needed per-product caps. Keep global stock distinct. No provider calls in database transactions.
+The bakery accepts scheduled orders and does not currently have enough volume to need automated daily production limits. Do not implement capacity weights, daily budgets, per-product daily caps, capacity reservations, or capacity-based date closures. No capacity-measure question remains pending.
 
-**Blocked by:** 02; approved capacity measure, limits, production-date mapping, advance/cutoff and booking horizon.
+Keep the existing requested-date scheduling, advance-date validation, product availability and finite-stock behavior. Scheduling a requested date does not create a production-capacity reservation.
 
-## Acceptance criteria
+## Dependency correction
 
-- [ ] Owner can set approved daily capacity and closed dates with authentication, Origin, version checks and plain Spanish validation.
-- [ ] Customer receives an explicit date-unavailable result before any payment action; reservation, snapshots and order commit together.
-- [ ] Reserved plus committed allocation cannot exceed daily or per-product limits under concurrent buyers; stable lock order applies to reservations, closure and future financial transitions.
-- [ ] Closing a date or lowering a limit cannot evict current holds/commitments; return conflicts.
-- [ ] Repeated checkout reserves once. Abandonment does not auto-release until the future provider-safety rule exists; no clock-only release shortcut.
-- [ ] Existing finite-stock behavior is preserved for old orders; new finite-stock allocations record enough information for exactly-once safe release. On-demand products use date capacity, not invented warehouse stock.
+Ticket04 no longer depends on03. Tickets01/04/05/06/07/14 retain their payment verification, promotion-expiry, duplicate-charge prevention, reconciliation and refund requirements, without production-capacity allocation or release requirements. Ticket06 now concerns safe payment expiry and reconciliation.
 
-## Tests and evidence
-
-Real PostgreSQL two-connection last-slot race, product/day caps, concurrent closure, rollback on late insert failure, duplicate reservation and Guatemala date boundaries; browser owner settings and unavailable-date explanation.
-
-## Completion boundary
-
-Demonstrate the stated behavior and record evidence. Do not commit, push, deploy, purchase, send messages, modify production data or run real-money transactions without the authorization applicable at implementation time.
+Payments remain disabled while Ticket01 is blocked. No commits, pushes or public deployment are authorized by this decision.

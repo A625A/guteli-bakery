@@ -1,6 +1,7 @@
 import { asc, eq } from 'drizzle-orm';
 
 import { orderItems, orders } from '@/server/db/schema';
+import { reviewOrderPricing } from './review-pricing';
 import { hashReceiptToken } from './identifiers';
 import type { OrdersDatabase } from './types';
 
@@ -8,6 +9,8 @@ const receiptTokenPattern = /^[A-Za-z0-9_-]{43}$/;
 
 export type PublicReceipt = Readonly<{
   publicId: string;
+  pricedAt: string;
+  validUntil: string | null;
   fulfillment: 'pickup' | 'delivery';
   requestedDate: string;
   orderStatus: string;
@@ -32,6 +35,7 @@ async function getDatabase(database?: OrdersDatabase) {
 export async function getReceipt(
   receiptToken: string,
   database?: OrdersDatabase,
+  clock?: () => Date,
 ): Promise<PublicReceipt | null> {
   if (!receiptTokenPattern.test(receiptToken)) return null;
 
@@ -39,6 +43,7 @@ export async function getReceipt(
     await getDatabase(database)
   )
     .select({
+      id: orders.id,
       publicId: orders.publicId,
       fulfillment: orders.fulfillment,
       requestedDate: orders.requestedDate,
@@ -62,22 +67,27 @@ export async function getReceipt(
   const [first] = rows;
   if (!first) return null;
 
+  const review = await reviewOrderPricing(first.id, database, clock);
   return {
     publicId: first.publicId,
+    pricedAt: review!.pricedAt,
+    validUntil: review!.validUntil,
     fulfillment: first.fulfillment === 'PICKUP' ? 'pickup' : 'delivery',
     requestedDate: first.requestedDate,
-    orderStatus: first.orderStatus,
-    paymentStatus: first.paymentStatus,
-    subtotalMinor: first.subtotalMinor,
-    shippingMinor: first.shippingMinor,
-    totalMinor: first.totalMinor,
-    items: rows.map((row) => ({
-      productName: row.productName,
-      categoryLabel: row.categoryLabel,
-      saleUnit: row.saleUnit,
-      unitPriceMinor: row.unitPriceMinor,
-      quantity: row.quantity,
-      lineTotalMinor: row.lineTotalMinor,
-    })),
+    orderStatus: review?.orderStatus ?? first.orderStatus,
+    paymentStatus: review?.paymentStatus ?? first.paymentStatus,
+    subtotalMinor: review?.subtotalMinor ?? first.subtotalMinor,
+    shippingMinor: review ? review.shippingMinor : first.shippingMinor,
+    totalMinor: review ? review.totalMinor : first.totalMinor,
+    items: [...(review?.items ?? rows)]
+      .sort((a, b) => a.productName.localeCompare(b.productName))
+      .map((row) => ({
+        productName: row.productName,
+        categoryLabel: row.categoryLabel,
+        saleUnit: row.saleUnit,
+        unitPriceMinor: row.unitPriceMinor,
+        quantity: row.quantity,
+        lineTotalMinor: row.lineTotalMinor,
+      })),
   };
 }

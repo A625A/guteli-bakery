@@ -23,6 +23,7 @@ import {
 export type AdminOrderErrorCode =
   | 'ORDER_NOT_FOUND'
   | 'STALE_ORDER'
+  | 'PAID_PRICING_IMMUTABLE'
   | 'INVALID_STATUS_TRANSITION'
   | 'PICKUP_QUOTE_FORBIDDEN'
   | 'TERMINAL_ORDER'

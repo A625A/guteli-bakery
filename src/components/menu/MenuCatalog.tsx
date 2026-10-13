@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 
+import { useCart } from '@/components/cart/CartProvider';
 import { ProductCard } from '@/components/menu/ProductCard';
 import { filterMenuProducts, type MenuFilterId } from '@/domain/menu';
 import type { PublicCategoryDto } from '@/server/products/types';
@@ -17,7 +18,9 @@ export function MenuCatalog({
   categories,
 }: Readonly<{ categories: readonly PublicCategoryDto[] }>) {
   const [activeFilter, setActiveFilter] = useState<MenuFilterId>('all');
-  const products = categories.flatMap((category) => category.products);
+  const { products: liveProducts } = useCart();
+  const products =
+    liveProducts ?? categories.flatMap((category) => category.products);
   const visibleProducts = filterMenuProducts(products, activeFilter);
   const activeFilterLabel =
     menuFilters.find((filter) => filter.id === activeFilter)?.label ?? 'Todos';

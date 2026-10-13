@@ -23,6 +23,8 @@ import {
   type CartItem,
   type CartLine,
 } from '@/domain/cart';
+import { useLiveResource } from '@/lib/use-live-resource';
+import { readLiveCatalog, catalogRefreshDelay } from '@/lib/live-catalog';
 import type { PublicProductDto } from '@/server/products/types';
 
 export const CART_STORAGE_KEY = 'guteli-cart-v2';
@@ -46,6 +48,10 @@ type CartContextValue = {
   itemCount: number;
   subtotal: number;
   hydrated: boolean;
+  products: readonly PublicProductDto[];
+  pricingAvailable: boolean;
+  catalogAvailable: boolean;
+  unavailableItems: CartItem[];
   addItem: (productId: string, quantity: number) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   removeItem: (productId: string) => void;
@@ -82,8 +88,13 @@ function cartReducer(state: CartState, action: CartAction): CartState {
 
 export function CartProvider({
   children,
-  products,
+  products: initialProducts,
 }: Readonly<{ children: ReactNode; products: readonly PublicProductDto[] }>) {
+  const { data: products, available: pricingAvailable } = useLiveResource(
+    initialProducts,
+    readLiveCatalog,
+    catalogRefreshDelay,
+  );
   const [{ items, hydrated }, dispatch] = useReducer(cartReducer, initialState);
 
   const availableItems = useMemo(
@@ -110,14 +121,11 @@ export function CartProvider({
     }
 
     try {
-      window.localStorage.setItem(
-        CART_STORAGE_KEY,
-        JSON.stringify(availableItems),
-      );
+      window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
     } catch {
       // Keep cart actions working even when storage writes are blocked.
     }
-  }, [availableItems, hydrated]);
+  }, [items, hydrated]);
 
   const lines = useMemo(
     () => getCartLines(availableItems, products),
@@ -154,12 +162,22 @@ export function CartProvider({
       itemCount,
       subtotal,
       hydrated,
+      products,
+      catalogAvailable: pricingAvailable,
+      pricingAvailable:
+        pricingAvailable && availableItems.length === items.length,
+      unavailableItems: items.filter(
+        (item) => !isAvailableProduct(item.productId, products),
+      ),
       addItem,
       updateQuantity,
       removeItem,
       clearCart,
     }),
     [
+      products,
+      pricingAvailable,
+      availableItems,
       addItem,
       clearCart,
       hydrated,

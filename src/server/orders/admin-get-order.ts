@@ -12,6 +12,7 @@ import {
 } from '@/server/db/schema';
 import type { OrderStatus } from '@/domain/order-state';
 
+import { reviewOrderPricing } from './review-pricing';
 import { allowedOrderTransitions } from './update-order';
 
 type SafeStatusHistory = Readonly<{
@@ -64,6 +65,11 @@ function safeHistoryEntry(candidate: {
 
 export async function adminGetOrder(publicId: string, requestHeaders: Headers) {
   await requireAdmin(requestHeaders);
+  const [identity] = await db
+    .select({ id: orders.id })
+    .from(orders)
+    .where(eq(orders.publicId, publicId));
+  const review = identity ? await reviewOrderPricing(identity.id, db) : null;
   const [order] = await db
     .select({
       id: orders.id,
@@ -146,7 +152,24 @@ export async function adminGetOrder(publicId: string, requestHeaders: Headers) {
       order.orderStatus,
       order.fulfillment,
     ),
-    items,
+    items:
+      review?.items.map(
+        ({
+          productName,
+          categoryLabel,
+          saleUnit,
+          unitPriceMinor,
+          quantity,
+          lineTotalMinor,
+        }) => ({
+          productName,
+          categoryLabel,
+          saleUnit,
+          unitPriceMinor,
+          quantity,
+          lineTotalMinor,
+        }),
+      ) ?? items,
     statusHistory: historyRows
       .map(safeHistoryEntry)
       .filter((entry): entry is SafeStatusHistory => entry !== null),

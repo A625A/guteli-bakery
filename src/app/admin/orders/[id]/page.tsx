@@ -80,6 +80,8 @@ export default async function AdminOrderDetailPage({
         <p>Total: {money(order.totalMinor)}</p>
       </section>
       {order.fulfillment === 'DELIVERY' &&
+      order.paymentStatus !== 'PAID' &&
+      order.paymentStatus !== 'REFUNDED' &&
       order.orderStatus !== 'COMPLETED' &&
       order.orderStatus !== 'CANCELLED' ? (
         <DeliveryQuoteForm
