@@ -546,7 +546,7 @@ test('order fields follow a logical keyboard sequence', async ({ page }) => {
   const orderControls = page.locator(
     '.order-form :is(input, textarea, button)',
   );
-  await expect(orderControls).toHaveCount(7);
+  await expect(orderControls).toHaveCount(8);
 
   const name = page.getByLabel('Nombre completo');
   await name.focus();
@@ -573,8 +573,23 @@ test('order fields follow a logical keyboard sequence', async ({ page }) => {
     'delivery',
     'order-requestedDate',
     'order-notes',
+    'order-whatsapp-opt-in',
     'Enviar pedido',
   ]);
+
+  await page.getByLabel('Notas opcionales').focus();
+  await page.keyboard.press('Tab');
+  const consent = page.getByRole('checkbox', {
+    name: /Quiero recibir por WhatsApp/,
+  });
+  await expect(consent).toBeFocused();
+  await expect(consent).not.toBeChecked();
+  await page.keyboard.press('Space');
+  await expect(consent).toBeChecked();
+  await page.keyboard.press('Tab');
+  await expect(
+    page.getByRole('button', { name: 'Enviar pedido', exact: true }),
+  ).toBeFocused();
 
   const positiveTabIndexes = await orderControls.evaluateAll((elements) =>
     elements.filter((element) => (element as HTMLElement).tabIndex > 0),

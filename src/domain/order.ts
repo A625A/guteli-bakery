@@ -1,3 +1,4 @@
+import { whatsappDestination } from './whatsapp-consent';
 import { addCalendarDays } from '@/lib/date';
 import type { CartLine } from '@/domain/cart';
 import type { CreateOrderRequest } from '@/domain/order-contract';
@@ -9,6 +10,7 @@ export type OrderFormValues = {
   requestedDate: string;
   location: string;
   notes: string;
+  whatsappOptIn?: boolean;
 };
 
 export type OrderErrors = Partial<Record<keyof OrderFormValues, string>>;
@@ -65,6 +67,10 @@ export function validateOrder(
     }
   }
 
+  if (values.whatsappOptIn && !whatsappDestination(phone))
+    errors.phone =
+      'Usa 8 dígitos de Guatemala o un número internacional que empiece con +.';
+
   if (!requestedDate) {
     errors.requestedDate = 'Selecciona una fecha.';
   } else if (!isValidIsoDate(requestedDate)) {
@@ -97,6 +103,7 @@ export function buildCreateOrderRequest(
   lines: readonly CartLine[],
 ): CreateOrderRequest {
   return {
+    ...(values.whatsappOptIn ? { whatsappOptIn: true } : {}),
     customerName: values.name,
     phone: values.phone,
     fulfillment: values.fulfillment,

@@ -1,3 +1,9 @@
+import { orderWhatsAppConsents, outboxEvents } from '@/server/db/schema';
+import {
+  whatsappDestination,
+  WHATSAPP_CONSENT_TEXT,
+  WHATSAPP_CONSENT_VERSION,
+} from '@/domain/whatsapp-consent';
 import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
 
 import { priceProduct } from '@/domain/pricing';
@@ -400,6 +406,25 @@ async function persistOrder(
     { orderId: order.id, requestId: input.requestId },
     dependencies.now,
   );
+  if (input.request.whatsappOptIn) {
+    const destination = whatsappDestination(input.request.phone);
+    if (!destination) throw new CreateOrderError('INTERNAL_ERROR');
+    await transaction.insert(orderWhatsAppConsents).values({
+      orderId: order.id,
+      destination,
+      consentVersion: WHATSAPP_CONSENT_VERSION,
+      consentText: WHATSAPP_CONSENT_TEXT,
+      optedInAt: dependencies.now,
+    });
+    await transaction.insert(outboxEvents).values({
+      eventType: 'CUSTOMER_ORDER_CREATED',
+      dedupeKey: `customer-order:${order.id}`,
+      payload: { orderId: order.id, requestId: input.requestId },
+      nextAttemptAt: dependencies.now,
+      createdAt: dependencies.now,
+      updatedAt: dependencies.now,
+    });
+  }
   await insertOrderCreatedAuditLog(transaction, {
     orderId: order.id,
     requestId: input.requestId,

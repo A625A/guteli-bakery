@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { CheckoutPriceReview, useCheckoutReview } from './CheckoutPriceReview';
+import { WhatsAppOrderSummary } from './WhatsAppOrderSummary';
 
 import { formatGTQ } from '@/lib/money';
 import type { PublicReceipt } from '@/server/orders/get-receipt';
@@ -137,6 +138,7 @@ export function OrderConfirmation({
       </section>
 
       <CheckoutPriceReview state={reviewState} />
+      <WhatsAppOrderSummary publicId={receipt.publicId} />
       <nav
         className="order-confirmation__actions"
         aria-label="Después de confirmar el pedido"

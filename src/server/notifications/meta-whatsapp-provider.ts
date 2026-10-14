@@ -183,6 +183,22 @@ export class MetaWhatsAppProvider implements NotificationProvider {
       );
     }
 
+    return this.#sendTemplate(message.bodyText);
+  }
+
+  /** Automation uses a separately approved body-only template with one text parameter. */
+  async sendOrderSummary(bodyText: string): Promise<NotificationResult> {
+    if (
+      !bodyText.trim() ||
+      /[\r\n\t]/.test(bodyText) ||
+      bodyText.length > this.#settings.templateBodyMaxCharacters
+    ) {
+      return { kind: 'permanent_failure', code: 'PAYLOAD_UNREPRESENTABLE' };
+    }
+    return this.#sendTemplate(bodyText);
+  }
+
+  async #sendTemplate(bodyText: string): Promise<NotificationResult> {
     let body: string;
     try {
       body = JSON.stringify({
@@ -196,7 +212,7 @@ export class MetaWhatsAppProvider implements NotificationProvider {
           components: [
             {
               type: 'body',
-              parameters: [{ type: 'text', text: message.bodyText }],
+              parameters: [{ type: 'text', text: bodyText }],
             },
           ],
         },

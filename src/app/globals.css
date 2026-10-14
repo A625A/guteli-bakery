@@ -1722,6 +1722,25 @@ button:disabled,
   font-size: 0.9rem;
 }
 
+.order-whatsapp {
+  display: grid;
+  min-width: 0;
+  gap: var(--space-3);
+}
+
+.order-whatsapp textarea {
+  width: 100%;
+  min-width: 0;
+  padding: var(--space-3);
+  resize: vertical;
+  font: inherit;
+}
+
+.order-whatsapp button {
+  min-height: 44px;
+  white-space: normal;
+}
+
 .order-confirmation__actions {
   display: flex;
   flex-wrap: wrap;

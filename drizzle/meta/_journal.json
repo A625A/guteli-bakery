@@ -85,6 +85,20 @@
       "when": 1791500424121,
       "tag": "0011_quote_revision",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1791933514906,
+      "tag": "0012_whatsapp_automation",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1791946593996,
+      "tag": "0013_whatsapp_delivery_receipts",
+      "breakpoints": true
     }
   ]
 }

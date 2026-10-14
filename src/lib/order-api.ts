@@ -75,6 +75,7 @@ type FetchImplementation = (
 
 function safeRequestBody(request: CreateOrderRequest): CreateOrderRequest {
   return {
+    ...(request.whatsappOptIn === true ? { whatsappOptIn: true } : {}),
     customerName: request.customerName,
     phone: request.phone,
     fulfillment: request.fulfillment,

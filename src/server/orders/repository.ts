@@ -208,10 +208,13 @@ export async function insertOrderCreatedOutboxEvent(
 ) {
   await transaction.insert(outboxEvents).values({
     eventType: 'OWNER_ORDER_CREATED',
+    dedupeKey: `owner-order:${payload.orderId}`,
     payload,
     state: 'PENDING',
     attempts: 0,
     nextAttemptAt: now,
+    createdAt: now,
+    updatedAt: now,
   });
 }
 

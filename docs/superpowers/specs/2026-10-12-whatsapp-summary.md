@@ -1,0 +1,15 @@
+# Ticket09: customer WhatsApp order summary
+
+Owner authorized local implementation on 2026-10-12. Publish the prior milestone first (4123082); keep Ticket09 changes local. Oracle and the hackathon website remain untouched. No payment processing or automatic message delivery.
+
+Reuse the existing pricing transaction, checkout-owner HttpOnly credential and configured bakery WhatsApp destination. Add an opt-in private summary on the confirmation page. The public receipt remains minimal. A POST endpoint with trusted Origin, a matching public order ID and the checkout credential resolves one current pricing/customer snapshot under existing locks, then rechecks credential expiry before returning private text.
+
+Messages include order identifier/status, name/contact, requested Guatemala date, delivery address only for delivery, optional notes, products/categories/sale units, quantities, base and effective unit prices, promotion label/percentage, line totals, aggregate savings, subtotal, quoted shipping and final total. An unquoted delivery must say the total is unknown. Never reconstruct current unpaid amounts from original order items. Paid/refunded markers retain existing immutable amounts.
+
+Payment state is separate from order state. UNPAID means not paid; PENDING means unverified/in process; FAILED is unsuccessful. No authoritative provider-payment record exists yet, so PAID/REFUNDED markers are explicitly unverified. Do not invent evidence or implement Ticket05. A verified-paid message requires that future evidence and remains an integration dependency.
+
+Preview first, disclose the included personal details and that the customer must press Send. Every open/copy action fetches again and supplies the displayed summary fingerprint. Changes return a new preview and require another action. Clear previews on focus/visibility return and known promotion expiry (also cap preview freshness at 30 seconds). The message includes its pricing timestamp and warns that unpaid prices may change; previously copied or sent messages cannot be recalled.
+
+Encode text exactly once with the existing wa.me helper. Preserve the existing public handoff configuration: demo/unavailable environments allow private preview and copy but disable opening WhatsApp. No real WhatsApp requests in tests. Provide copy and selectable-text fallback; oversized links use copy/contact without truncating the order. The 6,000-character encoded-link cutoff is a conservative UI fallback, not a WhatsApp protocol limit. An unavailable session or refresh removes private previews and exposes a safe contact path. Preview/open/copy must not accept a total, mark paid or acknowledge an order.
+
+Agreed test boundaries from Ticket09: formatter/URL unit tests; real isolated database plus HTTP handler tests for ownership, expiry, repricing and status; mobile-size and desktop browser preview/open/copy/failure tests. Reuse existing regression suites and record evidence without claiming real device delivery or provider verification.

@@ -11,6 +11,7 @@ function compareProductIds(left: string, right: string) {
 
 export function canonicalizeCreateOrderRequest(request: CreateOrderRequest) {
   return JSON.stringify({
+    ...(request.whatsappOptIn ? { whatsappOptIn: true } : {}),
     customerName: normalizeOrderText(request.customerName),
     phone: normalizeOrderText(request.phone),
     fulfillment: request.fulfillment,

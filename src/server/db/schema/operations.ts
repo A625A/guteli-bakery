@@ -6,7 +6,9 @@ import {
   jsonb,
   pgEnum,
   pgTable,
+  primaryKey,
   timestamp,
+  text,
   uniqueIndex,
   uuid,
   varchar,
@@ -87,6 +89,13 @@ export const outboxEvents = pgTable(
   {
     id: uuid('id').primaryKey().defaultRandom(),
     eventType: varchar('event_type', { length: 100 }).notNull(),
+    dedupeKey: varchar('dedupe_key', { length: 128 }),
+    deliveryStatus: varchar('delivery_status', { length: 32 })
+      .notNull()
+      .default('QUEUED'),
+    recipient: varchar('recipient', { length: 15 }),
+    attemptToken: uuid('attempt_token'),
+    deliveryUpdatedAt: timestamp('delivery_updated_at', { withTimezone: true }),
     payload: jsonb('payload').$type<OrderOutboxPayload>().notNull(),
     state: outboxStateEnum('state').notNull().default('PENDING'),
     attempts: integer('attempts').notNull().default(0),
@@ -105,6 +114,10 @@ export const outboxEvents = pgTable(
     sentAt: timestamp('sent_at', { withTimezone: true }),
   },
   (table) => [
+    uniqueIndex('outbox_events_dedupe_key_idx').on(table.dedupeKey),
+    uniqueIndex('outbox_events_provider_message_idx').on(
+      table.providerMessageId,
+    ),
     index('outbox_events_due_work_idx').on(table.state, table.nextAttemptAt),
     check('outbox_events_attempts_nonnegative', sql`${table.attempts} >= 0`),
   ],
@@ -127,5 +140,40 @@ export const auditLogs = pgTable(
   (table) => [
     index('audit_logs_entity_idx').on(table.entityType, table.entityId),
     index('audit_logs_created_at_idx').on(table.createdAt),
+  ],
+);
+
+export const orderWhatsAppConsents = pgTable('order_whatsapp_consents', {
+  orderId: uuid('order_id')
+    .primaryKey()
+    .references(() => orders.id),
+  destination: varchar('destination', { length: 15 }).notNull(),
+  consentVersion: varchar('consent_version', { length: 40 }).notNull(),
+  consentText: text('consent_text').notNull(),
+  optedInAt: timestamp('opted_in_at', { withTimezone: true }).notNull(),
+});
+export const whatsappSuppressions = pgTable('whatsapp_suppressions', {
+  destination: varchar('destination', { length: 15 }).primaryKey(),
+  revokedAt: timestamp('revoked_at', { withTimezone: true }).notNull(),
+});
+
+// Minimal authenticated callback inbox: supports callbacks that arrive before HTTP acceptance.
+export const whatsappDeliveryReceipts = pgTable(
+  'whatsapp_delivery_receipts',
+  {
+    providerMessageId: varchar('provider_message_id', {
+      length: 256,
+    }).notNull(),
+    status: varchar('status', { length: 16 }).notNull(),
+    recipient: varchar('recipient', { length: 15 }).notNull(),
+    occurredAt: timestamp('occurred_at', { withTimezone: true }).notNull(),
+    receivedAt: timestamp('received_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    primaryKey({
+      name: 'whatsapp_receipts_identity_pk',
+      columns: [table.providerMessageId, table.status, table.recipient],
+    }),
+    index('whatsapp_receipts_received_idx').on(table.receivedAt),
   ],
 );

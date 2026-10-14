@@ -121,6 +121,7 @@ export async function adminGetOrder(publicId: string, requestHeaders: Headers) {
       .select({
         eventType: outboxEvents.eventType,
         state: outboxEvents.state,
+        deliveryStatus: outboxEvents.deliveryStatus,
         attempts: outboxEvents.attempts,
         lastErrorCode: outboxEvents.lastErrorCode,
         createdAt: outboxEvents.createdAt,

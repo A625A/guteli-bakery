@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { WHATSAPP_CONSENT_TEXT } from '@/domain/whatsapp-consent';
 import { useRouter } from 'next/navigation';
 import {
   useCallback,
@@ -39,6 +40,7 @@ const fieldLabels: Record<keyof OrderFormValues, string> = {
   requestedDate: 'Fecha solicitada',
   location: 'Ubicación o dirección',
   notes: 'Notas opcionales',
+  whatsappOptIn: 'Confirmaciones por WhatsApp',
 };
 
 export function OrderRequest({ embedded = false }: { embedded?: boolean }) {
@@ -203,7 +205,8 @@ export function OrderRequest({ embedded = false }: { embedded?: boolean }) {
             <h2 id="empty-order-title">Agrega productos antes de continuar</h2>
             <p>
               Tu solicitud necesita al menos una opción del menú para crear el
-              pedido.
+              pedido. Al usar estas notificaciones, los datos necesarios se
+              comparten con WhatsApp (Meta) para entregar los mensajes.
             </p>
             <Link className="button-link button-link--primary" href="/menu/">
               Ir al menú
@@ -395,12 +398,29 @@ export function OrderRequest({ embedded = false }: { embedded?: boolean }) {
               </div>
             </fieldset>
 
+            <label className="order-privacy" htmlFor="order-whatsapp-opt-in">
+              <input
+                id="order-whatsapp-opt-in"
+                type="checkbox"
+                checked={values.whatsappOptIn === true}
+                disabled={submitting}
+                onChange={(event) =>
+                  setField('whatsappOptIn', event.target.checked)
+                }
+              />
+              {WHATSAPP_CONSENT_TEXT}
+            </label>
+            <p className="order-privacy">
+              Las notificaciones dependen de la disponibilidad del servicio.
+              Conserva tu confirmación en esta página.
+            </p>
             <p className="order-privacy">
               Tu nombre, teléfono, ubicación de entrega y notas se usan para
               procesar, contactarte y coordinar el pedido. Cuando esté
               configurado, Güteli podrá incluir estos datos en una notificación
               por WhatsApp a la persona dueña para preparar y entregar tu
-              pedido.
+              pedido. Al usar estas notificaciones, los datos necesarios se
+              comparten con WhatsApp (Meta) para entregar los mensajes.
             </p>
 
             <button

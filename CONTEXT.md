@@ -34,3 +34,11 @@ _Avoid_: Paid order, confirmed order
 ## Current Ticket02 implementation
 
 The provider-independent dynamic pricing and customer acceptance slice is implemented locally and verified. Pricing revisions preserve history while unpaid orders reprice; paid/refunded markers remain immutable. Promotions support catalog-wide and selected-product scopes, Guatemala schedules, and highest-discount selection. See `docs/implementation/2026-10-07-checkout-progress.md` for evidence and `.scratch/production-readiness/ticket02-checkpoint.md` for the small continuation checkpoint. Ticket01 remains blocked; payment-dependent verification is not implemented. No commits or pushes are authorized for this slice.
+
+**Automatic order receipt**: A business-initiated WhatsApp notification that a request was saved. It is distinct from production acceptance, price approval and verified payment.
+
+**WhatsApp opt-in**: The customer's explicit permission to receive this order's receipt and future verified-payment confirmation at the checkout number. It is optional and revocable.
+
+**Delivery acceptance**: The messaging provider accepted a request and returned an identifier. It does not establish delivery or reading.
+
+**Uncertain delivery**: Sending may have succeeded but no reliable result was recorded. It requires reconciliation before another attempt to avoid duplicate messages.

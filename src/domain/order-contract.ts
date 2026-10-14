@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { whatsappDestination } from './whatsapp-consent';
 
 import { addCalendarDays, getMinimumOrderDate } from '@/lib/date';
 
@@ -92,6 +93,7 @@ export const createOrderRequestSchema = z
   .object({
     customerName: customerNameSchema,
     phone: phoneSchema,
+    whatsappOptIn: z.boolean().optional(),
     fulfillment: z.enum(['pickup', 'delivery']),
     requestedDate: isoLocalDateSchema,
     deliveryLocation: deliveryLocationSchema.optional(),
@@ -100,6 +102,14 @@ export const createOrderRequestSchema = z
   })
   .strict()
   .superRefine((request, context) => {
+    if (request.whatsappOptIn && !whatsappDestination(request.phone)) {
+      context.addIssue({
+        code: 'custom',
+        path: ['phone'],
+        message:
+          'Use eight Guatemala digits or an international number beginning with +.',
+      });
+    }
     if (
       request.fulfillment === 'pickup' &&
       Object.hasOwn(request, 'deliveryLocation')
