@@ -68,3 +68,17 @@ The two README failures were reviewed rather than silenced. They expect the ordi
 Evidence lives under `/private/tmp/guteli-ticket09-harness`, outside Git. The harness now includes full `automation-integration` and focused `automation-unit` profiles. Database/browser profiles must run sequentially against an isolated test database. The task-owned PostgreSQL cluster on port 55439 is stopped after verification. No real WhatsApp requests, native-device delivery, provider approval or payment verification are claimed.
 
 Publication scope is the 48 reviewed Ticket09 files (manual summary and automation together); products/ and generated next-env.d.ts are excluded. This record is prepared for the authorized normal push; the final remote commit SHA is reported separately after equality verification. Ticket09 remains externally blocked for live activation/template approval and actual verified-paid messages. Ticket01 remains blocked, payments stay disabled, Oracle is on hold, and no next ticket begins.
+
+## Spanish-language requirement — 2026-10-14
+
+Owner direction: customer and owner interfaces, statuses, errors, notifications, WhatsApp templates/messages and owner documentation must remain natural Guatemalan Spanish. Internal code and technical documentation may remain English. Preserve Q/GTQ, America/Guatemala, existing visual design and business rules; do not introduce payment methods or verification claims merely to match example labels.
+
+Local follow-up replaces raw order-state enums in the admin dashboard, order list and history with the existing Spanish customer labels. Notification errors now use Spanish explanations with a safe generic fallback instead of exposing raw provider/internal codes. The WhatsApp operator guide is translated into Spanish and explicitly requires approved Spanish templates. Existing Spanish form copy and payment-verification warnings are preserved. Focused tests cover all supported order states, consent/delivery/uncertain errors and unknown-code fallbacks; summary/provider regressions remain unchanged. No provider, deployment or payment activation is included.
+
+### Revisión previa a publicación — 2026-10-14
+
+La revisión añade únicamente etiquetas españolas para la navegación («Resumen»), identificadores de enlaces y código interno del producto; las pruebas de navegador usan las nuevas etiquetas y comprueban que los estados internos no aparecen en la lista ni el historial. No se modificaron campos, rutas, permisos, transiciones, precios, bases de datos ni integraciones.
+
+Regresión local: 257 pruebas unitarias aprobadas y las mismas 2 fallas previas del contrato README; 36 pruebas de integración aprobadas; 28 pruebas de checkout, 10 de resumen WhatsApp en escritorio/móvil emulado y 5 de administración aprobadas. El caso exclusivo de demostración de WhatsApp no se ejecutó en el perfil de enlace manual. Typecheck, ESLint completo y build con configuración ficticia y servicios externos desactivados se verifican antes del commit. No se afirma entrega de mensajes en un teléfono real ni verificación de pagos. Los dos fallos del README quedan fuera del alcance, sin cambiar las pruebas para ocultarlos.
+
+Publicación autorizada por el usuario: únicamente estos ajustes de idioma, su documentación y pruebas en main; excluir products/, archivos generados, credenciales, bases de datos y cualquier trabajo de otros worktrees. El Ticket 13 se limita después a auditoría y plan pendiente de aprobación.

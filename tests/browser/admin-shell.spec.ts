@@ -76,9 +76,7 @@ test('verified admins receive the operational shell without storefront chrome', 
     page.getByRole('heading', { name: 'Panel administrativo' }),
   ).toBeVisible();
   const navigation = page.getByRole('navigation', { name: 'Administración' });
-  await expect(
-    navigation.getByRole('link', { name: 'Dashboard' }),
-  ).toBeVisible();
+  await expect(navigation.getByRole('link', { name: 'Resumen' })).toBeVisible();
   await expect(navigation.getByRole('link', { name: 'Pedidos' })).toBeVisible();
   await expect(
     navigation.getByRole('link', { name: 'Productos' }),

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const links = [
-  { href: '/admin', label: 'Dashboard' },
+  { href: '/admin', label: 'Resumen' },
   { href: '/admin/orders', label: 'Pedidos' },
   { href: '/admin/products', label: 'Productos' },
   { href: '/admin/categories', label: 'Categorías' },

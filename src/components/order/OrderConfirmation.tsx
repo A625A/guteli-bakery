@@ -4,18 +4,9 @@ import Link from 'next/link';
 import { CheckoutPriceReview, useCheckoutReview } from './CheckoutPriceReview';
 import { WhatsAppOrderSummary } from './WhatsAppOrderSummary';
 
+import { orderStatusLabel } from '@/lib/order-status-label';
 import { formatGTQ } from '@/lib/money';
 import type { PublicReceipt } from '@/server/orders/get-receipt';
-
-const orderStatusLabels: Readonly<Record<string, string>> = {
-  RECEIVED: 'Pedido recibido',
-  CONFIRMED: 'Pedido confirmado',
-  PREPARING: 'En preparación',
-  READY: 'Listo para entregar',
-  OUT_FOR_DELIVERY: 'En camino',
-  COMPLETED: 'Completado',
-  CANCELLED: 'Cancelado',
-};
 
 const paymentStatusLabels: Readonly<Record<string, string>> = {
   UNPAID: 'Pago pendiente',
@@ -64,9 +55,7 @@ export function OrderConfirmation({
         <dl>
           <div>
             <dt>Pedido</dt>
-            <dd>
-              {orderStatusLabels[receipt.orderStatus] ?? 'Estado por confirmar'}
-            </dd>
+            <dd>{orderStatusLabel(receipt.orderStatus)}</dd>
           </div>
           <div>
             <dt>Pago</dt>

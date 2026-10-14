@@ -5,8 +5,12 @@ import { notFound } from 'next/navigation';
 
 import { DeliveryQuoteForm } from '@/components/admin/DeliveryQuoteForm';
 import { OrderStatusForm } from '@/components/admin/OrderStatusForm';
+import { orderStatusLabel } from '@/lib/order-status-label';
 import { requireVerifiedAdminSession } from '@/server/auth/admin-page-access';
-import { notificationDeliveryLabel } from '@/lib/notification-status';
+import {
+  notificationDeliveryLabel,
+  notificationErrorLabel,
+} from '@/lib/notification-status';
 import { adminGetOrder } from '@/server/orders/admin-get-order';
 
 export const dynamic = 'force-dynamic';
@@ -104,7 +108,7 @@ export default async function AdminOrderDetailPage({
           <ol>
             {order.statusHistory.map((entry) => (
               <li key={`${entry.createdAt}-${entry.to}`}>
-                {entry.from} → {entry.to}
+                {orderStatusLabel(entry.from)} → {orderStatusLabel(entry.to)}
               </li>
             ))}
           </ol>
@@ -123,7 +127,7 @@ export default async function AdminOrderDetailPage({
                   : 'Tienda'}
                 : {notificationDeliveryLabel(notification.deliveryStatus)}
                 {notification.lastErrorCode
-                  ? ` (${notification.lastErrorCode})`
+                  ? ` (${notificationErrorLabel(notification.lastErrorCode)})`
                   : ''}
               </li>
             ))}

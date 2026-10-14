@@ -3,6 +3,7 @@ import { headers } from 'next/headers';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 
+import { orderStatusLabel } from '@/lib/order-status-label';
 import { requireVerifiedAdminSession } from '@/server/auth/admin-page-access';
 import {
   adminListOrders,
@@ -146,7 +147,7 @@ export default async function AdminOrdersPage({
                 <td>
                   {order.fulfillment === 'DELIVERY' ? 'Entrega' : 'Recoger'}
                 </td>
-                <td>{order.orderStatus}</td>
+                <td>{orderStatusLabel(order.orderStatus)}</td>
                 <td>{money(order.subtotalMinor)}</td>
                 <td>{paymentStatus(order.paymentStatus)}</td>
                 <td>{money(order.totalMinor)}</td>

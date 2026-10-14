@@ -112,6 +112,8 @@ test('an owner sees operational detail, quotes delivery, and advances an order w
   await expect(row).toContainText('2026-09-20');
   await expect(row).toContainText('Q180.00');
   await expect(row).toContainText('No pagado');
+  await expect(row).toContainText('Pedido recibido');
+  await expect(row).not.toContainText('RECEIVED');
   await expect(row).not.toContainText('+50255558888');
   await expect(row).not.toContainText('Zona 14, portón blanco');
   await expect(row).not.toContainText('Llamar al llegar');
@@ -135,6 +137,9 @@ test('an owner sees operational detail, quotes delivery, and advances an order w
       .getByRole('status')
       .filter({ hasText: 'Estado actualizado a Confirmado.' }),
   ).toHaveText('Estado actualizado a Confirmado.');
+  const history = page.getByRole('region', { name: 'Historial de estado' });
+  await expect(history).toContainText('Pedido recibido → Pedido confirmado');
+  await expect(history).not.toContainText('CONFIRMED');
 
   await test.step('owner manages a nonstacking promotion and the storefront shows both prices', async () => {
     await page.getByRole('link', { name: 'Promociones', exact: true }).click();

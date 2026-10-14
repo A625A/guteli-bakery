@@ -113,12 +113,14 @@ export function CategoryForm({ category }: { category?: AdminCategoryDto }) {
           maxLength={160}
           required
         />
-        <label htmlFor={`${prefix}-slug`}>Slug</label>
+        <label htmlFor={`${prefix}-slug`}>Identificador del enlace</label>
         <input
           id={`${prefix}-slug`}
           name="slug"
           aria-label={
-            category ? `Slug de ${category.name}` : 'Slug de categoría'
+            category
+              ? `Identificador del enlace de ${category.name}`
+              : 'Identificador del enlace de categoría'
           }
           defaultValue={category?.slug}
           maxLength={120}

@@ -1,5 +1,6 @@
 import { SessionActions } from '@/components/admin/SessionActions';
 import { DashboardRefresh } from '@/components/admin/DashboardRefresh';
+import { orderStatusLabel } from '@/lib/order-status-label';
 import { requireVerifiedAdminSession } from '@/server/auth/admin-page-access';
 import { getAdminDashboard } from '@/server/admin/dashboard';
 
@@ -91,7 +92,7 @@ export default async function AdminPage() {
                 {dashboard.recentOrders.map((order) => (
                   <tr key={order.publicId}>
                     <th scope="row">{order.publicId}</th>
-                    <td>{order.orderStatus}</td>
+                    <td>{orderStatusLabel(order.orderStatus)}</td>
                     <td>
                       {order.fulfillment === 'DELIVERY' ? 'Envío' : 'Recogida'}
                     </td>

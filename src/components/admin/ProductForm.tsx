@@ -364,11 +364,11 @@ export function ProductForm({
           maxLength={160}
           required
         />
-        <label htmlFor="product-slug">Slug</label>
+        <label htmlFor="product-slug">Identificador del enlace</label>
         <input
           id="product-slug"
           name="slug"
-          aria-label="Slug del producto"
+          aria-label="Identificador del enlace del producto"
           defaultValue={product?.slug}
           maxLength={120}
           pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
@@ -431,7 +431,7 @@ export function ProductForm({
           defaultValue={product?.saleUnit ?? ''}
           maxLength={80}
         />
-        <label htmlFor="product-sku">SKU</label>
+        <label htmlFor="product-sku">Código interno (SKU)</label>
         <input
           id="product-sku"
           name="sku"
@@ -517,7 +517,9 @@ export function ProductForm({
               required
               maxLength={160}
             />
-            <label htmlFor="duplicate-slug">Slug de la copia</label>
+            <label htmlFor="duplicate-slug">
+              Identificador del enlace de la copia
+            </label>
             <input
               id="duplicate-slug"
               name="duplicateSlug"

@@ -104,7 +104,9 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
     .getByRole('link', { name: 'Categorías' })
     .click();
   await page.getByLabel('Nombre de categoría').fill('Especiales navegador');
-  await page.getByLabel('Slug de categoría').fill('especiales-navegador');
+  await page
+    .getByLabel('Identificador del enlace de categoría')
+    .fill('especiales-navegador');
   await page.getByLabel('Orden de categoría').fill('50');
   await page.getByRole('button', { name: 'Crear categoría' }).click();
   await expect(page.getByRole('status')).toHaveText('Categoría creada.');
@@ -115,7 +117,9 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
     .click();
   await expect(page.getByRole('heading', { name: 'Productos' })).toBeVisible();
   await page.getByLabel('Nombre del producto').fill('Primero navegador');
-  await page.getByLabel('Slug del producto').fill('primero-navegador');
+  await page
+    .getByLabel('Identificador del enlace del producto')
+    .fill('primero-navegador');
   await page
     .getByLabel('Categoría', { exact: true })
     .selectOption({ label: 'Especiales navegador' });
@@ -141,7 +145,9 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
   ).toBeVisible();
 
   await page.getByLabel('Nombre del producto').fill('Segundo navegador');
-  await page.getByLabel('Slug del producto').fill('segundo-navegador');
+  await page
+    .getByLabel('Identificador del enlace del producto')
+    .fill('segundo-navegador');
   await page
     .getByLabel('Categoría', { exact: true })
     .selectOption({ label: 'Especiales navegador' });
@@ -380,7 +386,9 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
     .getByLabel('Categoría', { exact: true })
     .selectOption({ label: overflowCategory.name });
   await page.getByLabel('Nombre del producto').fill('Producto categoría 105');
-  await page.getByLabel('Slug del producto').fill('producto-categoria-105');
+  await page
+    .getByLabel('Identificador del enlace del producto')
+    .fill('producto-categoria-105');
   await page.getByLabel('Descripción').fill('Seleccionado mediante búsqueda.');
   await page.getByLabel('Precio en centavos').fill('4200');
   await page.getByLabel('Orden del producto').fill('1');
