@@ -1,4 +1,5 @@
 'use client';
+import { OwnerUiError, ownerErrorMessage } from '@/lib/owner-ui-error';
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -51,7 +52,7 @@ export function AdminUserForm({
       if (payload.error?.code === 'REAUTHENTICATION_REQUIRED') {
         setReauthenticationRequired(true);
       }
-      throw new Error(
+      throw new OwnerUiError(
         payload.error?.message ?? 'No se pudo guardar el cambio.',
       );
     }
@@ -82,9 +83,7 @@ export function AdminUserForm({
       setMessage('Cuenta administrativa creada.');
       router.refresh();
     } catch (error) {
-      setMessage(
-        error instanceof Error ? error.message : 'No se pudo crear la cuenta.',
-      );
+      setMessage(ownerErrorMessage(error, 'No se pudo crear la cuenta.'));
     } finally {
       setPending(false);
     }
@@ -110,11 +109,7 @@ export function AdminUserForm({
       setMessage('Cambio guardado. Las sesiones afectadas fueron cerradas.');
       router.refresh();
     } catch (error) {
-      setMessage(
-        error instanceof Error
-          ? error.message
-          : 'No se pudo guardar el cambio.',
-      );
+      setMessage(ownerErrorMessage(error, 'No se pudo guardar el cambio.'));
     } finally {
       setPending(false);
     }

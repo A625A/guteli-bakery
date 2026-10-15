@@ -99,6 +99,13 @@
       "when": 1791946593996,
       "tag": "0013_whatsapp_delivery_receipts",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1792001303894,
+      "tag": "0014_owner_payment_method",
+      "breakpoints": true
     }
   ]
 }

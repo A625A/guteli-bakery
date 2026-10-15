@@ -27,12 +27,14 @@ describe('admin dashboard refresh', () => {
 
     target.visibilityState = 'visible';
     target.dispatchEvent(new Event('visibilitychange'));
-    vi.advanceTimersByTime(30_000);
     expect(refresh).toHaveBeenCalledTimes(2);
+    vi.advanceTimersByTime(30_000);
+    expect(refresh).toHaveBeenCalledTimes(3);
 
     cleanup();
+    expect(refresh).toHaveBeenCalledTimes(3);
     vi.advanceTimersByTime(30_000);
-    expect(refresh).toHaveBeenCalledTimes(2);
+    expect(refresh).toHaveBeenCalledTimes(3);
     vi.useRealTimers();
   });
 });

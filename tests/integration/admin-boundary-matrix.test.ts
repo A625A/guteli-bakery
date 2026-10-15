@@ -73,6 +73,7 @@ import {
   POST as POST_CATEGORY,
 } from '@/app/api/admin/categories/route';
 import { GET as GET_ADMIN_MEDIA } from '@/app/api/admin/media/[...key]/route';
+import { PATCH as PATCH_PAYMENT_METHOD } from '@/app/api/admin/orders/[id]/payment-method/route';
 import { PATCH as PATCH_DELIVERY_QUOTE } from '@/app/api/admin/orders/[id]/delivery-quote/route';
 import { GET as GET_ORDER } from '@/app/api/admin/orders/[id]/route';
 import { PATCH as PATCH_ORDER_STATUS } from '@/app/api/admin/orders/[id]/status/route';
@@ -420,6 +421,22 @@ function routeMatrix(headersFor: () => Headers): MatrixRoute[] {
             {
               headers: headersFor(),
             },
+          ),
+          orderContext,
+        ),
+    },
+    {
+      name: 'PATCH /api/admin/orders/:id/payment-method',
+      mutation: true,
+      ownerOnly: true,
+      allowedStatus: 404,
+      call: () =>
+        PATCH_PAYMENT_METHOD(
+          jsonRequest(
+            `/api/admin/orders/${missingPublicId}/payment-method`,
+            'PATCH',
+            headersFor(),
+            { paymentMethod: 'BANK_TRANSFER', expectedVersion: 1 },
           ),
           orderContext,
         ),

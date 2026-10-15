@@ -64,7 +64,9 @@ test('creates a durable delivery order and renders only its public receipt', asy
   await expect(
     page.getByText('Pedido recibido', { exact: true }),
   ).toBeVisible();
-  await expect(page.getByText('Pago pendiente', { exact: true })).toBeVisible();
+  await expect(
+    page.getByText('Pendiente de pago', { exact: true }),
+  ).toBeVisible();
   await expect(page.getByText('Envío', { exact: true })).toBeVisible();
   await expect(page.getByText('Originales', { exact: true })).toBeVisible();
   await expect(page.getByText('Pretzels', { exact: true })).toBeVisible();

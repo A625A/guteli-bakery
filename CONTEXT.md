@@ -9,7 +9,11 @@ _Avoid_: Paid order, confirmed order
 
 **Order**: The durable record of requested products, customer details, fulfillment arrangements, amounts, and operational progress.
 
-**Confirmed order**: An order accepted for production. In the proposed prepaid workflow, confirmation requires verified payment; automated production-capacity reservation is not part of the current scope.
+**Confirmed order**: An order the bakery has accepted to fulfill. Confirmation is an operational decision and does not establish payment. Automated production-capacity reservation is not part of the current scope.
+
+**Assigned payment method**: The owner's choice of bank transfer, cash at pickup or cash on delivery for an individual order. Assignment does not collect or verify money, freeze unpaid prices or establish customer acceptance of a total.
+
+**Private payment-instruction draft**: Owner-only preparation notes for a transfer. The draft is not an active payment instruction and is never shared with the customer or included in WhatsApp messages.
 
 **Verified payment**: A payment whose provider record establishes the correct order association, amount, currency, and successful collection. A payment link, screenshot, or customer message is not verification.
 
@@ -42,3 +46,7 @@ The provider-independent dynamic pricing and customer acceptance slice is implem
 **Delivery acceptance**: The messaging provider accepted a request and returned an identifier. It does not establish delivery or reading.
 
 **Uncertain delivery**: Sending may have succeeded but no reliable result was recorded. It requires reconciliation before another attempt to avoid duplicate messages.
+
+## Authorized Git workflow
+
+The owner authorizes publishing verified implementations to `A625A/guteli-bakery` after each implementation milestone. For future tickets, use a separate ticket branch, push verified milestones, then merge the finished ticket into `main` and push normally. For the current Ticket13 implementation, the owner explicitly requested direct publication to `main`. Preserve unrelated changes and worktrees; never force-push. This supersedes earlier local-only publication notes. Publication does not authorize deployment, Oracle/hackathon access, live payments or automatic WhatsApp activation. Ticket acceptance and external blockers must remain accurately documented.

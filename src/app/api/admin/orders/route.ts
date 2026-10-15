@@ -54,6 +54,14 @@ export function adminOrderErrorResponse(error: unknown, requestId: string) {
       AdminOrderError['code'],
       readonly [number, string]
     > = {
+      INVALID_PAYMENT_METHOD: [
+        400,
+        'El método no corresponde a la modalidad del pedido.',
+      ],
+      PAYMENT_METHOD_LOCKED: [
+        409,
+        'No se puede cambiar el método de un pago en proceso, pagado o reembolsado.',
+      ],
       ORDER_NOT_FOUND: [404, 'No se encontró el pedido.'],
       PAID_PRICING_IMMUTABLE: [
         409,
@@ -105,6 +113,7 @@ function filtersFrom(request: Request) {
     'status',
     'fulfillment',
     'date',
+    'reference',
   ]);
   for (const key of parameters.keys()) {
     if (!allowed.has(key) || parameters.getAll(key).length !== 1) {
@@ -117,6 +126,7 @@ function filtersFrom(request: Request) {
     status: parameters.get('status') ?? undefined,
     fulfillment: parameters.get('fulfillment') ?? undefined,
     date: parameters.get('date') ?? undefined,
+    reference: parameters.get('reference') ?? undefined,
   });
 }
 

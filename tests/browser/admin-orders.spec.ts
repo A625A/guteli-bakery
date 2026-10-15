@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { base32 } from '@better-auth/utils/base32';
 import { createOTP } from '@better-auth/utils/otp';
 import { expect, test } from '@playwright/test';
@@ -33,7 +34,7 @@ test.beforeAll(async () => {
         '2026-09-20',
         'Zona 14, portón blanco',
         'Llamar al llegar',
-        'b'.repeat(64),
+        createHash('sha256').update('r'.repeat(43)).digest('hex'),
       ],
     );
     await pool.query(
@@ -111,7 +112,7 @@ test('an owner sees operational detail, quotes delivery, and advances an order w
   await expect(page.getByRole('columnheader', { name: 'Pago' })).toBeVisible();
   await expect(row).toContainText('2026-09-20');
   await expect(row).toContainText('Q180.00');
-  await expect(row).toContainText('No pagado');
+  await expect(row).toContainText('Pendiente de pago');
   await expect(row).toContainText('Pedido recibido');
   await expect(row).not.toContainText('RECEIVED');
   await expect(row).not.toContainText('+50255558888');
@@ -125,7 +126,7 @@ test('an owner sees operational detail, quotes delivery, and advances an order w
   await expect(page.getByText('+50255558888')).toBeVisible();
   await expect(page.getByText('Zona 14, portón blanco')).toBeVisible();
 
-  await page.getByLabel('Envío (centavos)').fill('500');
+  await page.getByLabel('Envío en quetzales (Q)').fill('5.00');
   await page.getByRole('button', { name: 'Guardar cotización' }).click();
   await expect(page.getByRole('status')).toHaveText(
     'Cotización guardada. Total Q185.00.',
@@ -140,6 +141,90 @@ test('an owner sees operational detail, quotes delivery, and advances an order w
   const history = page.getByRole('region', { name: 'Historial de estado' });
   await expect(history).toContainText('Pedido recibido → Pedido confirmado');
   await expect(history).not.toContainText('CONFIRMED');
+
+  await test.step('owner assigns a method and customer sees it without a paid claim or private draft', async () => {
+    await page
+      .getByLabel('Método de pago del pedido')
+      .selectOption('BANK_TRANSFER');
+    await page
+      .getByLabel('Borrador privado de instrucciones')
+      .fill('BORRADOR PRIVADO FICTICIO');
+    await page
+      .getByRole('button', { name: 'Guardar método', exact: true })
+      .click();
+    await expect(
+      page.getByRole('status').filter({ hasText: 'Método guardado' }),
+    ).toContainText('No se ha registrado ni verificado ningún cobro');
+    await expect(
+      page.getByText('Pago: Pendiente de pago', { exact: true }),
+    ).toBeVisible();
+    await expect(page.getByLabel('Método de pago del pedido')).toHaveValue(
+      'BANK_TRANSFER',
+    );
+    await page.getByLabel('Método de pago del pedido').focus();
+    await page.keyboard.press('Tab');
+    await expect(
+      page.getByLabel('Borrador privado de instrucciones'),
+    ).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(
+      page.getByRole('button', { name: 'Guardar método' }),
+    ).toBeFocused();
+    const customer = await page.context().newPage();
+    await customer.setViewportSize({ width: 390, height: 844 });
+    await customer.goto('/order/confirmation/' + 'r'.repeat(43));
+    await expect(
+      customer
+        .getByRole('main')
+        .getByText('Transferencia bancaria', { exact: true }),
+    ).toBeVisible();
+    await expect(
+      customer
+        .getByRole('main')
+        .getByText('Pendiente de pago', { exact: true }),
+    ).toBeVisible();
+    await expect(customer.locator('body')).not.toContainText(
+      'BORRADOR PRIVADO',
+    );
+    expect(
+      await customer.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await customer.screenshot({
+      path: test.info().outputPath('ticket13-cliente-movil.png'),
+      fullPage: true,
+    });
+    await customer.close();
+    await page.setViewportSize({ width: 390, height: 844 });
+    for (const label of [
+      'Método de pago del pedido',
+      'Envío en quetzales (Q)',
+    ]) {
+      const bounds = await page.getByLabel(label).boundingBox();
+      expect(bounds?.height).toBeGreaterThanOrEqual(44);
+    }
+    expect(
+      (await page.getByRole('button', { name: 'Guardar método' }).boundingBox())
+        ?.height,
+    ).toBeGreaterThanOrEqual(44);
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await page.screenshot({
+      path: test.info().outputPath('ticket13-dueno-movil.png'),
+      fullPage: true,
+    });
+    await page.setViewportSize({ width: 320, height: 640 });
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await page.setViewportSize({ width: 1280, height: 720 });
+  });
 
   await test.step('owner manages a nonstacking promotion and the storefront shows both prices', async () => {
     await page.getByRole('link', { name: 'Promociones', exact: true }).click();

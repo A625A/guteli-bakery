@@ -17,7 +17,7 @@ export default async function AdminPage() {
   const dashboard = await getAdminDashboard();
   return (
     <main className="admin-dashboard" id="main-content" tabIndex={-1}>
-      <DashboardRefresh />
+      <DashboardRefresh refreshedAt={new Date().toISOString()} />
       <header className="admin-dashboard__heading">
         <div>
           <p className="eyebrow">Operación diaria</p>
@@ -28,7 +28,7 @@ export default async function AdminPage() {
       </header>
 
       <section aria-labelledby="orders-summary-title">
-        <h2 id="orders-summary-title">Pedidos accionables</h2>
+        <h2 id="orders-summary-title">Pedidos por atender</h2>
         <div className="admin-dashboard__cards">
           {actionableStatuses.map(([status, label]) => (
             <article key={status} className="admin-dashboard__card">
@@ -41,7 +41,7 @@ export default async function AdminPage() {
             <strong>{dashboard.ordersReceivedTodayCount}</strong>
           </article>
           <article className="admin-dashboard__card">
-            <span>Pedidos accionables (no terminales)</span>
+            <span>Pedidos que necesitan seguimiento</span>
             <strong>{dashboard.actionableOrderCount}</strong>
           </article>
           <article className="admin-dashboard__card">
@@ -63,11 +63,11 @@ export default async function AdminPage() {
             <strong>{dashboard.activeProductCount}</strong>
           </article>
           <article className="admin-dashboard__card">
-            <span>Productos activos agotados (stock 0)</span>
+            <span>Productos activos agotados (existencia 0)</span>
             <strong>{dashboard.unavailableProductCount}</strong>
           </article>
           <article className="admin-dashboard__card">
-            <span>Productos activos con stock bajo (1–5)</span>
+            <span>Productos activos con pocas existencias (1–5)</span>
             <strong>{dashboard.lowStockProductCount}</strong>
           </article>
         </div>

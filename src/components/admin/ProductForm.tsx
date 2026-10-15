@@ -1,6 +1,9 @@
 'use client';
+import { OwnerUiError, ownerErrorMessage } from '@/lib/owner-ui-error';
 
+import { suggestSlug } from '@/lib/suggest-slug';
 import Image from 'next/image';
+import { parseQuetzales, quetzalesInput } from '@/lib/owner-money';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -42,6 +45,11 @@ export function ProductForm({
   product?: AdminProductDto;
 }>) {
   const router = useRouter();
+  const [slug, setSlug] = useState(product?.slug ?? '');
+  const [slugEdited, setSlugEdited] = useState(false);
+  const [duplicateSlug, setDuplicateSlug] = useState('');
+  const [duplicateSlugEdited, setDuplicateSlugEdited] = useState(false);
+  const [confirmRemoval, setConfirmRemoval] = useState(false);
   const [version, setVersion] = useState(product?.version ?? 1);
   const [active, setActive] = useState(product?.active ?? true);
   const [deleted, setDeleted] = useState(
@@ -81,7 +89,7 @@ export function ProductForm({
       const response = await fetch(`/api/admin/categories?${parameters}`);
       const payload = (await response.json()) as CategoryListPayload;
       if (!response.ok || !payload.categories) {
-        throw new Error(
+        throw new OwnerUiError(
           payload.error?.message ?? 'No se pudieron cargar las categorías.',
         );
       }
@@ -104,9 +112,7 @@ export function ProductForm({
       setCategoryResultTotal(payload.total ?? 0);
     } catch (error) {
       setMessage(
-        error instanceof Error
-          ? error.message
-          : 'No se pudieron cargar las categorías.',
+        ownerErrorMessage(error, 'No se pudieron cargar las categorías.'),
       );
     } finally {
       setCategoryLoading(false);
@@ -124,7 +130,7 @@ export function ProductForm({
       description: String(formData.get('description') ?? ''),
       saleUnit: saleUnit || null,
       sku: sku || null,
-      priceMinor: Number(formData.get('priceMinor')),
+      priceMinor: parseQuetzales(String(formData.get('priceQuetzales') ?? '')),
       stockQuantity: stock === '' ? null : Number(stock),
       active: nextActive,
       featured: formData.get('featured') === 'on',
@@ -147,7 +153,7 @@ export function ProductForm({
       );
       const payload = (await response.json()) as MutationPayload;
       if (!response.ok || !payload.product) {
-        throw new Error(
+        throw new OwnerUiError(
           payload.error?.message ?? 'No se pudo guardar el producto.',
         );
       }
@@ -157,11 +163,7 @@ export function ProductForm({
       setMessage(product ? 'Producto actualizado.' : 'Producto creado.');
       router.refresh();
     } catch (error) {
-      setMessage(
-        error instanceof Error
-          ? error.message
-          : 'No se pudo guardar el producto.',
-      );
+      setMessage(ownerErrorMessage(error, 'No se pudo guardar el producto.'));
     } finally {
       setPending(false);
     }
@@ -178,7 +180,7 @@ export function ProductForm({
       });
       const payload = (await response.json()) as MutationPayload;
       if (!response.ok || !payload.product) {
-        throw new Error(
+        throw new OwnerUiError(
           payload.error?.message ?? 'No se pudo desactivar el producto.',
         );
       }
@@ -188,9 +190,7 @@ export function ProductForm({
       router.refresh();
     } catch (error) {
       setMessage(
-        error instanceof Error
-          ? error.message
-          : 'No se pudo desactivar el producto.',
+        ownerErrorMessage(error, 'No se pudo desactivar el producto.'),
       );
     } finally {
       setPending(false);
@@ -198,6 +198,7 @@ export function ProductForm({
   }
 
   async function remove() {
+    if (!confirmRemoval || pending) return;
     setPending(true);
     setMessage(null);
     try {
@@ -208,7 +209,7 @@ export function ProductForm({
       });
       const payload = (await response.json()) as MutationPayload;
       if (!response.ok || !payload.product) {
-        throw new Error(
+        throw new OwnerUiError(
           payload.error?.message ?? 'No se pudo retirar el producto.',
         );
       }
@@ -218,11 +219,7 @@ export function ProductForm({
       setMessage('Producto retirado sin borrar su historial.');
       router.refresh();
     } catch (error) {
-      setMessage(
-        error instanceof Error
-          ? error.message
-          : 'No se pudo retirar el producto.',
-      );
+      setMessage(ownerErrorMessage(error, 'No se pudo retirar el producto.'));
     } finally {
       setPending(false);
     }
@@ -246,7 +243,7 @@ export function ProductForm({
       );
       const payload = (await response.json()) as MutationPayload;
       if (!response.ok || !payload.product) {
-        throw new Error(
+        throw new OwnerUiError(
           payload.error?.message ?? 'No se pudo duplicar el producto.',
         );
       }
@@ -254,11 +251,7 @@ export function ProductForm({
       router.push(`/admin/products/${payload.product.id}`);
       router.refresh();
     } catch (error) {
-      setMessage(
-        error instanceof Error
-          ? error.message
-          : 'No se pudo duplicar el producto.',
-      );
+      setMessage(ownerErrorMessage(error, 'No se pudo duplicar el producto.'));
     } finally {
       setPending(false);
     }
@@ -299,7 +292,7 @@ export function ProductForm({
       });
       const payload = (await response.json()) as MutationPayload;
       if (!response.ok || !payload.product) {
-        throw new Error(
+        throw new OwnerUiError(
           payload.error?.message ?? 'No se pudo cargar la imagen.',
         );
       }
@@ -308,9 +301,7 @@ export function ProductForm({
       setMessage('Imagen actualizada.');
       router.refresh();
     } catch (error) {
-      setMessage(
-        error instanceof Error ? error.message : 'No se pudo cargar la imagen.',
-      );
+      setMessage(ownerErrorMessage(error, 'No se pudo cargar la imagen.'));
     } finally {
       setImagePending(false);
       setPending(false);
@@ -329,7 +320,7 @@ export function ProductForm({
       });
       const payload = (await response.json()) as MutationPayload;
       if (!response.ok || !payload.product) {
-        throw new Error(
+        throw new OwnerUiError(
           payload.error?.message ?? 'No se pudo eliminar la imagen.',
         );
       }
@@ -338,11 +329,7 @@ export function ProductForm({
       setMessage('Imagen eliminada.');
       router.refresh();
     } catch (error) {
-      setMessage(
-        error instanceof Error
-          ? error.message
-          : 'No se pudo eliminar la imagen.',
-      );
+      setMessage(ownerErrorMessage(error, 'No se pudo eliminar la imagen.'));
     } finally {
       setImagePending(false);
       setPending(false);
@@ -354,12 +341,26 @@ export function ProductForm({
       className="admin-auth-card"
       aria-label={product ? 'Editar producto' : 'Crear producto'}
     >
-      <form action={save}>
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (pending) return;
+          const submitter = (event.nativeEvent as SubmitEvent).submitter;
+          const data = new FormData(event.currentTarget);
+          void (submitter?.getAttribute('data-action') === 'deactivate'
+            ? deactivate(data)
+            : save(data));
+        }}
+      >
         <label htmlFor="product-name">Nombre</label>
         <input
           id="product-name"
           name="name"
           aria-label="Nombre del producto"
+          onChange={(event) => {
+            if (!product && !slugEdited)
+              setSlug(suggestSlug(event.target.value));
+          }}
           defaultValue={product?.name}
           maxLength={160}
           required
@@ -369,11 +370,21 @@ export function ProductForm({
           id="product-slug"
           name="slug"
           aria-label="Identificador del enlace del producto"
-          defaultValue={product?.slug}
+          value={slug}
+          onChange={(event) => {
+            setSlugEdited(true);
+            setSlug(event.target.value);
+          }}
+          aria-describedby="product-slug-help"
           maxLength={120}
           pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
           required
         />
+        <p id="product-slug-help">
+          Se sugiere a partir del nombre. Usa letras minúsculas sin tildes,
+          números y guiones. Cambiar un enlace existente puede afectar enlaces
+          guardados.
+        </p>
         <label htmlFor="product-category">Categoría</label>
         <label htmlFor="product-category-search">Buscar categoría</label>
         <input
@@ -431,6 +442,10 @@ export function ProductForm({
           defaultValue={product?.saleUnit ?? ''}
           maxLength={80}
         />
+        <p>
+          Indica la presentación que compra el cliente, por ejemplo: bolsa de 5
+          unidades.
+        </p>
         <label htmlFor="product-sku">Código interno (SKU)</label>
         <input
           id="product-sku"
@@ -438,14 +453,14 @@ export function ProductForm({
           defaultValue={product?.sku ?? ''}
           maxLength={80}
         />
-        <label htmlFor="product-price">Precio en centavos</label>
+        <label htmlFor="product-price">Precio en quetzales (Q)</label>
         <input
           id="product-price"
-          name="priceMinor"
+          name="priceQuetzales"
           type="number"
           min="0"
-          step="1"
-          defaultValue={product?.priceMinor ?? 0}
+          step="0.01"
+          defaultValue={quetzalesInput(product?.priceMinor ?? 0)}
           required
         />
         <label htmlFor="product-stock">Existencia</label>
@@ -458,6 +473,10 @@ export function ProductForm({
           defaultValue={product?.stockQuantity ?? ''}
           placeholder="Sin control"
         />
+        <p>
+          Deja la existencia vacía si no llevas un conteo. Cero indica que está
+          agotado; esto no limita la producción diaria.
+        </p>
         <label htmlFor="product-sort">Orden</label>
         <input
           id="product-sort"
@@ -500,7 +519,7 @@ export function ProductForm({
                 ? 'Este producto está disponible; desactivarlo lo ocultará del menú.'
                 : 'Este producto está agotado; desactivarlo lo ocultará del menú.'}
             </p>
-            <button type="submit" formAction={deactivate} disabled={pending}>
+            <button type="submit" data-action="deactivate" disabled={pending}>
               Desactivar producto
             </button>
           </>
@@ -508,12 +527,21 @@ export function ProductForm({
       </form>
       {product && !deleted ? (
         <>
-          <form action={duplicate}>
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              if (!pending) void duplicate(new FormData(event.currentTarget));
+            }}
+          >
             <h2>Duplicar producto</h2>
             <label htmlFor="duplicate-name">Nombre de la copia</label>
             <input
               id="duplicate-name"
               name="duplicateName"
+              onChange={(event) => {
+                if (!duplicateSlugEdited)
+                  setDuplicateSlug(suggestSlug(event.target.value));
+              }}
               required
               maxLength={160}
             />
@@ -523,6 +551,11 @@ export function ProductForm({
             <input
               id="duplicate-slug"
               name="duplicateSlug"
+              value={duplicateSlug}
+              onChange={(event) => {
+                setDuplicateSlugEdited(true);
+                setDuplicateSlug(event.target.value);
+              }}
               required
               maxLength={120}
             />
@@ -535,7 +568,19 @@ export function ProductForm({
               Retirar conserva pedidos históricos y elimina el producto del
               catálogo público.
             </p>
-            <button type="button" onClick={remove} disabled={pending}>
+            <label>
+              <input
+                type="checkbox"
+                checked={confirmRemoval}
+                onChange={(event) => setConfirmRemoval(event.target.checked)}
+              />
+              Entiendo que el producto dejará de aparecer en el catálogo.
+            </label>
+            <button
+              type="button"
+              onClick={remove}
+              disabled={pending || !confirmRemoval}
+            >
               Retirar producto
             </button>
           </div>
@@ -547,7 +592,14 @@ export function ProductForm({
           <p id="product-image-help">
             JPEG, PNG o WebP. Máximo 8 MB; se publicará como WebP optimizado.
           </p>
-          <form action={uploadImage} aria-describedby="product-image-help">
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              if (!imagePending)
+                void uploadImage(new FormData(event.currentTarget));
+            }}
+            aria-describedby="product-image-help"
+          >
             <label htmlFor="product-image">Imagen del producto</label>
             <input
               id="product-image"

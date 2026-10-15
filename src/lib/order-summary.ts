@@ -1,3 +1,4 @@
+import { paymentMethodLabel } from '@/domain/payment-method';
 import { operationalCopy, siteConfig } from '@/content/business';
 import type { CartLine } from '@/domain/cart';
 import { getCartSubtotal } from '@/domain/cart';
@@ -68,6 +69,7 @@ export type CheckoutSummaryInput = Readonly<{
   deliveryLocation: string | null;
   notes: string | null;
   orderStatus: string;
+  paymentMethod?: import('@/domain/payment-method').PaymentMethod | null;
   paymentStatus: string;
   accepted: boolean;
   pricedAt: string;
@@ -102,6 +104,7 @@ export function buildCheckoutSummary(order: CheckoutSummaryInput): string {
     `Resumen de pedido — ${siteConfig.name}`,
     `Pedido: ${clean(order.publicId)}`,
     `Estado del pedido: ${summaryOrderLabels[order.orderStatus] ?? 'Por confirmar'}`,
+    `Método de pago: ${paymentMethodLabel(order.paymentMethod)}`,
     `Pago: ${summaryPaymentLabels[order.paymentStatus] ?? 'Sin verificación disponible.'}`,
     `Precios consultados: ${new Intl.DateTimeFormat('es-GT', { dateStyle: 'short', timeStyle: 'medium', timeZone: 'America/Guatemala' }).format(new Date(order.pricedAt))} (America/Guatemala)`,
     '',

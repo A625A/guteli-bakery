@@ -1,5 +1,7 @@
 'use client';
+import { OwnerUiError, ownerErrorMessage } from '@/lib/owner-ui-error';
 
+import { parseQuetzales, quetzalesInput } from '@/lib/owner-money';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -50,7 +52,9 @@ export function DeliveryQuoteForm({
     setPending(true);
     setMessage(null);
     try {
-      const input = Number(formData.get('shippingMinor'));
+      const input = parseQuetzales(
+        String(formData.get('shippingQuetzales') ?? ''),
+      );
       const response = await fetch(
         `/api/admin/orders/${publicId}/delivery-quote`,
         {
@@ -64,7 +68,7 @@ export function DeliveryQuoteForm({
       );
       const payload = (await response.json()) as MutationResponse;
       if (!response.ok || !payload.order) {
-        throw new Error(
+        throw new OwnerUiError(
           payload.error?.message ?? 'No se pudo guardar la cotización.',
         );
       }
@@ -81,11 +85,7 @@ export function DeliveryQuoteForm({
       );
       router.refresh();
     } catch (error) {
-      setMessage(
-        error instanceof Error
-          ? error.message
-          : 'No se pudo guardar la cotización.',
-      );
+      setMessage(ownerErrorMessage(error, 'No se pudo guardar la cotización.'));
     } finally {
       setPending(false);
     }
@@ -99,16 +99,21 @@ export function DeliveryQuoteForm({
         {shippingMinor === null ? 'Pendiente' : money(shippingMinor)}
       </p>
       <p>Total: {totalMinor === null ? 'Pendiente' : money(totalMinor)}</p>
-      <form action={submit}>
-        <label htmlFor="shipping-minor">Envío (centavos)</label>
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (!pending) void submit(new FormData(event.currentTarget));
+        }}
+      >
+        <label htmlFor="shipping-minor">Envío en quetzales (Q)</label>
         <input
           id="shipping-minor"
-          name="shippingMinor"
+          name="shippingQuetzales"
           type="number"
           min="0"
-          max="2147483647"
-          step="1"
-          defaultValue={shippingMinor ?? ''}
+          max="21474836.47"
+          step="0.01"
+          defaultValue={quetzalesInput(shippingMinor)}
           required
         />
         <button disabled={pending} type="submit">

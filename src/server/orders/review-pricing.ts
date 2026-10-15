@@ -205,6 +205,7 @@ export async function reviewPricingInTransaction(
     accepted: accepted && (frozen || canAccept),
     canAccept,
     conflict,
+    paymentMethod: order.paymentMethod,
     paymentStatus: order.paymentStatus,
     orderStatus: order.orderStatus,
     subtotalMinor,

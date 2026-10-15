@@ -132,3 +132,12 @@ it('keeps WhatsApp navigation disabled in demo and unavailable modes', async () 
     ).searchParams.get('text'),
   ).toBe(text);
 });
+
+it('describes the owner-selected method without implying payment was received', () => {
+  const text = buildCheckoutSummary({
+    ...sample(),
+    paymentMethod: 'BANK_TRANSFER',
+  });
+  expect(text).toContain('Método de pago: Transferencia bancaria');
+  expect(text).toContain('No se ha verificado ningún pago');
+});

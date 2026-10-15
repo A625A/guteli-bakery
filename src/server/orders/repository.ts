@@ -338,7 +338,10 @@ export async function insertAdminOrderAudit(
   values: Readonly<{
     actorId: string;
     orderId: string;
-    action: 'ORDER_STATUS_CHANGED' | 'ORDER_DELIVERY_QUOTED';
+    action:
+      | 'ORDER_STATUS_CHANGED'
+      | 'ORDER_DELIVERY_QUOTED'
+      | 'ORDER_PAYMENT_METHOD_CHANGED';
     requestId: string;
     before: Readonly<Record<string, string | number | null>>;
     after: Readonly<Record<string, string | number | null>>;

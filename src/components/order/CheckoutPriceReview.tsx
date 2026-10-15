@@ -48,6 +48,7 @@ export function useCheckoutReview(
         subtotalMinor: review.subtotalMinor,
         shippingMinor: review.shippingMinor,
         totalMinor: review.totalMinor,
+        paymentMethod: review.paymentMethod,
         paymentStatus: review.paymentStatus,
         orderStatus: review.orderStatus,
       },

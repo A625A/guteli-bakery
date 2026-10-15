@@ -1,3 +1,9 @@
+import { PaymentMethodForm } from '@/components/admin/PaymentMethodForm';
+import {
+  paymentMethodLabel,
+  paymentStatusLabel,
+} from '@/domain/payment-method';
+import { whatsappDestination } from '@/domain/whatsapp-consent';
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import Link from 'next/link';
@@ -22,6 +28,14 @@ export const metadata: Metadata = {
   referrer: 'no-referrer',
 };
 
+function localDate(value: string) {
+  return new Intl.DateTimeFormat('es-GT', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+    timeZone: 'America/Guatemala',
+  }).format(new Date(value));
+}
+
 function money(value: number | null) {
   return value === null ? 'Pendiente' : `Q${(value / 100).toFixed(2)}`;
 }
@@ -35,6 +49,7 @@ export default async function AdminOrderDetailPage({
   const { id } = await params;
   const order = await adminGetOrder(id, await headers());
   if (!order) notFound();
+  const contactNumber = whatsappDestination(order.phone);
 
   return (
     <main className="admin-dashboard" id="main-content" tabIndex={-1}>
@@ -70,8 +85,58 @@ export default async function AdminOrderDetailPage({
           ) : null}
         </dl>
       </section>
+      {contactNumber ? (
+        <a
+          href={`https://wa.me/${contactNumber}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          referrerPolicy="no-referrer"
+        >
+          Contactar al cliente por WhatsApp
+        </a>
+      ) : (
+        <p>No se pudo validar el número para abrir WhatsApp.</p>
+      )}
+      <section aria-labelledby="order-review-title">
+        <h2 id="order-review-title">Confirmación, total y pago</h2>
+        <p>Pedido: {orderStatusLabel(order.orderStatus)}</p>
+        <p>
+          Aceptación del total:{' '}
+          {order.totalAccepted
+            ? 'Aceptado por el cliente'
+            : 'Pendiente de aceptación vigente'}
+        </p>
+        <p>Método: {paymentMethodLabel(order.paymentMethod)}</p>
+        <p>Pago: {paymentStatusLabel(order.paymentStatus)}</p>
+        <p>
+          Confirmar el pedido significa que la tienda acepta atenderlo. No
+          verifica que se haya recibido dinero.
+        </p>
+        {order.shippingMinor === null ? (
+          <p>
+            Falta cotizar el envío antes de que el cliente pueda aceptar el
+            total completo.
+          </p>
+        ) : null}
+        {order.paymentMethodUpdatedAt ? (
+          <p>
+            Método actualizado: {localDate(order.paymentMethodUpdatedAt)}{' '}
+            (Guatemala)
+          </p>
+        ) : null}
+      </section>
+      {order.canAssignPaymentMethod ? (
+        <PaymentMethodForm
+          key={order.publicId}
+          publicId={order.publicId}
+          fulfillment={order.fulfillment}
+          initialVersion={order.version}
+          initialMethod={order.paymentMethod}
+          initialDraft={order.paymentInstructionsDraft}
+        />
+      ) : null}
       <section aria-labelledby="items-title">
-        <h2 id="items-title">Productos confirmados</h2>
+        <h2 id="items-title">Productos solicitados</h2>
         <ul>
           {order.items.map((item, index) => (
             <li key={`${item.productName}-${index}`}>
@@ -109,6 +174,10 @@ export default async function AdminOrderDetailPage({
             {order.statusHistory.map((entry) => (
               <li key={`${entry.createdAt}-${entry.to}`}>
                 {orderStatusLabel(entry.from)} → {orderStatusLabel(entry.to)}
+                <time dateTime={entry.createdAt}>
+                  {' '}
+                  · {localDate(entry.createdAt)} (Guatemala)
+                </time>
               </li>
             ))}
           </ol>

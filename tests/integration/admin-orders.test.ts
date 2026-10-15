@@ -17,6 +17,7 @@ vi.hoisted(() => {
 
 vi.mock('server-only', () => ({}));
 
+import { PATCH as PATCH_METHOD } from '@/app/api/admin/orders/[id]/payment-method/route';
 import { PATCH as PATCH_QUOTE } from '@/app/api/admin/orders/[id]/delivery-quote/route';
 import { GET as GET_ORDER } from '@/app/api/admin/orders/[id]/route';
 import { PATCH as PATCH_STATUS } from '@/app/api/admin/orders/[id]/status/route';
@@ -249,7 +250,7 @@ function detailRequest(publicId: string, jar?: CookieJar, query = '') {
 }
 
 function mutationRequest(
-  kind: 'status' | 'delivery-quote',
+  kind: 'status' | 'delivery-quote' | 'payment-method',
   publicId: string,
   jar: CookieJar,
   body: Record<string, unknown>,
@@ -267,6 +268,7 @@ function mutationRequest(
     },
   );
   const context = { params: Promise.resolve({ id: publicId }) };
+  if (kind === 'payment-method') return PATCH_METHOD(request, context);
   return kind === 'status'
     ? PATCH_STATUS(request, context)
     : PATCH_QUOTE(request, context);
@@ -275,6 +277,204 @@ function mutationRequest(
 describe('protected admin order operations', () => {
   beforeEach(resetDatabase);
   afterAll(() => pool.end());
+
+  it('lets only the owner assign a method without receiving money or changing prices', async () => {
+    const order = await orderFixture();
+    const owner = await enrolledActor('ADMIN');
+    const admin = owner;
+    const body = {
+      paymentMethod: 'BANK_TRANSFER',
+      instructionsDraft: 'Datos ficticios: banco de prueba',
+      expectedVersion: 1,
+    };
+    expect(
+      (await mutationRequest('payment-method', order.publicId, admin.jar, body))
+        .status,
+    ).toBe(403);
+    await db.update(user).set({ role: 'OWNER' }).where(eq(user.id, owner.id));
+    expect(
+      (
+        await mutationRequest(
+          'payment-method',
+          order.publicId,
+          owner.jar,
+          body,
+          'https://evil.test',
+        )
+      ).status,
+    ).toBe(403);
+    expect(
+      (await mutationRequest('payment-method', order.publicId, owner.jar, body))
+        .status,
+    ).toBe(200);
+    const detail = await (
+      await detailRequest(order.publicId, owner.jar)
+    ).json();
+    expect(detail.order).toMatchObject({
+      paymentMethod: 'BANK_TRANSFER',
+      paymentStatus: 'UNPAID',
+      orderStatus: 'RECEIVED',
+      paymentInstructionsDraft: body.instructionsDraft,
+    });
+    await db.update(user).set({ role: 'ADMIN' }).where(eq(user.id, owner.id));
+    const adminDetail = await (
+      await detailRequest(order.publicId, admin.jar)
+    ).json();
+    expect(adminDetail.order.paymentInstructionsDraft).toBeNull();
+    await db.update(user).set({ role: 'OWNER' }).where(eq(user.id, owner.id));
+    expect(
+      (await mutationRequest('payment-method', order.publicId, owner.jar, body))
+        .status,
+    ).toBe(409);
+    const [saved] = await db
+      .select()
+      .from(orders)
+      .where(eq(orders.id, order.id));
+    expect(saved.subtotalMinor).toBe(order.subtotalMinor);
+    const audit = await db
+      .select()
+      .from(auditLogs)
+      .where(eq(auditLogs.entityId, order.id));
+    expect(
+      audit.some((row) => row.action === 'ORDER_PAYMENT_METHOD_CHANGED'),
+    ).toBe(true);
+  });
+
+  it('finds a single order by its exact public reference', async () => {
+    const owner = await enrolledActor();
+    const order = await orderFixture();
+    await orderFixture();
+    const response = await listRequest(
+      owner.jar,
+      '?reference=' + order.publicId.toLowerCase(),
+    );
+    expect(response.status).toBe(200);
+    const result = await response.json();
+    expect(result.total).toBe(1);
+    expect(result.orders[0].publicId).toBe(order.publicId);
+  });
+
+  it('rejects incompatible methods, forged payment state, concurrent writes and final orders', async () => {
+    const actor = await enrolledActor();
+    const order = await orderFixture();
+    const base = { paymentMethod: 'CASH_DELIVERY', expectedVersion: 1 };
+    expect(
+      (
+        await mutationRequest('payment-method', order.publicId, actor.jar, {
+          ...base,
+          paymentMethod: 'CASH_PICKUP',
+        })
+      ).status,
+    ).toBe(400);
+    expect(
+      (
+        await mutationRequest('payment-method', order.publicId, actor.jar, {
+          ...base,
+          paymentStatus: 'PAID',
+        })
+      ).status,
+    ).toBe(400);
+    const replies = await Promise.all([
+      mutationRequest('payment-method', order.publicId, actor.jar, base),
+      mutationRequest('payment-method', order.publicId, actor.jar, {
+        ...base,
+        paymentMethod: 'BANK_TRANSFER',
+      }),
+    ]);
+    expect(replies.map((reply) => reply.status).sort()).toEqual([200, 409]);
+    const [after] = await db
+      .select()
+      .from(orders)
+      .where(eq(orders.id, order.id));
+    expect(after).toMatchObject({
+      paymentStatus: 'UNPAID',
+      subtotalMinor: 2500,
+      shippingMinor: null,
+      totalMinor: null,
+      version: 2,
+    });
+    for (const paymentStatus of ['PAID', 'PENDING', 'REFUNDED'] as const) {
+      const locked = await orderFixture({ paymentStatus });
+      expect(
+        (
+          await mutationRequest(
+            'payment-method',
+            locked.publicId,
+            actor.jar,
+            base,
+          )
+        ).status,
+      ).toBe(409);
+    }
+    const terminal = await orderFixture({
+      orderStatus: 'CANCELLED',
+      terminalAt: new Date(),
+    });
+    expect(
+      (
+        await mutationRequest(
+          'payment-method',
+          terminal.publicId,
+          actor.jar,
+          base,
+        )
+      ).status,
+    ).toBe(409);
+    const pickup = await orderFixture({
+      fulfillment: 'PICKUP',
+      shippingMinor: 0,
+      totalMinor: 2500,
+    });
+    expect(
+      (
+        await mutationRequest(
+          'payment-method',
+          pickup.publicId,
+          actor.jar,
+          base,
+        )
+      ).status,
+    ).toBe(400);
+    expect(
+      (
+        await mutationRequest('payment-method', pickup.publicId, actor.jar, {
+          ...base,
+          paymentMethod: 'CASH_PICKUP',
+        })
+      ).status,
+    ).toBe(200);
+  });
+
+  it('rechecks owner authority after waiting for an order lock', async () => {
+    const actor = await enrolledActor();
+    const order = await orderFixture();
+    const blocker = await pool.connect();
+    let mutation: Promise<Response> | undefined;
+    try {
+      await blocker.query('BEGIN');
+      await blocker.query('SELECT id FROM orders WHERE id = $1 FOR UPDATE', [
+        order.id,
+      ]);
+      mutation = mutationRequest('payment-method', order.publicId, actor.jar, {
+        paymentMethod: 'BANK_TRANSFER',
+        expectedVersion: 1,
+      });
+      await waitForOrderMutationLock();
+      await db.update(user).set({ role: 'ADMIN' }).where(eq(user.id, actor.id));
+      await blocker.query('COMMIT');
+      expect((await mutation).status).toBe(403);
+      const [saved] = await db
+        .select()
+        .from(orders)
+        .where(eq(orders.id, order.id));
+      expect(saved.paymentMethod).toBeNull();
+      expect(saved.version).toBe(1);
+    } finally {
+      await blocker.query('ROLLBACK');
+      blocker.release();
+      await mutation;
+    }
+  });
 
   it('authorizes reads inside each use case for OWNER and ADMIN and denies anonymous access', async () => {
     const order = await orderFixture();

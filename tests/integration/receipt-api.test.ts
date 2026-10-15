@@ -132,6 +132,7 @@ describe('GET /api/order-status/[receiptToken]', () => {
         requestedDate: '2026-08-31',
         orderStatus: 'RECEIVED',
         paymentStatus: 'UNPAID',
+        paymentMethod: null,
         subtotalMinor: 17500,
         shippingMinor: null,
         totalMinor: null,

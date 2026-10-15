@@ -256,3 +256,40 @@ it('a changed customer detail forces review and anonymized orders expose no summ
     .where(eq(orders.id, order.id));
   expect((await handler()(request())).status).toBe(404);
 });
+
+it('refreshes the owner method without leaking private instructions or preserving an expired promotion', async () => {
+  const first = await (await handler()(request())).json();
+  await database
+    .update(orders)
+    .set({
+      paymentMethod: 'BANK_TRANSFER',
+      paymentInstructionsDraft: 'PRIVATE-DRAFT-DO-NOT-SHARE',
+    })
+    .where(eq(orders.publicId, publicId));
+  const changed = await handler()(
+    request({ publicId, expectedVersion: first.summary.version }),
+  );
+  expect(changed.status).toBe(409);
+  const { summary } = await changed.json();
+  expect(summary.message).toContain('Método de pago: Transferencia bancaria');
+  expect(summary.message).toContain('No se ha verificado ningún pago');
+  expect(JSON.stringify(summary)).not.toContain('PRIVATE-DRAFT');
+  const receipt = await getReceipt(receiptToken, database, () => now);
+  expect(receipt?.paymentMethod).toBe('BANK_TRANSFER');
+  expect(JSON.stringify(receipt)).not.toContain('PRIVATE-DRAFT');
+  await database.insert(promotions).values({
+    name: 'Temporal',
+    scope: 'CATALOG',
+    discountBps: 7000,
+    startsAt: new Date('2026-10-12T11:00:00Z'),
+    endsAt: new Date('2026-10-12T13:00:00Z'),
+    enabled: true,
+  });
+  expect(
+    (await getReceipt(receiptToken, database, () => now))?.subtotalMinor,
+  ).toBe(15000);
+  now = new Date('2026-10-12T13:00:01Z');
+  expect(
+    (await getReceipt(receiptToken, database, () => now))?.subtotalMinor,
+  ).toBe(50000);
+});

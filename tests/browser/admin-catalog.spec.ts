@@ -117,6 +117,9 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
     .click();
   await expect(page.getByRole('heading', { name: 'Productos' })).toBeVisible();
   await page.getByLabel('Nombre del producto').fill('Primero navegador');
+  await expect(
+    page.getByLabel('Identificador del enlace del producto'),
+  ).toHaveValue('primero-navegador');
   await page
     .getByLabel('Identificador del enlace del producto')
     .fill('primero-navegador');
@@ -127,7 +130,7 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
     .getByLabel('Descripción')
     .fill('Producto creado desde administración.');
   await page.getByLabel('Unidad de venta').fill('unidad');
-  await page.getByLabel('Precio en centavos').fill('2500');
+  await page.getByLabel('Precio en quetzales (Q)').fill('25.00');
   await page.getByLabel('Existencia').fill('10');
   await page.getByLabel('Orden del producto').fill('20');
   const firstCreateResponse = page.waitForResponse(
@@ -155,7 +158,7 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
     .getByLabel('Descripción')
     .fill('Segundo producto para comprobar el orden.');
   await page.getByLabel('Unidad de venta').fill('unidad');
-  await page.getByLabel('Precio en centavos').fill('3000');
+  await page.getByLabel('Precio en quetzales (Q)').fill('30.00');
   await page.getByLabel('Existencia').fill('10');
   await page.getByLabel('Orden del producto').fill('10');
   await page.getByRole('button', { name: 'Crear producto' }).click();
@@ -188,8 +191,22 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
   await page
     .getByLabel('Nombre del producto')
     .fill('Primero navegador editado');
-  await page.getByLabel('Precio en centavos').fill('2750');
+  await page.getByLabel('Precio en quetzales (Q)').fill('27.50');
   await page.getByLabel('Orden del producto').fill('0');
+  await page.route('**/api/admin/products/*', (route) =>
+    route.request().method() === 'PATCH'
+      ? route.abort('failed')
+      : route.continue(),
+  );
+  await page.getByRole('button', { name: 'Guardar producto' }).click();
+  await expect(page.getByRole('status')).toHaveText(
+    'No se pudo guardar el producto.',
+  );
+  await expect(page.getByLabel('Nombre del producto')).toHaveValue(
+    'Primero navegador editado',
+  );
+  await expect(page.getByLabel('Precio en quetzales (Q)')).toHaveValue('27.50');
+  await page.unroute('**/api/admin/products/*');
   const editResponse = page.waitForResponse(
     (response) =>
       response.request().method() === 'PATCH' &&
@@ -390,7 +407,7 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
     .getByLabel('Identificador del enlace del producto')
     .fill('producto-categoria-105');
   await page.getByLabel('Descripción').fill('Seleccionado mediante búsqueda.');
-  await page.getByLabel('Precio en centavos').fill('4200');
+  await page.getByLabel('Precio en quetzales (Q)').fill('42.00');
   await page.getByLabel('Orden del producto').fill('1');
   const overflowCreateResponse = page.waitForResponse(
     (response) =>
@@ -413,7 +430,7 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
   await expect(page.getByLabel('Categoría', { exact: true })).toHaveValue(
     overflowCategory.id,
   );
-  await page.getByLabel('Precio en centavos').fill('4300');
+  await page.getByLabel('Precio en quetzales (Q)').fill('43.00');
   const overflowEditResponse = page.waitForResponse(
     (response) =>
       response.request().method() === 'PATCH' &&
@@ -444,4 +461,28 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
   const refreshedOverflowProduct = await overflowRefreshResponse;
   expect(refreshedOverflowProduct.status()).toBe(200);
   expect(await refreshedOverflowProduct.finished()).toBeNull();
+  await page.getByLabel('Nombre de la copia').fill('Copia de prueba');
+  await expect(
+    page.getByLabel('Identificador del enlace de la copia'),
+  ).toHaveValue('copia-de-prueba');
+  const copied = page.waitForResponse((response) =>
+    response.url().endsWith('/duplicate'),
+  );
+  await page.getByRole('button', { name: 'Crear copia inactiva' }).click();
+  const copiedProduct = await (await copied).json();
+  expect(copiedProduct.product.active).toBe(false);
+  await expect(
+    page.getByRole('heading', { name: 'Editar Copia de prueba' }),
+  ).toBeVisible();
+  const retire = page.getByRole('button', { name: 'Retirar producto' });
+  await expect(retire).toBeDisabled();
+  await page
+    .getByRole('checkbox', {
+      name: 'Entiendo que el producto dejará de aparecer en el catálogo.',
+    })
+    .check();
+  await retire.click();
+  await expect(page.getByRole('status')).toContainText(
+    'Producto retirado sin borrar su historial.',
+  );
 });

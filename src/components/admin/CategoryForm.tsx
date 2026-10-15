@@ -1,5 +1,7 @@
 'use client';
+import { OwnerUiError, ownerErrorMessage } from '@/lib/owner-ui-error';
 
+import { suggestSlug } from '@/lib/suggest-slug';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -12,6 +14,8 @@ type MutationPayload = Readonly<{
 
 export function CategoryForm({ category }: { category?: AdminCategoryDto }) {
   const router = useRouter();
+  const [slug, setSlug] = useState(category?.slug ?? '');
+  const [slugEdited, setSlugEdited] = useState(false);
   const [version, setVersion] = useState(category?.version ?? 1);
   const [active, setActive] = useState(category?.active ?? true);
   const [pending, setPending] = useState(false);
@@ -47,7 +51,7 @@ export function CategoryForm({ category }: { category?: AdminCategoryDto }) {
       );
       const payload = (await response.json()) as MutationPayload;
       if (!response.ok || !payload.category) {
-        throw new Error(
+        throw new OwnerUiError(
           payload.error?.message ?? 'No se pudo guardar la categoría.',
         );
       }
@@ -56,11 +60,7 @@ export function CategoryForm({ category }: { category?: AdminCategoryDto }) {
       setMessage(category ? 'Categoría actualizada.' : 'Categoría creada.');
       router.refresh();
     } catch (error) {
-      setMessage(
-        error instanceof Error
-          ? error.message
-          : 'No se pudo guardar la categoría.',
-      );
+      setMessage(ownerErrorMessage(error, 'No se pudo guardar la categoría.'));
     } finally {
       setPending(false);
     }
@@ -80,7 +80,7 @@ export function CategoryForm({ category }: { category?: AdminCategoryDto }) {
       });
       const payload = (await response.json()) as MutationPayload;
       if (!response.ok || !payload.category) {
-        throw new Error(
+        throw new OwnerUiError(
           payload.error?.message ?? 'No se pudo desactivar la categoría.',
         );
       }
@@ -90,9 +90,7 @@ export function CategoryForm({ category }: { category?: AdminCategoryDto }) {
       router.refresh();
     } catch (error) {
       setMessage(
-        error instanceof Error
-          ? error.message
-          : 'No se pudo desactivar la categoría.',
+        ownerErrorMessage(error, 'No se pudo desactivar la categoría.'),
       );
     } finally {
       setPending(false);
@@ -101,7 +99,12 @@ export function CategoryForm({ category }: { category?: AdminCategoryDto }) {
 
   return (
     <section className="admin-auth-card">
-      <form action={save}>
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (!pending) void save(new FormData(event.currentTarget));
+        }}
+      >
         <label htmlFor={`${prefix}-name`}>Nombre</label>
         <input
           id={`${prefix}-name`}
@@ -109,6 +112,10 @@ export function CategoryForm({ category }: { category?: AdminCategoryDto }) {
           aria-label={
             category ? `Nombre de ${category.name}` : 'Nombre de categoría'
           }
+          onChange={(event) => {
+            if (!category && !slugEdited)
+              setSlug(suggestSlug(event.target.value));
+          }}
           defaultValue={category?.name}
           maxLength={160}
           required
@@ -122,7 +129,11 @@ export function CategoryForm({ category }: { category?: AdminCategoryDto }) {
               ? `Identificador del enlace de ${category.name}`
               : 'Identificador del enlace de categoría'
           }
-          defaultValue={category?.slug}
+          value={slug}
+          onChange={(event) => {
+            setSlugEdited(true);
+            setSlug(event.target.value);
+          }}
           maxLength={120}
           required
         />

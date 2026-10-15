@@ -1,4 +1,5 @@
 'use client';
+import { OwnerUiError, ownerErrorMessage } from '@/lib/owner-ui-error';
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Promotion } from '@/domain/pricing';
@@ -44,7 +45,7 @@ export function PromotionForm({
       );
       const result = await response.json();
       if (!response.ok || !result.promotion)
-        throw new Error(
+        throw new OwnerUiError(
           result.error?.message ?? 'No se pudo guardar la promoción.',
         );
       setVersion(result.promotion.version);
@@ -53,11 +54,7 @@ export function PromotionForm({
       );
       router.refresh();
     } catch (error) {
-      setMessage(
-        error instanceof Error
-          ? error.message
-          : 'No se pudo guardar la promoción.',
-      );
+      setMessage(ownerErrorMessage(error, 'No se pudo guardar la promoción.'));
     } finally {
       setPending(false);
     }

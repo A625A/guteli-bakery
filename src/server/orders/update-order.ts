@@ -21,6 +21,8 @@ import {
 } from './repository';
 
 export type AdminOrderErrorCode =
+  | 'INVALID_PAYMENT_METHOD'
+  | 'PAYMENT_METHOD_LOCKED'
   | 'ORDER_NOT_FOUND'
   | 'STALE_ORDER'
   | 'PAID_PRICING_IMMUTABLE'

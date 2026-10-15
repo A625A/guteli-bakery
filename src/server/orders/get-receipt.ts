@@ -14,6 +14,7 @@ export type PublicReceipt = Readonly<{
   fulfillment: 'pickup' | 'delivery';
   requestedDate: string;
   orderStatus: string;
+  paymentMethod?: import('@/domain/payment-method').PaymentMethod | null;
   paymentStatus: string;
   subtotalMinor: number;
   shippingMinor: number | null;
@@ -75,6 +76,7 @@ export async function getReceipt(
     fulfillment: first.fulfillment === 'PICKUP' ? 'pickup' : 'delivery',
     requestedDate: first.requestedDate,
     orderStatus: review?.orderStatus ?? first.orderStatus,
+    paymentMethod: review?.paymentMethod ?? null,
     paymentStatus: review?.paymentStatus ?? first.paymentStatus,
     subtotalMinor: review?.subtotalMinor ?? first.subtotalMinor,
     shippingMinor: review ? review.shippingMinor : first.shippingMinor,

@@ -36,6 +36,7 @@ export type CheckoutPricingReview = Readonly<{
   accepted: boolean;
   canAccept: boolean;
   conflict: boolean;
+  paymentMethod?: import('@/domain/payment-method').PaymentMethod | null;
   paymentStatus: string;
   orderStatus: string;
   subtotalMinor: number;

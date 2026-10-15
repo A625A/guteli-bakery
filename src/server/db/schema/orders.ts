@@ -12,6 +12,7 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 
+import { paymentMethods } from '@/domain/payment-method';
 import { products } from './catalog';
 
 export const fulfillmentEnum = pgEnum('fulfillment', ['PICKUP', 'DELIVERY']);
@@ -25,6 +26,8 @@ export const orderStatusEnum = pgEnum('order_status', [
   'COMPLETED',
   'CANCELLED',
 ]);
+
+export const paymentMethodEnum = pgEnum('payment_method', paymentMethods);
 
 export const paymentStatusEnum = pgEnum('payment_status', [
   'UNPAID',
@@ -58,6 +61,13 @@ export const orders = pgTable(
     shippingMinor: integer('shipping_minor'),
     totalMinor: integer('total_minor'),
     orderStatus: orderStatusEnum('order_status').notNull().default('RECEIVED'),
+    paymentMethod: paymentMethodEnum('payment_method'),
+    paymentInstructionsDraft: varchar('payment_instructions_draft', {
+      length: 500,
+    }),
+    paymentMethodUpdatedAt: timestamp('payment_method_updated_at', {
+      withTimezone: true,
+    }),
     paymentStatus: paymentStatusEnum('payment_status')
       .notNull()
       .default('UNPAID'),

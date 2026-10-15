@@ -2222,6 +2222,47 @@ button:disabled,
   width: min(34rem, 100%);
   margin: 0 auto;
 }
+
+.admin-dashboard form {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.admin-dashboard
+  :is(input:not([type='checkbox']):not([type='radio']), select, textarea) {
+  width: 100%;
+  min-width: 0;
+  min-height: 2.75rem;
+  padding: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-small);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.admin-dashboard button {
+  min-height: 2.75rem;
+  max-width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-brand);
+  border-radius: var(--radius-small);
+  background: var(--color-brand);
+  color: var(--color-brand-contrast);
+  font: inherit;
+}
+
+.admin-dashboard label:has(input[type='checkbox']) {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.75rem;
+}
+
+.admin-dashboard select:focus-visible {
+  outline: 0.2rem solid var(--color-focus);
+  outline-offset: 0.2rem;
+}
 .product-price {
   display: inline-flex;
   flex-wrap: wrap;

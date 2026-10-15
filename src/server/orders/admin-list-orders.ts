@@ -29,6 +29,7 @@ export type AdminOrderFilters = Readonly<{
   status?: unknown;
   fulfillment?: unknown;
   date?: unknown;
+  reference?: unknown;
 }>;
 
 const isoDatePattern = /^\d{4}-\d{2}-\d{2}$/;
@@ -54,6 +55,16 @@ function positiveInteger(value: unknown, fallback: number) {
 }
 
 export function parseAdminOrderFilters(input: AdminOrderFilters = {}) {
+  const reference =
+    typeof input.reference === 'string'
+      ? input.reference.trim().toUpperCase() || undefined
+      : input.reference;
+  if (
+    reference !== undefined &&
+    (typeof reference !== 'string' ||
+      !/^GUT-\d{2}-[A-Z0-9]{8}$/.test(reference))
+  )
+    throw new RangeError('Invalid reference filter.');
   const page = positiveInteger(input.page, 1);
   const pageSize = positiveInteger(input.pageSize, 25);
   const offset = (page - 1) * pageSize;
@@ -81,6 +92,7 @@ export function parseAdminOrderFilters(input: AdminOrderFilters = {}) {
     throw new RangeError('Invalid date filter.');
   }
   return {
+    reference: reference as string | undefined,
     page,
     pageSize,
     offset,
@@ -107,6 +119,7 @@ export async function adminListOrders(
   await requireAdmin(requestHeaders);
   const parsed = parseAdminOrderFilters(filters);
   const conditions = [
+    parsed.reference ? eq(orders.publicId, parsed.reference) : undefined,
     parsed.status ? eq(orders.orderStatus, parsed.status) : undefined,
     parsed.fulfillment ? eq(orders.fulfillment, parsed.fulfillment) : undefined,
     parsed.date ? eq(orders.requestedDate, parsed.date) : undefined,

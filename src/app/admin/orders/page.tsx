@@ -3,12 +3,12 @@ import { headers } from 'next/headers';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 
+import { paymentStatusLabel } from '@/domain/payment-method';
 import { orderStatusLabel } from '@/lib/order-status-label';
 import { requireVerifiedAdminSession } from '@/server/auth/admin-page-access';
 import {
   adminListOrders,
   parseAdminOrderFilters,
-  type AdminOrderListDto,
 } from '@/server/orders/admin-list-orders';
 
 export const dynamic = 'force-dynamic';
@@ -29,6 +29,7 @@ function filtersFrom(parameters: Awaited<SearchParams>) {
     'status',
     'fulfillment',
     'date',
+    'reference',
   ]);
   for (const [key, value] of Object.entries(parameters)) {
     if (!allowed.has(key) || typeof value !== 'string') notFound();
@@ -45,17 +46,6 @@ function money(value: number | null) {
   return value === null ? 'Pendiente' : `Q${(value / 100).toFixed(2)}`;
 }
 
-function paymentStatus(status: AdminOrderListDto['paymentStatus']) {
-  const labels = {
-    UNPAID: 'No pagado',
-    PENDING: 'Pendiente',
-    PAID: 'Pagado',
-    FAILED: 'Fallido',
-    REFUNDED: 'Reembolsado',
-  } as const;
-  return labels[status];
-}
-
 export default async function AdminOrdersPage({
   searchParams,
 }: {
@@ -70,6 +60,7 @@ export default async function AdminOrdersPage({
     const query = new URLSearchParams({
       page: String(page),
       pageSize: String(result.pageSize),
+      ...(filters.reference ? { reference: filters.reference } : {}),
       ...(filters.status ? { status: filters.status } : {}),
       ...(filters.fulfillment ? { fulfillment: filters.fulfillment } : {}),
       ...(filters.date ? { date: filters.date } : {}),
@@ -89,6 +80,14 @@ export default async function AdminOrdersPage({
         </div>
       </header>
       <form method="get" className="admin-auth-card">
+        <label htmlFor="orders-reference">Referencia exacta del pedido</label>
+        <input
+          id="orders-reference"
+          name="reference"
+          defaultValue={filters.reference ?? ''}
+          maxLength={32}
+          placeholder="GUT-26-ABC12345"
+        />
         <label htmlFor="orders-status">Estado</label>
         <select
           id="orders-status"
@@ -149,7 +148,7 @@ export default async function AdminOrdersPage({
                 </td>
                 <td>{orderStatusLabel(order.orderStatus)}</td>
                 <td>{money(order.subtotalMinor)}</td>
-                <td>{paymentStatus(order.paymentStatus)}</td>
+                <td>{paymentStatusLabel(order.paymentStatus)}</td>
                 <td>{money(order.totalMinor)}</td>
                 <td>
                   <Link href={`/admin/orders/${order.publicId}`}>

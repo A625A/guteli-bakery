@@ -1,4 +1,5 @@
 'use client';
+import { OwnerUiError, ownerErrorMessage } from '@/lib/owner-ui-error';
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -67,7 +68,7 @@ export function OrderStatusForm({
       });
       const payload = (await response.json()) as MutationResponse;
       if (!response.ok || !payload.order) {
-        throw new Error(
+        throw new OwnerUiError(
           payload.error?.message ?? 'No se pudo actualizar el estado.',
         );
       }
@@ -83,11 +84,7 @@ export function OrderStatusForm({
       );
       router.refresh();
     } catch (error) {
-      setMessage(
-        error instanceof Error
-          ? error.message
-          : 'No se pudo actualizar el estado.',
-      );
+      setMessage(ownerErrorMessage(error, 'No se pudo actualizar el estado.'));
     } finally {
       setPending(false);
     }
@@ -98,7 +95,12 @@ export function OrderStatusForm({
       <h2 id="order-status-title">Estado del pedido</h2>
       <p>Estado actual: {labels[status]}</p>
       {transitions.length > 0 ? (
-        <form action={submit}>
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (!pending) void submit(new FormData(event.currentTarget));
+          }}
+        >
           <label htmlFor="order-status">Nuevo estado</label>
           <select
             id="order-status"

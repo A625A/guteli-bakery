@@ -75,6 +75,20 @@ test('verified admins receive the operational shell without storefront chrome', 
   await expect(
     page.getByRole('heading', { name: 'Panel administrativo' }),
   ).toBeVisible();
+  await expect(page.getByText(/Última consulta correcta:/)).toBeVisible();
+  const firstConfirmed = await page
+    .getByRole('region', { name: 'Actualización del panel' })
+    .locator('time')
+    .getAttribute('datetime');
+  await page.getByRole('button', { name: 'Actualizar panel' }).click();
+  await expect(
+    page
+      .getByRole('region', { name: 'Actualización del panel' })
+      .locator('time'),
+  ).not.toHaveAttribute('datetime', firstConfirmed!);
+  await expect(
+    page.getByRole('button', { name: 'Actualizar panel' }),
+  ).toBeEnabled();
   const navigation = page.getByRole('navigation', { name: 'Administración' });
   await expect(navigation.getByRole('link', { name: 'Resumen' })).toBeVisible();
   await expect(navigation.getByRole('link', { name: 'Pedidos' })).toBeVisible();
@@ -85,6 +99,53 @@ test('verified admins receive the operational shell without storefront chrome', 
     navigation.getByRole('link', { name: 'Categorías' }),
   ).toBeVisible();
   await expect(page.getByRole('link', { name: 'Menú' })).toHaveCount(0);
+
+  const refreshPanel = page.getByRole('region', {
+    name: 'Actualización del panel',
+  });
+  const lastConfirmed = await refreshPanel
+    .locator('time')
+    .getAttribute('datetime');
+  const refreshRequest = (url: URL) =>
+    /^\/admin\/?$/.test(url.pathname) && url.searchParams.has('_rsc');
+  let blockedRefreshes = 0;
+  let releaseRefresh!: () => void;
+  const delayedRefresh = new Promise<void>((resolve) => {
+    releaseRefresh = resolve;
+  });
+  await page.route(refreshRequest, async (route) => {
+    blockedRefreshes += 1;
+    await delayedRefresh;
+    return route.continue();
+  });
+  await refreshPanel.getByRole('button', { name: 'Actualizar panel' }).click();
+  await expect.poll(() => blockedRefreshes).toBeGreaterThan(0);
+  await expect(refreshPanel.getByRole('status')).toContainText(
+    'No se ha confirmado',
+    { timeout: 15000 },
+  );
+  await expect(refreshPanel.locator('time')).toHaveAttribute(
+    'datetime',
+    lastConfirmed!,
+  );
+  releaseRefresh();
+  await expect(refreshPanel.locator('time')).not.toHaveAttribute(
+    'datetime',
+    lastConfirmed!,
+  );
+  await page.unroute(refreshRequest);
+  // A failed RSC request falls back to a full navigation in this Next version.
+  // That fallback can legitimately confirm a fresh server result.
+  const beforeFallback = await refreshPanel
+    .locator('time')
+    .getAttribute('datetime');
+  await page.route(refreshRequest, (route) => route.abort('failed'));
+  await refreshPanel.getByRole('button', { name: 'Actualizar panel' }).click();
+  await expect(refreshPanel.locator('time')).not.toHaveAttribute(
+    'datetime',
+    beforeFallback!,
+  );
+  await page.unroute(refreshRequest);
 
   const ordersResponse = await page.goto('/admin/orders');
   expect(ordersResponse?.headers()['cache-control']).toBe(

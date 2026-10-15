@@ -64,7 +64,7 @@ function safeHistoryEntry(candidate: {
 }
 
 export async function adminGetOrder(publicId: string, requestHeaders: Headers) {
-  await requireAdmin(requestHeaders);
+  const actor = await requireAdmin(requestHeaders);
   const [identity] = await db
     .select({ id: orders.id })
     .from(orders)
@@ -85,6 +85,9 @@ export async function adminGetOrder(publicId: string, requestHeaders: Headers) {
       totalMinor: orders.totalMinor,
       orderStatus: orders.orderStatus,
       paymentStatus: orders.paymentStatus,
+      paymentMethod: orders.paymentMethod,
+      paymentInstructionsDraft: orders.paymentInstructionsDraft,
+      paymentMethodUpdatedAt: orders.paymentMethodUpdatedAt,
       version: orders.version,
       terminalAt: orders.terminalAt,
       createdAt: orders.createdAt,
@@ -145,6 +148,15 @@ export async function adminGetOrder(publicId: string, requestHeaders: Headers) {
     totalMinor: order.totalMinor,
     orderStatus: order.orderStatus,
     paymentStatus: order.paymentStatus,
+    paymentMethod: order.paymentMethod,
+    paymentInstructionsDraft:
+      actor.role === 'OWNER' ? order.paymentInstructionsDraft : null,
+    paymentMethodUpdatedAt: order.paymentMethodUpdatedAt?.toISOString() ?? null,
+    canAssignPaymentMethod:
+      actor.role === 'OWNER' &&
+      !['PAID', 'PENDING', 'REFUNDED'].includes(order.paymentStatus) &&
+      !order.terminalAt,
+    totalAccepted: review?.accepted ?? false,
     version: order.version,
     terminalAt: order.terminalAt?.toISOString() ?? null,
     createdAt: order.createdAt.toISOString(),

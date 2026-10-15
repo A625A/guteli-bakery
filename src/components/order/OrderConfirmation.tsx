@@ -5,16 +5,12 @@ import { CheckoutPriceReview, useCheckoutReview } from './CheckoutPriceReview';
 import { WhatsAppOrderSummary } from './WhatsAppOrderSummary';
 
 import { orderStatusLabel } from '@/lib/order-status-label';
+import {
+  paymentMethodLabel,
+  paymentStatusLabel,
+} from '@/domain/payment-method';
 import { formatGTQ } from '@/lib/money';
 import type { PublicReceipt } from '@/server/orders/get-receipt';
-
-const paymentStatusLabels: Readonly<Record<string, string>> = {
-  UNPAID: 'Pago pendiente',
-  PENDING: 'Pago en proceso',
-  PAID: 'Pagado',
-  FAILED: 'Pago no completado',
-  REFUNDED: 'Pago reembolsado',
-};
 
 function formatRequestedDate(requestedDate: string) {
   return new Intl.DateTimeFormat('es-GT', {
@@ -58,11 +54,12 @@ export function OrderConfirmation({
             <dd>{orderStatusLabel(receipt.orderStatus)}</dd>
           </div>
           <div>
+            <dt>Método de pago</dt>
+            <dd>{paymentMethodLabel(receipt.paymentMethod)}</dd>
+          </div>
+          <div>
             <dt>Pago</dt>
-            <dd>
-              {paymentStatusLabels[receipt.paymentStatus] ??
-                'Estado por confirmar'}
-            </dd>
+            <dd>{paymentStatusLabel(receipt.paymentStatus)}</dd>
           </div>
           <div>
             <dt>Modalidad</dt>
@@ -75,6 +72,11 @@ export function OrderConfirmation({
         </dl>
       </section>
 
+      <p>
+        Confirmar el pedido y elegir el método no significan que se haya
+        recibido un pago. La tienda coordinará los detalles contigo; los cobros
+        en línea siguen desactivados.
+      </p>
       <section
         className="order-confirmation__items"
         aria-labelledby="order-items-title"
