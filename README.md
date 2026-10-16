@@ -4,7 +4,7 @@
 
 **Full-stack bakery ordering experience built with Next.js, TypeScript, PostgreSQL, and Docker.**
 
-Spanish-first, mobile-first storefront for browsing baked goods, building an order request, choosing pickup or delivery, and handing the request to the bakery for human confirmation.
+Spanish-first, mobile-first storefront for browsing baked goods, building an order request, choosing pickup or delivery, and handing the request to the bakery for human confirmation
 
 ![Güteli Bakery storefront](artifacts/screenshots/desktop/milestone-3-homepage.png)
 
