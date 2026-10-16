@@ -178,4 +178,22 @@ describe('Better Auth configuration', () => {
     expect(storedSessions).toHaveLength(1);
     expect(audit.actorId).toBe(provisionedUser.id);
   });
+  it('keeps provider errors, customer data and credentials out of authentication logs', async () => {
+    const context = await auth.$context;
+    vi.spyOn(context.internalAdapter, 'findUserByEmail').mockRejectedValueOnce(
+      new Error('CANARY_NAME CANARY_PHONE CANARY_COOKIE CANARY_PASSWORD'),
+    );
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const response = await authRequest('sign-in/email', {
+      email: 'canary@example.test',
+      password: 'CANARY_PASSWORD',
+    });
+    expect(response.status).toBe(503);
+    expect(await response.text()).not.toContain('CANARY');
+    expect(
+      JSON.stringify([warn.mock.calls, error.mock.calls, log.mock.calls]),
+    ).not.toContain('CANARY');
+  });
 });

@@ -1,3 +1,5 @@
+import { logOperationalEvent } from '@/server/observability/safe-log';
+import { privateHeaders } from '@/server/privacy/headers';
 import { getRequestId } from '@/server/observability/request-id';
 
 export const dynamic = 'force-dynamic';
@@ -13,15 +15,16 @@ export async function GET(request: Request) {
       { status: 'ok', ...database, requestId },
       {
         status: 200,
-        headers: { 'x-request-id': requestId },
+        headers: { ...privateHeaders, 'x-request-id': requestId },
       },
     );
   } catch {
+    logOperationalEvent('DATABASE_UNAVAILABLE');
     return Response.json(
       { status: 'unavailable', database: 'down', requestId },
       {
         status: 503,
-        headers: { 'x-request-id': requestId },
+        headers: { ...privateHeaders, 'x-request-id': requestId },
       },
     );
   }

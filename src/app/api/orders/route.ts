@@ -1,3 +1,5 @@
+import { logOperationalEvent } from '@/server/observability/safe-log';
+import { privateHeaders } from '@/server/privacy/headers';
 import { createOrderRequestSchema } from '@/domain/order-contract';
 import {
   getOrderSecuritySettings,
@@ -28,6 +30,7 @@ function postErrorResponse(
   status: number,
   retryAfterSeconds?: number,
 ) {
+  if (status >= 500) logOperationalEvent('ORDER_SAVE_FAILED');
   return errorResponse(error, status, retryAfterSeconds);
 }
 
@@ -260,6 +263,7 @@ export function createPostOrderHandler(
         {
           status: result.kind === 'created' ? 201 : 200,
           headers: {
+            ...privateHeaders,
             'cache-control': 'no-store',
             'x-request-id': requestId,
           },

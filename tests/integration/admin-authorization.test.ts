@@ -25,6 +25,7 @@ import {
 import { auth } from '@/server/auth/auth';
 import { provisionOwner } from '@/server/auth/provision-owner';
 import { requireRecentReauthentication } from '@/server/auth/reauth';
+import { getOperationsSummary } from '@/server/operations/summary';
 import { getAdminDashboard } from '@/server/admin/dashboard';
 import {
   categories,
@@ -150,6 +151,9 @@ describe('authoritative admin authorization DAL', () => {
   afterAll(() => pool.end());
 
   it('denies no session, expired sessions, inactive users, and missing MFA', async () => {
+    await expect(getOperationsSummary(new Headers())).rejects.toMatchObject({
+      code: 'UNAUTHENTICATED',
+    });
     await expect(requireAdmin(new Headers())).rejects.toMatchObject({
       code: 'UNAUTHENTICATED',
     });
@@ -160,6 +164,9 @@ describe('authoritative admin authorization DAL', () => {
       .update(session)
       .set({ expiresAt: new Date(Date.now() - 1_000) })
       .where(eq(session.id, active.sessionId));
+    await expect(getOperationsSummary(jar.headers())).rejects.toMatchObject({
+      code: 'UNAUTHENTICATED',
+    });
     await expect(requireAdmin(jar.headers())).rejects.toMatchObject({
       code: 'UNAUTHENTICATED',
     });
@@ -171,6 +178,9 @@ describe('authoritative admin authorization DAL', () => {
       .update(user)
       .set({ active: false })
       .where(eq(user.id, inactive.userId));
+    await expect(getOperationsSummary(jar.headers())).rejects.toMatchObject({
+      code: 'UNAUTHENTICATED',
+    });
     await expect(requireAdmin(jar.headers())).rejects.toMatchObject({
       code: 'UNAUTHENTICATED',
     });
@@ -182,6 +192,9 @@ describe('authoritative admin authorization DAL', () => {
       .update(session)
       .set({ mfaVerifiedAt: null })
       .where(eq(session.id, incomplete.sessionId));
+    await expect(getOperationsSummary(jar.headers())).rejects.toMatchObject({
+      code: 'UNAUTHENTICATED',
+    });
     await expect(requireAdmin(jar.headers())).rejects.toMatchObject({
       code: 'UNAUTHENTICATED',
     });
@@ -256,7 +269,30 @@ describe('authoritative admin authorization DAL', () => {
         fulfillment: 'DELIVERY',
       }),
     ]);
-    const serialized = JSON.stringify(dashboard);
+    const operations = await getOperationsSummary(jar.headers());
+    expect(operations.find((row) => row.key === 'database')?.state).toBe('ok');
+    expect(operations.find((row) => row.key === 'backups')?.state).toBe(
+      'unknown',
+    );
+    await db.insert(outboxEvents).values({
+      eventType: 'CUSTOMER_ORDER_CREATED',
+      payload: { orderId, requestId: 'private-failed-notification' },
+      recipient: '50255550000',
+      state: 'BLOCKED',
+      deliveryStatus: 'BLOCKED',
+      lastErrorCode: 'RETRY_LIMIT',
+    });
+    const failedOperations = await getOperationsSummary(jar.headers());
+    expect(
+      failedOperations.find((row) => row.key === 'notifications')?.state,
+    ).toBe('attention');
+    const serialized = JSON.stringify({
+      dashboard,
+      operations,
+      failedOperations,
+    });
+    expect(serialized).not.toContain('50255550000');
+    expect(serialized).not.toContain('private-failed-notification');
     expect(serialized).not.toContain('+50255550000');
     expect(serialized).not.toContain('Ubicación privada');
     expect(serialized).not.toContain('Nombre privado');

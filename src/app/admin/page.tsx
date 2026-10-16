@@ -1,3 +1,4 @@
+import { getOperationsSummary } from '@/server/operations/summary';
 import { SessionActions } from '@/components/admin/SessionActions';
 import { DashboardRefresh } from '@/components/admin/DashboardRefresh';
 import { orderStatusLabel } from '@/lib/order-status-label';
@@ -14,7 +15,10 @@ const actionableStatuses = [
 
 export default async function AdminPage() {
   await requireVerifiedAdminSession();
-  const dashboard = await getAdminDashboard();
+  const [dashboard, operations] = await Promise.all([
+    getAdminDashboard(),
+    getOperationsSummary(),
+  ]);
   return (
     <main className="admin-dashboard" id="main-content" tabIndex={-1}>
       <DashboardRefresh refreshedAt={new Date().toISOString()} />
@@ -26,6 +30,31 @@ export default async function AdminPage() {
         </div>
         <SessionActions />
       </header>
+
+      <section aria-labelledby="operations-title">
+        <h2 id="operations-title">Estado de la tienda</h2>
+        <p>
+          Se actualiza con este panel. No envía alertas con el panel cerrado.
+        </p>
+        <div className="admin-dashboard__cards">
+          {operations.map((item) => (
+            <article key={item.key} className="admin-dashboard__card">
+              <h3>{item.label}</h3>
+              <strong>
+                {
+                  {
+                    ok: 'Comprobado',
+                    attention: 'Necesita atención',
+                    unknown: 'Sin comprobar',
+                    disabled: 'Desactivado',
+                  }[item.state]
+                }
+              </strong>
+              <p>{item.message}</p>
+            </article>
+          ))}
+        </div>
+      </section>
 
       <section aria-labelledby="orders-summary-title">
         <h2 id="orders-summary-title">Pedidos por atender</h2>

@@ -1,3 +1,5 @@
+import { privateHeaders } from '@/server/privacy/headers';
+import { logOperationalEvent } from '@/server/observability/safe-log';
 export type PublicError<Code extends string = string> = Readonly<{
   code: Code;
   message: string;
@@ -10,6 +12,7 @@ export function errorResponse<Code extends string>(
   status: number,
   retryAfterSeconds?: number,
 ) {
+  if (status >= 500) logOperationalEvent('REQUEST_FAILED');
   return Response.json(
     {
       error: {
@@ -22,6 +25,7 @@ export function errorResponse<Code extends string>(
     {
       status,
       headers: {
+        ...privateHeaders,
         'cache-control': 'no-store',
         'x-request-id': error.requestId,
         ...(retryAfterSeconds === undefined

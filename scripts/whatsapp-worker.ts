@@ -2,8 +2,8 @@ import { loadEnvConfig } from '@next/env';
 import { readAutomationSettings } from '../src/server/notifications/automation-settings';
 import { processNextWhatsAppEvent } from '../src/server/notifications/automation-worker';
 import { recordWhatsAppOptOut } from '../src/server/notifications/delivery-receipts';
-import { whatsappDeliveryReceipts } from '../src/server/db/schema';
-import { lt } from 'drizzle-orm';
+import { recordWorkerSignal } from '../src/server/operations/worker-signal';
+import { logOperationalEvent } from '../src/server/observability/safe-log';
 
 loadEnvConfig(process.cwd(), false);
 async function main() {
@@ -14,9 +14,17 @@ async function main() {
   const cleanup = mode === '--cleanup';
   if (!['', '--opt-out', '--cleanup'].includes(mode))
     throw new Error('Invalid arguments');
+  if (cleanup) {
+    logOperationalEvent('RETENTION_DISABLED');
+    throw new Error(
+      'La limpieza requiere una política aprobada. No se modificaron datos.',
+    );
+  }
   const settings = readAutomationSettings();
   if (!optOut && !cleanup && !settings) {
-    console.log('WhatsApp automation disabled; no sends attempted.');
+    console.log(
+      'WhatsApp automático desactivado. No se intentó enviar mensajes.',
+    );
     return;
   }
   const { db, pool } = await import('../src/server/db/client');
@@ -28,44 +36,23 @@ async function main() {
         if (destination.length > 32) throw new Error('Invalid destination');
       }
       await recordWhatsAppOptOut(db, destination.trim(), new Date());
-      console.log('WhatsApp withdrawal recorded.');
+      console.log('Se registró la solicitud de no recibir mensajes.');
       return;
     }
-    if (cleanup) {
-      await db
-        .delete(whatsappDeliveryReceipts)
-        .where(
-          lt(
-            whatsappDeliveryReceipts.receivedAt,
-            new Date(Date.now() - 7 * 86400000),
-          ),
-        );
-      console.log('Expired WhatsApp callback receipts removed.');
-      return;
-    }
-    const counts: Record<string, number> = {};
     for (let i = 0; i < 25; i++) {
       const result = await processNextWhatsAppEvent({ database: db, settings });
-      counts[result] = (counts[result] ?? 0) + 1;
       if (result === 'IDLE' || result === 'DISABLED') break;
     }
-    // Minimal authenticated callback inbox is kept for at most seven days by the worker.
-    await db
-      .delete(whatsappDeliveryReceipts)
-      .where(
-        lt(
-          whatsappDeliveryReceipts.receivedAt,
-          new Date(Date.now() - 7 * 86400000),
-        ),
-      );
-    console.log({ event: 'whatsapp_batch_complete', counts });
+    await recordWorkerSignal(db, 'ok');
+    logOperationalEvent('WHATSAPP_BATCH_COMPLETE');
+  } catch (error) {
+    if (!optOut) await recordWorkerSignal(db, 'failed');
+    throw error;
   } finally {
     await pool.end();
   }
 }
 main().catch(() => {
-  console.error(
-    'WhatsApp operation failed; no configuration or customer data logged.',
-  );
+  logOperationalEvent('WHATSAPP_WORKER_FAILED');
   process.exitCode = 1;
 });

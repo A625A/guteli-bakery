@@ -1,3 +1,4 @@
+import { privateHeaders } from '@/server/privacy/headers';
 import { errorResponse } from '@/server/http/error-response';
 import { getRequestId } from '@/server/observability/request-id';
 import { getReceipt } from '@/server/orders/get-receipt';
@@ -36,6 +37,7 @@ export function createGetReceiptHandler(
         {
           status: 200,
           headers: {
+            ...privateHeaders,
             'cache-control': 'no-store',
             'x-request-id': requestId,
           },

@@ -1,3 +1,5 @@
+import { privateHeaders } from '@/server/privacy/headers';
+import { logOperationalEvent } from '@/server/observability/safe-log';
 import { toNextJsHandler } from 'better-auth/next-js';
 
 import { auth } from '@/server/auth/auth';
@@ -17,9 +19,26 @@ function hasCookie(cookieHeader: string | null, name: string) {
   });
 }
 
-export const GET = handlers.GET;
+function unavailableAuthResponse() {
+  logOperationalEvent('AUTH_FAILURE');
+  return Response.json(
+    {
+      code: 'AUTH_UNAVAILABLE',
+      message:
+        'No se pudo completar el acceso. Intenta de nuevo en un momento.',
+    },
+    { status: 503, headers: privateHeaders },
+  );
+}
+export async function GET(request: Request) {
+  try {
+    return await handlers.GET(request);
+  } catch {
+    return unavailableAuthResponse();
+  }
+}
 
-export async function POST(request: Request) {
+async function post(request: Request) {
   const sessionCookieName = (await auth.$context).authCookies.sessionToken.name;
   if (hasCookie(request.headers.get('cookie'), sessionCookieName)) {
     try {
@@ -33,5 +52,13 @@ export async function POST(request: Request) {
     }
   }
 
-  return handlers.POST(request);
+  return await handlers.POST(request);
+}
+
+export async function POST(request: Request) {
+  try {
+    return await post(request);
+  } catch {
+    return unavailableAuthResponse();
+  }
 }

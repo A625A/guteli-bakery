@@ -177,3 +177,23 @@ export const whatsappDeliveryReceipts = pgTable(
     index('whatsapp_receipts_received_idx').on(table.receivedAt),
   ],
 );
+
+// One bounded row per internal worker; no request/customer/provider identifiers.
+export const operationalChecks = pgTable(
+  'operational_checks',
+  {
+    component: varchar('component', { length: 32 }).primaryKey(),
+    status: varchar('status', { length: 16 }).notNull(),
+    checkedAt: timestamp('checked_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    check(
+      'operational_checks_component',
+      sql`${table.component} IN ('whatsapp_worker')`,
+    ),
+    check(
+      'operational_checks_status',
+      sql`${table.status} IN ('ok', 'failed')`,
+    ),
+  ],
+);

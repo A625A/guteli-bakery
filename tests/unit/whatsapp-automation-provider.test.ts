@@ -129,6 +129,6 @@ it('disabled operator command exits without opening even an invalid database or 
       },
     },
   );
-  expect(output).toContain('disabled; no sends attempted');
+  expect(output).toContain('No se intentó enviar mensajes.');
   expect(output).not.toContain('fixture-sensitive');
 });

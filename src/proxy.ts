@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
+import { isPrivatePath, privateHeaders } from '@/server/privacy/headers';
 import { buildContentSecurityPolicy } from '@/server/security/csp';
 
 export function proxy(request: NextRequest) {
@@ -31,9 +32,9 @@ export function proxy(request: NextRequest) {
     'referrer-policy',
     isAdmin ? 'no-referrer' : 'strict-origin-when-cross-origin',
   );
-  if (isAdmin) {
-    response.headers.set('cache-control', 'private, no-store');
-    response.headers.set('x-robots-tag', 'noindex, nofollow');
+  if (isPrivatePath(request.nextUrl.pathname)) {
+    for (const [name, value] of Object.entries(privateHeaders))
+      response.headers.set(name, value);
   }
   return response;
 }

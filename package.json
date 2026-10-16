@@ -23,6 +23,7 @@
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "test:privacy": "playwright test --config=playwright.privacy.config.ts",
     "test:e2e:live": "playwright test --config=playwright.live.config.ts",
     "test:e2e:unavailable": "playwright test --config=playwright.unavailable.config.ts",
     "test:e2e:install": "playwright install chromium",
@@ -30,7 +31,8 @@
     "build:sites": "node scripts/build-sites.mjs",
     "start": "next start",
     "production:check": "node --conditions=react-server --import tsx scripts/check-production-runtime.ts",
-    "whatsapp:worker": "node --conditions=react-server --import tsx scripts/whatsapp-worker.ts"
+    "whatsapp:worker": "node --conditions=react-server --import tsx scripts/whatsapp-worker.ts",
+    "privacy:check": "node --conditions=react-server --import tsx scripts/privacy-check.ts"
   },
   "dependencies": {
     "better-auth": "^1.7.2",

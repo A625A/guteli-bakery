@@ -18,6 +18,10 @@ En **Resumen** puedes ver pedidos por atender, productos agotados y notificacion
 
 Si aparece un aviso de información sin actualizar, revisa la conexión y pulsa **Actualizar panel**. No tomes un dato antiguo como confirmación de que no hay pedidos nuevos. Con el panel cerrado no se reciben alertas; la tienda debe acordar una rutina de revisión. Un mensaje aceptado por el proveedor no significa entregado, y ninguno de esos estados demuestra un pago.
 
+En **Estado de la tienda**, «Necesita atención» indica un problema que conviene revisar; «Sin comprobar» significa que falta evidencia. Si hubo errores al guardar, busca el pedido antes de pedir al cliente que lo envíe otra vez. Si un mensaje tiene resultado desconocido, no lo reenvíes hasta aclararlo. Los respaldos y la verificación de pagos siguen pendientes. Consulta la [guía de monitoreo](monitoreo-local.md) para pedir apoyo técnico.
+
+Los enlaces privados de pedidos no deben publicarse. Atiende las solicitudes de corrección o eliminación según el [procedimiento de privacidad](privacidad-conservacion.md); la política de limpieza aún necesita aprobación y no está activada.
+
 ## Mantener productos y promociones
 
 - En **Productos**, crea o edita nombre, categoría, descripción y presentación. En **Unidad de venta**, escribe lo que se compra: por ejemplo, «bolsa de 5 unidades».

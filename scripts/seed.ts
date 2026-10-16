@@ -143,8 +143,9 @@ async function main() {
 
 if (process.argv[1]?.endsWith('/scripts/seed.ts')) {
   void main().catch((error: unknown) => {
+    void error;
     console.error(
-      error instanceof Error ? error.message : 'Catalog seed failed.',
+      'No se pudo preparar el catálogo. Revisa la configuración local.',
     );
     process.exitCode = 1;
   });

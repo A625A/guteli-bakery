@@ -47,7 +47,7 @@ Usar una base de datos de pruebas aislada. Aplicar las migraciones con el comand
 
 `npm run whatsapp:worker -- --opt-out` lee un número con código de país desde la entrada estándar, seguido del fin de entrada (EOF). Registra una baja solicitada por otro medio sin enviar mensajes. No poner números de clientes en historiales de comandos compartidos ni en registros. Solo debe ejecutarlo una persona de confianza con acceso a la base de datos.
 
-`npm run whatsapp:worker -- --cleanup` elimina avisos de entrega almacenados hace más de siete días sin activar los envíos. Los lotes ejecutados correctamente con el envío habilitado también hacen esta limpieza. Programarla por separado si los envíos permanecen desactivados mientras se reciben avisos. Los registros de consentimiento y bajas son datos operativos privados: deben incluirse en la futura política de privacidad y conservación; no se debe asumir que anonimizar un pedido elimina automáticamente todos sus registros relacionados.
+El Ticket 12 bloquea `npm run whatsapp:worker -- --cleanup` y retira la eliminación automática al terminar lotes. No programar limpieza: falta aprobar los plazos y proteger la evidencia de conciliación e idempotencia. Los registros de consentimiento y bajas son datos operativos privados; anonimizar un pedido no elimina todas sus copias relacionadas. Véase la [propuesta de conservación pendiente](privacidad-conservacion.md). El worker ahora registra una señal mínima de ejecución para el [estado operativo del panel](monitoreo-local.md), sin activar envíos ni añadir un scheduler.
 
 ## Costos y referencias oficiales
 

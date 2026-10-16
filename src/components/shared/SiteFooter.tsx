@@ -37,6 +37,9 @@ export function SiteFooter() {
                 <Link href={href}>{label}</Link>
               </li>
             ))}
+            <li>
+              <Link href="/privacidad/">Privacidad</Link>
+            </li>
           </ul>
         </nav>
 

@@ -75,6 +75,12 @@ test('verified admins receive the operational shell without storefront chrome', 
   await expect(
     page.getByRole('heading', { name: 'Panel administrativo' }),
   ).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Estado de la tienda', exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByText('Pendiente del Ticket 11.', { exact: false }),
+  ).toBeVisible();
   await expect(page.getByText(/Última consulta correcta:/)).toBeVisible();
   const firstConfirmed = await page
     .getByRole('region', { name: 'Actualización del panel' })

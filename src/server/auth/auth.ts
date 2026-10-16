@@ -4,6 +4,7 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { betterAuth } from 'better-auth';
 import { twoFactor } from 'better-auth/plugins';
 
+import { safeAuthLog } from '@/server/observability/safe-log';
 import { db } from '@/server/db/client';
 import * as schema from '@/server/db/schema';
 
@@ -32,6 +33,9 @@ const authSecret = requiredProductionAuthValue(
 );
 
 export const auth = betterAuth({
+  logger: { level: 'warn', log: safeAuthLog },
+  // Let our HTTP boundary handle unexpected errors before Better Call logs them.
+  onAPIError: { throw: true },
   database: drizzleAdapter(db, { provider: 'pg', schema }),
   baseURL: applicationOrigin,
   secret: authSecret,
