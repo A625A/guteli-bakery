@@ -57,6 +57,13 @@ export function OrderStatusForm({
   }, [publicId]);
 
   async function submit(formData: FormData) {
+    if (
+      formData.get('status') === 'CANCELLED' &&
+      !window.confirm(
+        '¿Cancelar este pedido? Esta acción no se puede deshacer.',
+      )
+    )
+      return;
     setPending(true);
     setMessage(null);
     try {

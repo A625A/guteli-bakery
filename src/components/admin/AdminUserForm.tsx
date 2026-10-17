@@ -124,25 +124,31 @@ export function AdminUserForm({
 
   return (
     <>
-      <section aria-labelledby="create-admin-title" className="admin-auth-card">
-        <h2 id="create-admin-title">Crear administradora</h2>
-        <form action={createUser}>
-          <label htmlFor="admin-name">Nombre</label>
-          <input id="admin-name" name="name" required maxLength={160} />
-          <label htmlFor="admin-email">Correo electrónico</label>
-          <input
-            id="admin-email"
-            name="email"
-            required
-            type="email"
-            maxLength={254}
-            autoComplete="off"
-          />
-          <button disabled={pending} type="submit">
-            Crear administradora
-          </button>
-        </form>
-      </section>
+      <details className="admin-panel">
+        <summary>Agregar administradora</summary>
+        <section
+          aria-labelledby="create-admin-title"
+          className="admin-auth-card"
+        >
+          <h2 id="create-admin-title">Crear administradora</h2>
+          <form action={createUser}>
+            <label htmlFor="admin-name">Nombre</label>
+            <input id="admin-name" name="name" required maxLength={160} />
+            <label htmlFor="admin-email">Correo electrónico</label>
+            <input
+              id="admin-email"
+              name="email"
+              required
+              type="email"
+              maxLength={254}
+              autoComplete="off"
+            />
+            <button disabled={pending} type="submit">
+              Crear administradora
+            </button>
+          </form>
+        </section>
+      </details>
 
       {credential ? (
         <section aria-labelledby="credential-title" role="status">
@@ -172,7 +178,7 @@ export function AdminUserForm({
 
       <section aria-labelledby="admin-users-title">
         <h2 id="admin-users-title">Cuentas administrativas</h2>
-        <div className="admin-dashboard__table-wrap">
+        <div className="admin-dashboard__table-wrap admin-responsive-table">
           <table>
             <thead>
               <tr>
@@ -191,13 +197,15 @@ export function AdminUserForm({
                     <br />
                     <small>{candidate.email}</small>
                   </th>
-                  <td>
+                  <td data-label="Rol">
                     {candidate.role === 'OWNER'
                       ? 'Propietaria'
                       : 'Administradora'}
                   </td>
-                  <td>{candidate.active ? 'Activa' : 'Desactivada'}</td>
-                  <td>
+                  <td data-label="Estado">
+                    {candidate.active ? 'Activa' : 'Desactivada'}
+                  </td>
+                  <td data-label="MFA">
                     {candidate.twoFactorEnabled ? 'Configurado' : 'Pendiente'}
                   </td>
                   <td>

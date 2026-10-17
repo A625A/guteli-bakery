@@ -122,3 +122,25 @@ export function parseAdminCategorySearch(value: unknown) {
   }
   return search || undefined;
 }
+
+export function parseProductFilters(
+  input: Readonly<{
+    search?: unknown;
+    state?: unknown;
+    category?: unknown;
+    sort?: unknown;
+  }>,
+) {
+  const parsed = z
+    .object({
+      search: z.string().trim().max(160).optional(),
+      state: z
+        .enum(['all', 'active', 'inactive', 'retired', 'out'])
+        .default('all'),
+      category: z.union([z.string().uuid(), z.literal('')]).optional(),
+      sort: z.enum(['catalog', 'name', 'price']).default('catalog'),
+    })
+    .safeParse(input);
+  if (!parsed.success) throw new RangeError('Invalid product filters.');
+  return { ...parsed.data, category: parsed.data.category || undefined };
+}

@@ -75,6 +75,9 @@ test('verified admins receive the operational shell without storefront chrome', 
   await expect(
     page.getByRole('heading', { name: 'Panel administrativo' }),
   ).toBeVisible();
+  await page
+    .getByText('Actualización y seguimiento del panel', { exact: true })
+    .click();
   await expect(page.getByText(/Última consulta correcta:/)).toBeVisible();
   const firstConfirmed = await page
     .getByRole('region', { name: 'Actualización del panel' })
@@ -141,7 +144,7 @@ test('verified admins receive the operational shell without storefront chrome', 
     .getAttribute('datetime');
   await page.route(refreshRequest, (route) => route.abort('failed'));
   await refreshPanel.getByRole('button', { name: 'Actualizar panel' }).click();
-  await expect(refreshPanel.locator('time')).not.toHaveAttribute(
+  await expect(page.locator('.admin-refresh time')).not.toHaveAttribute(
     'datetime',
     beforeFallback!,
   );

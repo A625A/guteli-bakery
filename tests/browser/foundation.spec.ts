@@ -85,12 +85,13 @@ for (const route of routes) {
 
 test('slashless storefront routes render directly without redirects', async ({
   request,
+  baseURL,
 }) => {
   for (const path of ['/menu', '/cart', '/contact']) {
     const response = await request.get(path, { maxRedirects: 0 });
 
     expect(response.status()).toBe(200);
-    expect(response.url()).toBe(`http://127.0.0.1:3000${path}`);
+    expect(response.url()).toBe(`${baseURL}${path}`);
     expect(response.headers().location).toBeUndefined();
   }
 });

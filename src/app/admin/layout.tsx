@@ -1,3 +1,4 @@
+import './admin.css';
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import Link from 'next/link';
@@ -29,7 +30,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       </a>
       <header className="admin-shell__header">
         <Link className="admin-shell__brand" href="/admin">
-          Güteli <span>Administración</span>
+          Güteli <span>Hecho con cariño</span>
         </Link>
         <VerifiedAdminNavigation />
       </header>

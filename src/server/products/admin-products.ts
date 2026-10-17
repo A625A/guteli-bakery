@@ -1,6 +1,16 @@
 import 'server-only';
 
-import { and, asc, count, eq, gt, inArray, isNull } from 'drizzle-orm';
+import {
+  and,
+  asc,
+  count,
+  eq,
+  gt,
+  ilike,
+  inArray,
+  isNull,
+  isNotNull,
+} from 'drizzle-orm';
 
 import {
   AuthorizationError,
@@ -26,7 +36,10 @@ import type {
   AdminProductCreateInput,
   AdminProductUpdateInput,
 } from './admin-contracts';
-import { parseAdminCatalogPagination } from './admin-contracts';
+import {
+  parseAdminCatalogPagination,
+  parseProductFilters,
+} from './admin-contracts';
 import { acquireCatalogMutationLock } from './catalog-mutation-lock';
 
 type CatalogTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
@@ -245,16 +258,51 @@ function toDto(
 
 export async function adminListProducts(
   requestHeaders: Headers,
-  pagination: Readonly<{ page?: unknown; pageSize?: unknown }> = {},
+  pagination: Readonly<{
+    page?: unknown;
+    pageSize?: unknown;
+    search?: unknown;
+    state?: unknown;
+    category?: unknown;
+    sort?: unknown;
+  }> = {},
 ) {
   await requireAdmin(requestHeaders);
   const parsed = parseAdminCatalogPagination(pagination);
+  const filters = parseProductFilters(pagination);
+  const where = and(
+    filters.search
+      ? ilike(
+          products.name,
+          `%${filters.search.replace(/[\\%_]/g, (c) => `\\${c}`)}%`,
+        )
+      : undefined,
+    filters.category ? eq(products.categoryId, filters.category) : undefined,
+    filters.state === 'retired'
+      ? isNotNull(products.deletedAt)
+      : filters.state !== 'all'
+        ? isNull(products.deletedAt)
+        : undefined,
+    filters.state === 'active'
+      ? eq(products.active, true)
+      : filters.state === 'inactive'
+        ? eq(products.active, false)
+        : filters.state === 'out'
+          ? and(eq(products.active, true), eq(products.stockQuantity, 0))
+          : undefined,
+  );
   const [rows, [{ value: total }]] = await Promise.all([
     db
       .select(productSelection)
       .from(products)
       .innerJoin(categories, eq(products.categoryId, categories.id))
+      .where(where)
       .orderBy(
+        ...(filters.sort === 'price'
+          ? [asc(products.priceMinor)]
+          : filters.sort === 'name'
+            ? [asc(products.name)]
+            : []),
         asc(categories.sortOrder),
         asc(categories.name),
         asc(products.sortOrder),
@@ -263,7 +311,7 @@ export async function adminListProducts(
       )
       .limit(parsed.pageSize)
       .offset(parsed.offset),
-    db.select({ value: count() }).from(products),
+    db.select({ value: count() }).from(products).where(where),
   ]);
   const groupedImages = await imagesFor(rows.map(({ id }) => id));
   return {

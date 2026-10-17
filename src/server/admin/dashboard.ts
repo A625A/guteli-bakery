@@ -27,6 +27,7 @@ const ACTIONABLE_STATUSES: readonly OrderStatus[] = [
 export type AdminDashboardDTO = Readonly<{
   orderCounts: Readonly<Record<OrderStatus, number>>;
   ordersReceivedTodayCount: number;
+  completedTodayCount: number;
   actionableOrderCount: number;
   activeProductCount: number;
   unavailableProductCount: number;
@@ -59,6 +60,7 @@ export async function getAdminDashboard(
         .groupBy(orders.orderStatus),
       db
         .select({
+          completed: sql<number>`count(*) filter (where ${orders.orderStatus}='COMPLETED' AND (${orders.terminalAt} at time zone ${GUATEMALA_TIME_ZONE})::date = (${now}::timestamptz at time zone ${GUATEMALA_TIME_ZONE})::date)::integer`,
           count: sql<number>`count(*) filter (
           where ${orders.createdAt} >= (
             date_trunc('day', ${now}::timestamptz at time zone ${GUATEMALA_TIME_ZONE})
@@ -122,6 +124,7 @@ export async function getAdminDashboard(
   return {
     orderCounts,
     ordersReceivedTodayCount: todayRows[0]?.count ?? 0,
+    completedTodayCount: todayRows[0]?.completed ?? 0,
     actionableOrderCount: ACTIONABLE_STATUSES.reduce(
       (total, status) => total + orderCounts[status],
       0,

@@ -1,109 +1,166 @@
+import Link from 'next/link';
 import { SessionActions } from '@/components/admin/SessionActions';
 import { DashboardRefresh } from '@/components/admin/DashboardRefresh';
+import { AnalyticsPanel } from '@/components/admin/AnalyticsPanel';
 import { orderStatusLabel } from '@/lib/order-status-label';
 import { requireVerifiedAdminSession } from '@/server/auth/admin-page-access';
 import { getAdminDashboard } from '@/server/admin/dashboard';
-
-const actionableStatuses = [
-  ['RECEIVED', 'Recibidos'],
-  ['CONFIRMED', 'Confirmados'],
-  ['PREPARING', 'En preparación'],
-  ['READY', 'Listos'],
-  ['OUT_FOR_DELIVERY', 'En reparto'],
+const cards = [
+  ['RECEIVED', 'Por confirmar', 'Revisar pedidos'],
+  ['PREPARING', 'En preparación', 'En cocina'],
+  ['READY', 'Listos para entregar', 'Preparados'],
+  ['OUT_FOR_DELIVERY', 'En reparto', 'Camino al cliente'],
 ] as const;
-
-export default async function AdminPage() {
+export default async function AdminPage({
+  searchParams = Promise.resolve({}),
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+} = {}) {
+  const parameters = await searchParams;
+  const analyticsQuery = new URLSearchParams();
+  for (const [key, value] of Object.entries(parameters)) {
+    if (typeof value === 'string' && ['period', 'from', 'to'].includes(key))
+      analyticsQuery.set(key, value);
+  }
   await requireVerifiedAdminSession();
-  const dashboard = await getAdminDashboard();
+  const d = await getAdminDashboard();
   return (
     <main className="admin-dashboard" id="main-content" tabIndex={-1}>
-      <DashboardRefresh refreshedAt={new Date().toISOString()} />
       <header className="admin-dashboard__heading">
         <div>
-          <p className="eyebrow">Operación diaria</p>
+          <p className="eyebrow">Tu panadería, de un vistazo</p>
           <h1>Panel administrativo</h1>
-          <p>Pedidos y notificaciones que necesitan seguimiento.</p>
+          <p>Buen día, Güteli. Esto es lo que necesita tu atención.</p>
         </div>
-        <SessionActions />
+        <details className="admin-account-menu">
+          <summary>Mi cuenta</summary>
+          <SessionActions />
+        </details>
       </header>
-
-      <section aria-labelledby="orders-summary-title">
-        <h2 id="orders-summary-title">Pedidos por atender</h2>
+      <section aria-label="Operación actual">
         <div className="admin-dashboard__cards">
-          {actionableStatuses.map(([status, label]) => (
-            <article key={status} className="admin-dashboard__card">
-              <span>{label}</span>
-              <strong>{dashboard.orderCounts[status]}</strong>
-            </article>
+          {cards.map(([status, title, foot]) => (
+            <Link
+              href={'/admin/orders?status=' + status}
+              key={status}
+              className="admin-dashboard__card"
+            >
+              <span>{title}</span>
+              <strong>{d.orderCounts[status]}</strong>
+              <span className="admin-card-foot">{foot}</span>
+            </Link>
           ))}
-          <article className="admin-dashboard__card">
-            <span>Pedidos recibidos hoy (Guatemala)</span>
-            <strong>{dashboard.ordersReceivedTodayCount}</strong>
-          </article>
-          <article className="admin-dashboard__card">
-            <span>Pedidos que necesitan seguimiento</span>
-            <strong>{dashboard.actionableOrderCount}</strong>
-          </article>
-          <article className="admin-dashboard__card">
-            <span>Notificaciones pendientes de envío</span>
-            <strong>{dashboard.pendingNotificationCount}</strong>
-          </article>
-          <article className="admin-dashboard__card">
-            <span>Notificaciones fallidas que requieren atención</span>
-            <strong>{dashboard.failedNotificationCount}</strong>
-          </article>
+        </div>
+        <div className="admin-mini-stats" style={{ marginTop: 14 }}>
+          <Link href="/admin/orders?status=CONFIRMED">
+            <strong>{d.orderCounts.CONFIRMED}</strong> confirmados por preparar
+          </Link>
+          <span>
+            <strong>{d.ordersReceivedTodayCount}</strong> recibidos hoy
+          </span>
+          <span>
+            <strong>{d.completedTodayCount}</strong> completados hoy
+          </span>
+          <span>
+            <strong>{d.actionableOrderCount}</strong> abiertos en total
+          </span>
         </div>
       </section>
-
-      <section aria-labelledby="catalog-summary-title">
-        <h2 id="catalog-summary-title">Estado del catálogo</h2>
-        <div className="admin-dashboard__cards">
-          <article className="admin-dashboard__card">
-            <span>Productos activos en categorías activas</span>
-            <strong>{dashboard.activeProductCount}</strong>
-          </article>
-          <article className="admin-dashboard__card">
-            <span>Productos activos agotados (existencia 0)</span>
-            <strong>{dashboard.unavailableProductCount}</strong>
-          </article>
-          <article className="admin-dashboard__card">
-            <span>Productos activos con pocas existencias (1–5)</span>
-            <strong>{dashboard.lowStockProductCount}</strong>
-          </article>
+      {d.failedNotificationCount > 0 || d.pendingNotificationCount > 0 ? (
+        <section className="admin-panel" aria-label="Avisos">
+          <h2>Notificaciones por revisar</h2>
+          <p>
+            {d.failedNotificationCount} fallidas · {d.pendingNotificationCount}{' '}
+            pendientes. Revisa el detalle del pedido para consultar su estado.
+          </p>
+        </section>
+      ) : null}
+      <AnalyticsPanel initialQuery={analyticsQuery.toString() || 'period=7'} />
+      <section className="admin-panel">
+        <div className="admin-panel-heading">
+          <div>
+            <h2>Pedidos recientes</h2>
+            <p>
+              Los pendientes anteriores siguen incluidos en la operación actual.
+            </p>
+          </div>
+          <div className="admin-toolbar">
+            <Link
+              href={
+                '/admin/orders?date=' +
+                new Intl.DateTimeFormat('en-CA', {
+                  timeZone: 'America/Guatemala',
+                  year: 'numeric',
+                  month: '2-digit',
+                  day: '2-digit',
+                }).format(new Date())
+              }
+              className="admin-secondary"
+            >
+              Entregas de hoy
+            </Link>
+            <Link href="/admin/orders" className="admin-secondary">
+              Ver pedidos
+            </Link>
+          </div>
         </div>
-      </section>
-
-      <section aria-labelledby="recent-orders-title">
-        <h2 id="recent-orders-title">Pedidos recientes</h2>
-        {dashboard.recentOrders.length === 0 ? (
-          <p>No hay pedidos todavía.</p>
-        ) : (
-          <div className="admin-dashboard__table-wrap">
+        {d.recentOrders.length ? (
+          <div className="admin-dashboard__table-wrap admin-responsive-table">
             <table>
               <thead>
                 <tr>
-                  <th scope="col">Pedido</th>
+                  <th scope="col">Referencia</th>
                   <th scope="col">Estado</th>
                   <th scope="col">Entrega</th>
                   <th scope="col">Fecha solicitada</th>
                 </tr>
               </thead>
               <tbody>
-                {dashboard.recentOrders.map((order) => (
-                  <tr key={order.publicId}>
-                    <th scope="row">{order.publicId}</th>
-                    <td>{orderStatusLabel(order.orderStatus)}</td>
-                    <td>
-                      {order.fulfillment === 'DELIVERY' ? 'Envío' : 'Recogida'}
+                {d.recentOrders.slice(0, 5).map((o) => (
+                  <tr key={o.publicId}>
+                    <th scope="row">
+                      <Link href={'/admin/orders/' + o.publicId}>
+                        {o.publicId}
+                      </Link>
+                    </th>
+                    <td data-label="Estado">
+                      <span className="admin-badge" data-state={o.orderStatus}>
+                        {orderStatusLabel(o.orderStatus)}
+                      </span>
                     </td>
-                    <td>{order.requestedDate}</td>
+                    <td data-label="Entrega">
+                      {o.fulfillment === 'DELIVERY'
+                        ? 'A domicilio'
+                        : 'Recogida'}
+                    </td>
+                    <td data-label="Fecha">{o.requestedDate}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+        ) : (
+          <p className="admin-empty">
+            Todavía no hay pedidos. Aquí verás las solicitudes recibidas en la
+            tienda.
+          </p>
         )}
       </section>
+
+      <section className="admin-panel">
+        <h2>Tu catálogo</h2>
+        <div className="admin-mini-stats">
+          <Link href="/admin/products?state=active">
+            {d.activeProductCount} productos activos en categorías activas
+          </Link>
+          <span>{d.unavailableProductCount} agotados</span>
+          <span>{d.lowStockProductCount} con pocas existencias (1–5)</span>
+        </div>
+      </section>
+      <details className="admin-refresh">
+        <summary>Actualización y seguimiento del panel</summary>
+        <DashboardRefresh refreshedAt={new Date().toISOString()} />
+      </details>
     </main>
   );
 }

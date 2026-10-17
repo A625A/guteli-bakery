@@ -107,11 +107,11 @@ test('an owner sees operational detail, quotes delivery, and advances an order w
     page.getByRole('columnheader', { name: 'Fecha solicitada' }),
   ).toBeVisible();
   await expect(
-    page.getByRole('columnheader', { name: 'Subtotal' }),
+    page.getByRole('columnheader', { name: 'Total', exact: true }),
   ).toBeVisible();
   await expect(page.getByRole('columnheader', { name: 'Pago' })).toBeVisible();
   await expect(row).toContainText('2026-09-20');
-  await expect(row).toContainText('Q180.00');
+  await expect(row.locator('td[data-label="Total"]')).toHaveText('Pendiente');
   await expect(row).toContainText('Pendiente de pago');
   await expect(row).toContainText('Pedido recibido');
   await expect(row).not.toContainText('RECEIVED');
@@ -125,6 +125,9 @@ test('an owner sees operational detail, quotes delivery, and advances an order w
   ).toBeVisible();
   await expect(page.getByText('+50255558888')).toBeVisible();
   await expect(page.getByText('Zona 14, portón blanco')).toBeVisible();
+  await expect(
+    page.getByRole('main').getByText('Subtotal: Q180.00', { exact: true }),
+  ).toBeVisible();
 
   await page.getByLabel('Envío en quetzales (Q)').fill('5.00');
   await page.getByRole('button', { name: 'Guardar cotización' }).click();
@@ -228,7 +231,10 @@ test('an owner sees operational detail, quotes delivery, and advances an order w
 
   await test.step('owner manages a nonstacking promotion and the storefront shows both prices', async () => {
     await page.getByRole('link', { name: 'Promociones', exact: true }).click();
-    const form = page.getByRole('form', { name: 'Nueva promoción' });
+    await page
+      .getByRole('button', { name: 'Agregar promoción', exact: true })
+      .click();
+    const form = page.getByRole('dialog').getByRole('form');
     await form.getByLabel('Nombre de la promoción').fill('Oferta de prueba');
     await form.getByLabel('Descuento (%)').fill('70');
     await form
@@ -251,6 +257,9 @@ test('an owner sees operational detail, quotes delivery, and advances an order w
       await expect(card.getByText('Q18', { exact: true })).toBeVisible();
     } finally {
       await page.goto('/admin/promotions');
+      await page
+        .getByRole('button', { name: 'Editar Oferta de prueba', exact: true })
+        .click();
       const edit = page.getByRole('form', { name: 'Editar Oferta de prueba' });
       await edit.getByLabel('Promoción habilitada').uncheck();
       await edit.getByRole('button', { name: 'Guardar promoción' }).click();
@@ -295,9 +304,13 @@ test('an owner sees operational detail, quotes delivery, and advances an order w
       await expect(
         page.getByText('Total: Q185.00', { exact: true }),
       ).toBeVisible();
-      await expect(
-        page.getByText('3 × Pretzel histórico (Snapshot) — Q180.00'),
-      ).toBeVisible();
+      const historicalItem = page
+        .getByRole('region', { name: 'Productos solicitados' })
+        .getByRole('row', { name: /Pretzel histórico/ });
+      await expect(historicalItem.getByRole('rowheader')).toHaveText(
+        'Pretzel histórico · Snapshot',
+      );
+      await expect(historicalItem.getByRole('cell')).toHaveText(['3', 'Q180.00']);
     } finally {
       for (const row of originalPrices.rows) {
         await pool.query('UPDATE products SET price_minor = $1 WHERE id = $2', [

@@ -1,0 +1,70 @@
+
+> guteli-bakery@0.1.0 build
+> next build
+
+▲ Next.js 16.3.3 (Turbopack)
+✓ Running next.config.ts took 12ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 927ms
+  Running TypeScript ...
+  Finished TypeScript in 1976ms ...
+  Collecting page data using 7 workers ...
+  Generating static pages using 7 workers (0/1) ...
+✓ Generating static pages using 7 workers (1/1) in 42ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ƒ /
+├ ƒ /_not-found
+├ ƒ /admin
+├ ƒ /admin/[...missing]
+├ ƒ /admin/categories
+├ ƒ /admin/change-password
+├ ƒ /admin/enroll-mfa
+├ ƒ /admin/login
+├ ƒ /admin/orders
+├ ƒ /admin/orders/[id]
+├ ƒ /admin/products
+├ ƒ /admin/products/[id]
+├ ƒ /admin/promotions
+├ ƒ /admin/users
+├ ƒ /admin/verify-mfa
+├ ƒ /api/admin/analytics
+├ ƒ /api/admin/categories
+├ ƒ /api/admin/categories/[id]
+├ ƒ /api/admin/media/[...key]
+├ ƒ /api/admin/orders
+├ ƒ /api/admin/orders/[id]
+├ ƒ /api/admin/orders/[id]/delivery-quote
+├ ƒ /api/admin/orders/[id]/payment-method
+├ ƒ /api/admin/orders/[id]/status
+├ ƒ /api/admin/products
+├ ƒ /api/admin/products/[id]
+├ ƒ /api/admin/products/[id]/duplicate
+├ ƒ /api/admin/promotions
+├ ƒ /api/admin/promotions/[id]
+├ ƒ /api/admin/uploads
+├ ƒ /api/admin/users
+├ ƒ /api/admin/users/[id]
+├ ƒ /api/auth/[...all]
+├ ƒ /api/checkout-review
+├ ƒ /api/checkout-session
+├ ƒ /api/checkout-summary
+├ ƒ /api/media/[...key]
+├ ƒ /api/order-status/[receiptToken]
+├ ƒ /api/orders
+├ ƒ /api/products
+├ ƒ /api/products/[slug]
+├ ƒ /api/webhooks/whatsapp
+├ ƒ /cart
+├ ƒ /contact
+├ ƒ /health
+├ ƒ /menu
+├ ƒ /order
+└ ƒ /order/confirmation/[token]
+
+
+ƒ Proxy (Middleware)
+
+ƒ  (Dynamic)  server-rendered on demand

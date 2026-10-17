@@ -12,7 +12,12 @@ type MutationPayload = Readonly<{
   error?: { message?: string };
 }>;
 
-export function CategoryForm({ category }: { category?: AdminCategoryDto }) {
+export function CategoryForm({
+  category: initialCategory,
+}: {
+  category?: AdminCategoryDto;
+}) {
+  const [category, setCategory] = useState(initialCategory);
   const router = useRouter();
   const [slug, setSlug] = useState(category?.slug ?? '');
   const [slugEdited, setSlugEdited] = useState(false);
@@ -23,6 +28,14 @@ export function CategoryForm({ category }: { category?: AdminCategoryDto }) {
   const prefix = category ? `category-${category.id}` : 'category-new';
 
   async function save(formData: FormData) {
+    if (
+      category?.active &&
+      !active &&
+      !window.confirm(
+        `Desactivar ocultará ${category.productCount} productos activos. ¿Continuar?`,
+      )
+    )
+      return;
     setPending(true);
     setMessage(null);
     try {
@@ -58,6 +71,10 @@ export function CategoryForm({ category }: { category?: AdminCategoryDto }) {
       setVersion(payload.category.version);
       setActive(payload.category.active);
       setMessage(category ? 'Categoría actualizada.' : 'Categoría creada.');
+      setCategory(payload.category);
+      document
+        .getElementById(`${prefix}-name`)
+        ?.dispatchEvent(new Event('admin:saved', { bubbles: true }));
       router.refresh();
     } catch (error) {
       setMessage(ownerErrorMessage(error, 'No se pudo guardar la categoría.'));
@@ -67,6 +84,12 @@ export function CategoryForm({ category }: { category?: AdminCategoryDto }) {
   }
 
   async function deactivate() {
+    if (
+      !window.confirm(
+        `Desactivar ocultará ${category?.productCount ?? 0} productos activos. ¿Continuar?`,
+      )
+    )
+      return;
     setPending(true);
     setMessage(null);
     try {
@@ -86,7 +109,10 @@ export function CategoryForm({ category }: { category?: AdminCategoryDto }) {
       }
       setVersion(payload.category.version);
       setActive(false);
-      setMessage('Categoría desactivada.');
+      setCategory(payload.category);
+      setMessage(
+        'Categoría desactivada. Los demás cambios del formulario siguen pendientes.',
+      );
       router.refresh();
     } catch (error) {
       setMessage(
@@ -98,70 +124,73 @@ export function CategoryForm({ category }: { category?: AdminCategoryDto }) {
   }
 
   return (
-    <section className="admin-auth-card">
+    <section className="admin-auth-card" aria-busy={pending}>
       <form
         onSubmit={(event) => {
           event.preventDefault();
           if (!pending) void save(new FormData(event.currentTarget));
         }}
       >
-        <label htmlFor={`${prefix}-name`}>Nombre</label>
-        <input
-          id={`${prefix}-name`}
-          name="name"
-          aria-label={
-            category ? `Nombre de ${category.name}` : 'Nombre de categoría'
-          }
-          onChange={(event) => {
-            if (!category && !slugEdited)
-              setSlug(suggestSlug(event.target.value));
-          }}
-          defaultValue={category?.name}
-          maxLength={160}
-          required
-        />
-        <label htmlFor={`${prefix}-slug`}>Identificador del enlace</label>
-        <input
-          id={`${prefix}-slug`}
-          name="slug"
-          aria-label={
-            category
-              ? `Identificador del enlace de ${category.name}`
-              : 'Identificador del enlace de categoría'
-          }
-          value={slug}
-          onChange={(event) => {
-            setSlugEdited(true);
-            setSlug(event.target.value);
-          }}
-          maxLength={120}
-          required
-        />
-        <label htmlFor={`${prefix}-sort`}>Orden</label>
-        <input
-          id={`${prefix}-sort`}
-          name="sortOrder"
-          aria-label={
-            category ? `Orden de ${category.name}` : 'Orden de categoría'
-          }
-          type="number"
-          min="0"
-          step="1"
-          defaultValue={category?.sortOrder ?? 0}
-          required
-        />
-        <label>
+        <fieldset disabled={pending} className="admin-fields">
+          <legend className="visually-hidden">Datos de la categoría</legend>
+          <label htmlFor={`${prefix}-name`}>Nombre</label>
           <input
-            name="active"
-            type="checkbox"
-            checked={active}
-            onChange={(event) => setActive(event.target.checked)}
-          />{' '}
-          Activa
-        </label>
-        <button type="submit" disabled={pending}>
-          {category ? `Guardar ${category.name}` : 'Crear categoría'}
-        </button>
+            id={`${prefix}-name`}
+            name="name"
+            aria-label={
+              category ? `Nombre de ${category.name}` : 'Nombre de categoría'
+            }
+            onChange={(event) => {
+              if (!category && !slugEdited)
+                setSlug(suggestSlug(event.target.value));
+            }}
+            defaultValue={category?.name}
+            maxLength={160}
+            required
+          />
+          <label htmlFor={`${prefix}-slug`}>Identificador del enlace</label>
+          <input
+            id={`${prefix}-slug`}
+            name="slug"
+            aria-label={
+              category
+                ? `Identificador del enlace de ${category.name}`
+                : 'Identificador del enlace de categoría'
+            }
+            value={slug}
+            onChange={(event) => {
+              setSlugEdited(true);
+              setSlug(event.target.value);
+            }}
+            maxLength={120}
+            required
+          />
+          <label htmlFor={`${prefix}-sort`}>Orden</label>
+          <input
+            id={`${prefix}-sort`}
+            name="sortOrder"
+            aria-label={
+              category ? `Orden de ${category.name}` : 'Orden de categoría'
+            }
+            type="number"
+            min="0"
+            step="1"
+            defaultValue={category?.sortOrder ?? 0}
+            required
+          />
+          <label>
+            <input
+              name="active"
+              type="checkbox"
+              checked={active}
+              onChange={(event) => setActive(event.target.checked)}
+            />{' '}
+            Activa
+          </label>
+          <button type="submit" disabled={pending}>
+            {category ? `Guardar ${category.name}` : 'Crear categoría'}
+          </button>
+        </fieldset>
       </form>
       {category?.active ? (
         <div>

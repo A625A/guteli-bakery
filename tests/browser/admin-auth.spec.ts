@@ -67,6 +67,7 @@ test('the real admin lifecycle requires password change, TOTP, and explicit logo
   await expect(
     page.getByRole('heading', { name: 'Panel administrativo' }),
   ).toBeVisible();
+  await page.getByText('Mi cuenta', { exact: true }).click();
   await expect(
     page.getByRole('button', { name: 'Cerrar esta sesión' }),
   ).toBeVisible();
@@ -95,6 +96,7 @@ test('the real admin lifecycle requires password change, TOTP, and explicit logo
   await expect(
     page.getByRole('heading', { name: 'Panel administrativo' }),
   ).toBeVisible();
+  await page.getByText('Mi cuenta', { exact: true }).click();
   await page.getByRole('button', { name: 'Cerrar todas las sesiones' }).click();
   await expect(
     page.getByRole('heading', { name: 'Acceso administrativo' }),

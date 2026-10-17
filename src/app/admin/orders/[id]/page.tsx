@@ -52,7 +52,11 @@ export default async function AdminOrderDetailPage({
   const contactNumber = whatsappDestination(order.phone);
 
   return (
-    <main className="admin-dashboard" id="main-content" tabIndex={-1}>
+    <main
+      className="admin-dashboard admin-order-detail"
+      id="main-content"
+      tabIndex={-1}
+    >
       <header className="admin-dashboard__heading">
         <div>
           <p className="eyebrow">Detalle operativo</p>
@@ -60,6 +64,33 @@ export default async function AdminOrderDetailPage({
           <Link href="/admin/orders">Volver a pedidos</Link>
         </div>
       </header>
+      <section aria-labelledby="items-title">
+        <h2 id="items-title">Productos solicitados</h2>
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Producto</th>
+              <th scope="col">Cantidad</th>
+              <th scope="col">Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            {order.items.map((item, index) => (
+              <tr key={index}>
+                <th scope="row">
+                  {item.productName}
+                  <small> · {item.categoryLabel}</small>
+                </th>
+                <td>{item.quantity}</td>
+                <td>{money(item.lineTotalMinor)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p>Subtotal: {money(order.subtotalMinor)}</p>
+        <p>Envío: {money(order.shippingMinor)}</p>
+        <p>Total: {money(order.totalMinor)}</p>
+      </section>
       <section aria-labelledby="customer-title">
         <h2 id="customer-title">Cliente y entrega</h2>
         <dl>
@@ -135,20 +166,7 @@ export default async function AdminOrderDetailPage({
           initialDraft={order.paymentInstructionsDraft}
         />
       ) : null}
-      <section aria-labelledby="items-title">
-        <h2 id="items-title">Productos solicitados</h2>
-        <ul>
-          {order.items.map((item, index) => (
-            <li key={`${item.productName}-${index}`}>
-              {item.quantity} × {item.productName} ({item.categoryLabel}) —{' '}
-              {money(item.lineTotalMinor)}
-            </li>
-          ))}
-        </ul>
-        <p>Subtotal: {money(order.subtotalMinor)}</p>
-        <p>Envío: {money(order.shippingMinor)}</p>
-        <p>Total: {money(order.totalMinor)}</p>
-      </section>
+
       {order.fulfillment === 'DELIVERY' &&
       order.paymentStatus !== 'PAID' &&
       order.paymentStatus !== 'REFUNDED' &&

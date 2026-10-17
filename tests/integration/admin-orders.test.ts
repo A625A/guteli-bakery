@@ -558,7 +558,32 @@ describe('protected admin order operations', () => {
       ]),
     );
 
+    const rangeResponse = await listRequest(
+      actor.jar,
+      '?from=2026-09-10&to=2026-09-10&sort=requested&pageSize=100',
+    );
+    expect(rangeResponse.status).toBe(200);
+    const rangePayload = await rangeResponse.json();
+    expect(rangePayload.total).toBe(14);
+    expect(
+      rangePayload.orders.every(
+        (order: { requestedDate: string }) =>
+          order.requestedDate === '2026-09-10',
+      ),
+    ).toBe(true);
+    const sortedResponse = await listRequest(
+      actor.jar,
+      '?sort=requested&pageSize=100',
+    );
+    const sortedPayload = await sortedResponse.json();
+    const dates = sortedPayload.orders.map(
+      (order: { requestedDate: string }) => order.requestedDate,
+    );
+    expect(dates).toEqual([...dates].sort());
     for (const query of [
+      '?from=2026-09-12&to=2026-09-10',
+      '?from=2026-02-30',
+      '?sort=invalid',
       '?pageSize=101',
       '?page=0',
       '?status=PAID',

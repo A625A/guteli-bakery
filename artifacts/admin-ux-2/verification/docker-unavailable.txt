@@ -1,0 +1,19 @@
+  2) [storefront] › tests/browser/order-persistence.spec.ts:67:5 › keeps an accepted unpaid order and pending notification after an app-container restart
+
+    Error: Command failed: docker build --target runner --tag guteli-task6-order-persistence:local .
+    DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+                Install the buildx component to build images with BuildKit:
+                https://docs.docker.com/go/buildx/
+
+    failed to connect to the docker API at unix:///var/run/docker.sock; check if the path is correct and if the daemon is running: dial unix /var/run/docker.sock: connect: no such file or directory
+
+
+      14 |
+      15 | function docker(args: string[]) {
+    > 16 |   return execFileSync('docker', args, {
+         |                      ^
+      17 |     cwd: repoRoot,
+      18 |     encoding: 'utf8',
+      19 |     stdio: ['ignore', 'pipe', 'pipe'],
+        at docker (/Users/andrewarana/.codex/worktrees/guteli-admin-ux-2/Guteli Bakery/tests/browser/order-persistence.spec.ts:16:22)
+        at /Users/andrewarana/.codex/worktrees/guteli-admin-ux-2/Guteli Bakery/tests/browser/order-persistence.spec.ts:75:3

@@ -1,135 +1,232 @@
-import type { Metadata } from 'next';
 import { headers } from 'next/headers';
-import Link from 'next/link';
+import Image from 'next/image';
 import { notFound, redirect } from 'next/navigation';
-
+import { AdminDrawer } from '@/components/admin/AdminDrawer';
+import { AdminPagination } from '@/components/admin/AdminPagination';
 import { ProductForm } from '@/components/admin/ProductForm';
 import { requireVerifiedAdminSession } from '@/server/auth/admin-page-access';
-import { adminListCategories } from '@/server/products/admin-categories';
-import { parseAdminCatalogPagination } from '@/server/products/admin-contracts';
+import {
+  adminListCategories,
+  adminGetCategory,
+} from '@/server/products/admin-categories';
+import {
+  parseAdminCatalogPagination,
+  parseProductFilters,
+} from '@/server/products/admin-contracts';
 import { adminListProducts } from '@/server/products/admin-products';
-
 export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
-export const metadata: Metadata = {
-  title: 'Productos | Administración',
-  robots: { index: false, follow: false },
-  referrer: 'no-referrer',
-};
-
-type SearchParams = Promise<Record<string, string | string[] | undefined>>;
-
-function pagination(parameters: Awaited<SearchParams>) {
-  for (const [key, value] of Object.entries(parameters)) {
-    if ((key !== 'page' && key !== 'pageSize') || typeof value !== 'string')
-      notFound();
-  }
-  try {
-    return parseAdminCatalogPagination(parameters);
-  } catch (error) {
-    if (error instanceof RangeError) notFound();
-    throw error;
-  }
-}
-
 export default async function AdminProductsPage({
   searchParams,
 }: {
-  searchParams: SearchParams;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   await requireVerifiedAdminSession();
-  const requested = pagination(await searchParams);
-  const requestHeaders = await headers();
-  const [result, categoryResult] = await Promise.all([
-    adminListProducts(requestHeaders, requested),
-    adminListCategories(requestHeaders, { page: 1, pageSize: 100 }),
+  const params = await searchParams;
+  const query: Record<string, string> = {};
+  for (const [k, v] of Object.entries(params)) {
+    if (
+      !['page', 'pageSize', 'search', 'state', 'category', 'sort'].includes(
+        k,
+      ) ||
+      typeof v !== 'string'
+    )
+      notFound();
+    query[k] = v;
+  }
+  let filters;
+  try {
+    filters = {
+      ...parseAdminCatalogPagination(query),
+      ...parseProductFilters(query),
+    };
+  } catch {
+    notFound();
+  }
+  const h = await headers();
+  const [result, categories] = await Promise.all([
+    adminListProducts(h, filters),
+    adminListCategories(h, { pageSize: 100 }),
   ]);
-  const lastPage = Math.max(1, Math.ceil(result.total / result.pageSize));
-  if (result.page > lastPage) redirect('/admin/products');
-
+  const missingIds = [
+    ...new Set([
+      ...result.products.map((p) => p.categoryId),
+      ...(filters.category ? [filters.category] : []),
+    ]),
+  ].filter((id) => !categories.categories.some((c) => c.id === id));
+  const extra = await Promise.all(
+    missingIds.map((id) => adminGetCategory(id, h)),
+  );
+  const choices = [
+    ...categories.categories,
+    ...extra.filter((c): c is NonNullable<typeof c> => !!c),
+  ];
+  const last = Math.max(1, Math.ceil(result.total / result.pageSize));
+  if (result.page > last)
+    redirect(
+      '/admin/products?' +
+        new URLSearchParams({ ...query, page: String(last) }),
+    );
+  const editor = (product?: (typeof result.products)[number]) => (
+    <ProductForm
+      product={product}
+      categories={choices}
+      categoryTotal={categories.total}
+    />
+  );
   return (
     <main className="admin-dashboard" id="main-content" tabIndex={-1}>
       <header className="admin-dashboard__heading">
         <div>
-          <p className="eyebrow">Catálogo persistente</p>
           <h1>Productos</h1>
-          <p>
-            Crea y ordena productos; los cambios públicos aparecen en la
-            siguiente solicitud.
-          </p>
+          <p>Tu catálogo, listo para el próximo pedido.</p>
         </div>
+        <AdminDrawer title="Agregar producto" trigger="Agregar producto">
+          {editor()}
+        </AdminDrawer>
       </header>
-      <ProductForm
-        categories={categoryResult.categories}
-        categoryTotal={categoryResult.total}
-      />
-      <div className="admin-dashboard__table-wrap">
+      <form className="admin-toolbar" method="get">
+        <label>
+          Buscar productos
+          <input
+            type="search"
+            name="search"
+            placeholder="Nombre del producto…"
+            defaultValue={filters.search}
+            maxLength={160}
+          />
+        </label>
+        <label>
+          Categoría
+          <select name="category" defaultValue={filters.category ?? ''}>
+            <option value="">Todas las categorías</option>
+            {choices.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Estado
+          <select name="state" defaultValue={filters.state}>
+            <option value="all">Todos los estados</option>
+            <option value="active">Activos</option>
+            <option value="inactive">Inactivos</option>
+            <option value="out">Agotados</option>
+            <option value="retired">Retirados</option>
+          </select>
+        </label>
+        <label>
+          Ordenar
+          <select name="sort" defaultValue={filters.sort}>
+            <option value="catalog">Orden del catálogo</option>
+            <option value="name">Nombre</option>
+            <option value="price">Precio menor primero</option>
+          </select>
+        </label>
+        <button>Buscar</button>
+      </form>
+      <div className="admin-dashboard__table-wrap admin-responsive-table">
         <table>
           <thead>
             <tr>
-              <th scope="col">Producto</th>
-              <th scope="col">Categoría</th>
-              <th scope="col">Precio</th>
-              <th scope="col">Existencia</th>
-              <th scope="col">Estado</th>
-              <th scope="col">Editar</th>
+              {[
+                'Producto',
+                'Categoría',
+                'Precio',
+                'Existencia',
+                'Estado',
+                'Acciones',
+              ].map((t) => (
+                <th scope="col" key={t}>
+                  {t}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
-            {result.products.map((product) => (
-              <tr key={product.id}>
-                <th scope="row">{product.name}</th>
-                <td>{product.categoryName}</td>
-                <td>Q{(product.priceMinor / 100).toFixed(2)}</td>
-                <td>
-                  {product.stockQuantity === null
-                    ? 'Sin control'
-                    : product.stockQuantity}
+            {result.products.map((p) => (
+              <tr key={p.id}>
+                <th scope="row">
+                  <div className="admin-product-name">
+                    {p.images[0] ? (
+                      <Image
+                        src={
+                          '/api/admin/media/' +
+                          p.images[0].storageKey
+                            .split('/')
+                            .map(encodeURIComponent)
+                            .join('/')
+                        }
+                        width={44}
+                        height={44}
+                        alt=""
+                        unoptimized
+                      />
+                    ) : (
+                      <span
+                        className="admin-product-placeholder"
+                        aria-hidden="true"
+                      >
+                        ♧
+                      </span>
+                    )}
+                    <span>
+                      {p.name}
+                      <small>{p.saleUnit}</small>
+                    </span>
+                  </div>
+                </th>
+                <td data-label="Categoría">{p.categoryName}</td>
+                <td data-label="Precio">
+                  {new Intl.NumberFormat('es-GT', {
+                    style: 'currency',
+                    currency: 'GTQ',
+                  }).format(p.priceMinor / 100)}
                 </td>
-                <td>
-                  {product.deletedAt
-                    ? 'Retirado'
-                    : product.active
-                      ? 'Activo'
-                      : 'Inactivo'}
+                <td data-label="Existencia">
+                  {p.stockQuantity ?? 'Sin control'}
                 </td>
-                <td>
-                  <Link
-                    href={`/admin/products/${product.id}`}
-                    aria-label={`Editar ${product.name}`}
+                <td data-label="Estado">
+                  <span
+                    className="admin-badge"
+                    data-state={
+                      p.active && !p.deletedAt ? 'active' : 'inactive'
+                    }
                   >
-                    Editar
-                  </Link>
+                    {p.deletedAt
+                      ? 'Retirado'
+                      : p.active
+                        ? 'Activo'
+                        : 'Inactivo'}
+                  </span>
+                </td>
+                <td>
+                  <AdminDrawer
+                    title={'Editar ' + p.name}
+                    trigger={'Editar ' + p.name}
+                  >
+                    {editor(p)}
+                  </AdminDrawer>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
+        {!result.total ? (
+          <p className="admin-empty">
+            No hay productos que coincidan. Prueba otra búsqueda o agrega un
+            producto.
+          </p>
+        ) : null}
       </div>
-      <nav aria-label="Paginación de productos">
-        {result.page > 1 ? (
-          <Link
-            href={`/admin/products?page=${result.page - 1}&pageSize=${result.pageSize}`}
-          >
-            Anterior
-          </Link>
-        ) : (
-          <span aria-disabled="true">Anterior</span>
-        )}
-        <p>
-          Página {result.page} de {lastPage}
-        </p>
-        {result.page < lastPage ? (
-          <Link
-            href={`/admin/products?page=${result.page + 1}&pageSize=${result.pageSize}`}
-          >
-            Siguiente
-          </Link>
-        ) : (
-          <span aria-disabled="true">Siguiente</span>
-        )}
-      </nav>
+      <AdminPagination
+        path="/admin/products"
+        page={result.page}
+        pageSize={result.pageSize}
+        total={result.total}
+        query={query}
+      />
     </main>
   );
 }
