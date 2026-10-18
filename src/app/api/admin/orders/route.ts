@@ -114,6 +114,9 @@ function filtersFrom(request: Request) {
     'fulfillment',
     'date',
     'reference',
+    'from',
+    'to',
+    'sort',
   ]);
   for (const key of parameters.keys()) {
     if (!allowed.has(key) || parameters.getAll(key).length !== 1) {
@@ -127,6 +130,9 @@ function filtersFrom(request: Request) {
     fulfillment: parameters.get('fulfillment') ?? undefined,
     date: parameters.get('date') ?? undefined,
     reference: parameters.get('reference') ?? undefined,
+    from: parameters.get('from') ?? undefined,
+    to: parameters.get('to') ?? undefined,
+    sort: parameters.get('sort') ?? undefined,
   });
 }
 

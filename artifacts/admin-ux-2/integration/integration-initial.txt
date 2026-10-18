@@ -1,0 +1,269 @@
+
+> guteli-bakery@0.1.0 test:integration
+> vitest run --config vitest.integration.config.ts
+
+
+ RUN  v3.2.7 /Users/andrewarana/.codex/worktrees/guteli-admin-ux-2/Guteli Bakery
+
+stderr | tests/integration/admin-boundary-matrix.test.ts > complete admin route authorization matrix > runs every admin page loader against the complete real session-state matrix
+{"event":"STORAGE_UNAVAILABLE","at":"2026-10-17T23:57:18.649Z"}
+
+stderr | tests/integration/admin-boundary-matrix.test.ts > complete admin route authorization matrix > runs every admin page loader against the complete real session-state matrix
+{"event":"STORAGE_UNAVAILABLE","at":"2026-10-17T23:57:27.883Z"}
+
+ ✓ tests/integration/admin-boundary-matrix.test.ts (4 tests) 68021ms
+   ✓ complete admin route authorization matrix > denies every method to anonymous, expired, inactive, forced-password-change, and pre-MFA callers and admits the intended active roles  5316ms
+   ✓ complete admin route authorization matrix > rejects missing and forged Origin on every cookie-authenticated mutation  1382ms
+   ✓ complete admin route authorization matrix > runs every admin page loader against the complete real session-state matrix  61129ms
+stderr | tests/integration/admin-users.test.ts > owner-only administrator management > makes the credential expire after 24 hours and uses the existing replacement and TOTP enrollment flow
+{"event":"AUTH_FAILURE","at":"2026-10-17T23:57:49.460Z"}
+
+ ✓ tests/integration/admin-users.test.ts (10 tests) 13900ms
+   ✓ owner-only administrator management > denies anonymous and ADMIN callers and revalidates inactive, pre-MFA, stale, and Origin state  1346ms
+   ✓ owner-only administrator management > creates only ADMIN users, normalizes email, rejects authority fields and duplicates, and never lists secrets  1323ms
+   ✓ owner-only administrator management > strictly validates bounded pagination and orders users deterministically  1074ms
+   ✓ owner-only administrator management > denies a mutation whose owner session expires while waiting for the real global lock without writing state or audit  2235ms
+   ✓ owner-only administrator management > denies a mutation whose MFA freshness crosses ten minutes while waiting for the real global lock without writing state or audit  2280ms
+   ✓ owner-only administrator management > returns a private validation error for malformed JSON and mismatched target IDs  806ms
+   ✓ owner-only administrator management > makes the credential expire after 24 hours and uses the existing replacement and TOTP enrollment flow  1369ms
+   ✓ owner-only administrator management > protects self-disable and last-owner invariants, revokes sessions, and writes safe audits  1288ms
+   ✓ owner-only administrator management > rolls back state and session revocation when a late audit write fails  790ms
+   ✓ owner-only administrator management > preserves one active owner under concurrent cross-demotions  1387ms
+ ✓ tests/integration/admin-orders.test.ts (17 tests) 12920ms
+   ✓ protected admin order operations > lets only the owner assign a method without receiving money or changing prices  780ms
+   ✓ protected admin order operations > finds a single order by its exact public reference  725ms
+   ✓ protected admin order operations > rejects incompatible methods, forged payment state, concurrent writes and final orders  808ms
+   ✓ protected admin order operations > rechecks owner authority after waiting for an order lock  671ms
+   ✓ protected admin order operations > authorizes reads inside each use case for OWNER and ADMIN and denies anonymous access  716ms
+   ✓ protected admin order operations > returns bounded deterministic pagination and strict validated filters without list PII  940ms
+   ✓ protected admin order operations > exposes operational PII and immutable snapshots only on authenticated detail  689ms
+   ✓ protected admin order operations > enforces fulfillment-aware transition edges, terminal timestamps, strict bodies, and Origin  680ms
+   ✓ protected admin order operations > requires fresh MFA for cancellation after RECEIVED, never restocks, and records a safe audit  681ms
+   ✓ protected admin order operations > rechecks MFA freshness with the current time after winning the order lock  866ms
+   ✓ protected admin order operations > quotes only nonterminal delivery orders with exact checked math and one version increment  1240ms
+   ✓ protected admin order operations > invalidates customer acceptance immediately even when a delivery requote has the same amount  702ms
+   ✓ protected admin order operations > preserves PAID item pricing and totals when an owner attempts a delivery requote  708ms
+   ✓ protected admin order operations > preserves REFUNDED item pricing and totals when an owner attempts a delivery requote  681ms
+   ✓ protected admin order operations > rechecks payment status after acquiring the order lock before a requote  691ms
+   ✓ protected admin order operations > rejects a simultaneous stale writer without side effects  670ms
+   ✓ protected admin order operations > rolls back the mutation when the late audit insert fails  669ms
+stderr | tests/integration/admin-auth-lifecycle.test.ts > real Better Auth admin lifecycle > preserves the exact login subject through the signed TOTP challenge and clears it only on success
+{"event":"AUTH_FAILURE","at":"2026-10-17T23:58:11.801Z"}
+
+stderr | tests/integration/admin-auth-lifecycle.test.ts > real Better Auth admin lifecycle > preserves the exact login subject through the signed TOTP challenge and clears it only on success
+{"event":"AUTH_FAILURE","at":"2026-10-17T23:58:11.941Z"}
+
+stderr | tests/integration/admin-auth-lifecycle.test.ts > real Better Auth admin lifecycle > preserves the exact login subject through the signed TOTP challenge and clears it only on success
+{"event":"AUTH_FAILURE","at":"2026-10-17T23:58:12.057Z"}
+
+stderr | tests/integration/admin-auth-lifecycle.test.ts > real Better Auth admin lifecycle > accepts each backup code once and clears the matching subject only after success
+{"event":"AUTH_FAILURE","at":"2026-10-17T23:58:12.983Z"}
+
+ ✓ tests/integration/admin-auth-lifecycle.test.ts (12 tests) 9158ms
+   ✓ real Better Auth admin lifecycle > requires an explicit trusted Origin for session-cookie mutations without breaking the public MFA challenge  856ms
+   ✓ real Better Auth admin lifecycle > fails closed on account and session endpoints until password change and MFA enrollment finish  801ms
+   ✓ real Better Auth admin lifecycle > rejects and revokes inactive sessions across the auth handler surface  675ms
+   ✓ real Better Auth admin lifecycle > rejects and revokes setup-expired sessions across the auth handler surface  311ms
+   ✓ real Better Auth admin lifecycle > preserves the exact login subject through the signed TOTP challenge and clears it only on success  1244ms
+   ✓ real Better Auth admin lifecycle > accepts each backup code once and clears the matching subject only after success  1040ms
+   ✓ real Better Auth admin lifecycle > keeps current-session logout separate from logout-all  796ms
+   ✓ real Better Auth admin lifecycle > revokes a sibling pre-MFA session when enrollment completes  780ms
+   ✓ real Better Auth admin lifecycle > revokes invalid existing sessions and treats them as unauthenticated at the reusable boundary  965ms
+   ✓ real Better Auth admin lifecycle > rejects and revokes a inactive account changed during a signed MFA challenge  781ms
+   ✓ real Better Auth admin lifecycle > rejects and revokes a setup-expired account changed during a signed MFA challenge  800ms
+ ✓ tests/integration/admin-catalog.test.ts (11 tests) 8003ms
+   ✓ protected catalog administration > manages scheduled promotions with protected versioned writes and a disable toggle  775ms
+   ✓ protected catalog administration > authorizes every list/detail use case for OWNER and ADMIN and protects private responses  686ms
+   ✓ protected catalog administration > enforces strict fields, integer money/stock, UUIDs, slug uniqueness, and hard pagination limits  696ms
+   ✓ protected catalog administration > rejects public products in inactive categories and duplicates approved fields without images  680ms
+   ✓ protected catalog administration > uses optimistic versions atomically and checkout invalidates a stale stock edit  692ms
+   ✓ protected catalog administration > soft-deletes products, preserves historical snapshots, and deactivates categories without cascade deletion  693ms
+   ✓ protected catalog administration > serves public catalog requests no-store and reflects mutations on the next request  699ms
+   ✓ protected catalog administration > rechecks destructive reauthentication after a blocked product lock  682ms
+   ✓ protected catalog administration > locks the destination category before rechecking a deactivating move  727ms
+   ✓ protected catalog administration > returns only the exact public DTO keys from every catalog mutation  693ms
+   ✓ protected catalog administration > validates detail paths, missing entities, mutation origins, and category confirmation  976ms
+ ✓ tests/integration/admin-images.test.ts (11 tests) 6786ms
+   ✓ secure admin product images > stores a randomized metadata-free WebP and transactionally replaces the active image  823ms
+   ✓ secure admin product images > rejects unauthenticated, cross-origin, spoofed, and rate-limited upload attempts safely  704ms
+   ✓ secure admin product images > deletes only a newly-created object when metadata insertion or version validation fails  727ms
+   ✓ secure admin product images > durably records and retries compensation when metadata and object deletion both fail  692ms
+   ✓ secure admin product images > soft-removes metadata before cleanup and retains durable pending state when deletion fails  712ms
+   ✓ secure admin product images > serves unremoved images through the protected preview regardless of catalog activity  720ms
+   ✓ secure admin product images > never deletes an object that still has another active image reference  708ms
+   ✓ secure admin product images > never compensates an existing object when every randomized key collides  681ms
+   ✓ secure admin product images > rechecks live admin authorization after waiting for the catalog lock  728ms
+stderr | tests/integration/owner-provisioning.test.ts > owner provisioning and credential protection > rejects inactive accounts with the same generic credential error
+{"event":"AUTH_FAILURE","at":"2026-10-17T23:58:36.979Z"}
+
+stderr | tests/integration/owner-provisioning.test.ts > owner provisioning and credential protection > rejects a distinct 13-character password without changing credential, setup, or session state
+{"event":"AUTH_FAILURE","at":"2026-10-17T23:58:37.941Z"}
+
+stderr | tests/integration/owner-provisioning.test.ts > owner provisioning and credential protection > throttles the sixth failed login by HMAC account/IP without storing raw identifiers
+{"event":"AUTH_FAILURE","at":"2026-10-17T23:58:39.339Z"}
+
+stderr | tests/integration/owner-provisioning.test.ts > owner provisioning and credential protection > throttles the sixth failed login by HMAC account/IP without storing raw identifiers
+{"event":"AUTH_FAILURE","at":"2026-10-17T23:58:39.461Z"}
+
+stderr | tests/integration/owner-provisioning.test.ts > owner provisioning and credential protection > throttles the sixth failed login by HMAC account/IP without storing raw identifiers
+{"event":"AUTH_FAILURE","at":"2026-10-17T23:58:39.580Z"}
+
+stderr | tests/integration/owner-provisioning.test.ts > owner provisioning and credential protection > throttles the sixth failed login by HMAC account/IP without storing raw identifiers
+{"event":"AUTH_FAILURE","at":"2026-10-17T23:58:39.699Z"}
+
+stderr | tests/integration/owner-provisioning.test.ts > owner provisioning and credential protection > throttles the sixth failed login by HMAC account/IP without storing raw identifiers
+{"event":"AUTH_FAILURE","at":"2026-10-17T23:58:39.814Z"}
+
+stderr | tests/integration/owner-provisioning.test.ts > owner provisioning and credential protection > prevents failed-login bursts across fixed clock boundaries
+{"event":"AUTH_FAILURE","at":"2026-09-01T00:14:59.000Z"}
+
+stderr | tests/integration/owner-provisioning.test.ts > owner provisioning and credential protection > prevents failed-login bursts across fixed clock boundaries
+{"event":"AUTH_FAILURE","at":"2026-09-01T00:14:59.000Z"}
+
+stderr | tests/integration/owner-provisioning.test.ts > owner provisioning and credential protection > prevents failed-login bursts across fixed clock boundaries
+{"event":"AUTH_FAILURE","at":"2026-09-01T00:14:59.000Z"}
+
+stderr | tests/integration/owner-provisioning.test.ts > owner provisioning and credential protection > prevents failed-login bursts across fixed clock boundaries
+{"event":"AUTH_FAILURE","at":"2026-09-01T00:14:59.000Z"}
+
+stderr | tests/integration/owner-provisioning.test.ts > owner provisioning and credential protection > prevents failed-login bursts across fixed clock boundaries
+{"event":"AUTH_FAILURE","at":"2026-09-01T00:14:59.000Z"}
+
+stderr | tests/integration/owner-provisioning.test.ts > owner provisioning and credential protection > cannot split a limiter bucket with spoofed leftward proxy addresses
+{"event":"AUTH_FAILURE","at":"2026-10-17T23:58:40.883Z"}
+
+stderr | tests/integration/owner-provisioning.test.ts > owner provisioning and credential protection > cannot split a limiter bucket with spoofed leftward proxy addresses
+{"event":"AUTH_FAILURE","at":"2026-10-17T23:58:40.995Z"}
+
+stderr | tests/integration/owner-provisioning.test.ts > owner provisioning and credential protection > cannot split a limiter bucket with spoofed leftward proxy addresses
+{"event":"AUTH_FAILURE","at":"2026-10-17T23:58:41.107Z"}
+
+stderr | tests/integration/owner-provisioning.test.ts > owner provisioning and credential protection > cannot split a limiter bucket with spoofed leftward proxy addresses
+{"event":"AUTH_FAILURE","at":"2026-10-17T23:58:41.236Z"}
+
+stderr | tests/integration/owner-provisioning.test.ts > owner provisioning and credential protection > cannot split a limiter bucket with spoofed leftward proxy addresses
+{"event":"AUTH_FAILURE","at":"2026-10-17T23:58:41.351Z"}
+
+ ✓ tests/integration/owner-provisioning.test.ts (15 tests) 5380ms
+   ✓ owner provisioning and credential protection > rejects inactive accounts with the same generic credential error  320ms
+   ✓ owner provisioning and credential protection > rejects direct MFA enrollment until the setup password is changed  327ms
+   ✓ owner provisioning and credential protection > rejects the current setup password without changing credential, setup, or session state  319ms
+   ✓ owner provisioning and credential protection > rejects a distinct 13-character password without changing credential, setup, or session state  313ms
+   ✓ owner provisioning and credential protection > rejects and revokes a setup-expired existing session on password change  302ms
+   ✓ owner provisioning and credential protection > rejects and revokes an inactive existing session on an auth route  301ms
+   ✓ owner provisioning and credential protection > does not promote another pre-MFA session when one session enrolls  307ms
+   ✓ owner provisioning and credential protection > throttles the sixth failed login by HMAC account/IP without storing raw identifiers  779ms
+   ✓ owner provisioning and credential protection > prevents failed-login bursts across fixed clock boundaries  770ms
+   ✓ owner provisioning and credential protection > cannot split a limiter bucket with spoofed leftward proxy addresses  766ms
+stderr | tests/integration/admin-authorization.test.ts > authoritative admin authorization DAL > returns only minimized aggregate and recent-order dashboard fields
+{"event":"STORAGE_UNAVAILABLE","at":"2026-10-17T23:58:46.430Z"}
+
+stderr | tests/integration/admin-authorization.test.ts > authoritative admin authorization DAL > returns only minimized aggregate and recent-order dashboard fields
+{"event":"STORAGE_UNAVAILABLE","at":"2026-10-17T23:58:46.435Z"}
+
+ ✓ tests/integration/admin-authorization.test.ts (5 tests) 4852ms
+   ✓ authoritative admin authorization DAL > denies no session, expired sessions, inactive users, and missing MFA  2189ms
+   ✓ authoritative admin authorization DAL > reloads the current role and enforces owner-only operations  670ms
+   ✓ authoritative admin authorization DAL > uses the MFA completion marker for the exact reauthentication window  653ms
+   ✓ authoritative admin authorization DAL > returns only minimized aggregate and recent-order dashboard fields  677ms
+   ✓ authoritative admin authorization DAL > reports the Guatemala-local day and explicit actionable, availability, low-stock, and failed-notification metrics  661ms
+ ✓ tests/integration/catalog-seed.test.ts (7 tests) 2215ms
+   ✓ catalog seed and local storage > seeds the exact approved catalog idempotently  1999ms
+stderr | tests/integration/order-api.test.ts > POST /api/orders > fails closed when no direct address source exists and ignores spoofed forwarding at zero trusted hops
+{"event":"ORDER_SAVE_FAILED","at":"2026-08-29T12:00:00.000Z"}
+{"event":"REQUEST_FAILED","at":"2026-08-29T12:00:00.000Z"}
+
+stderr | tests/integration/order-api.test.ts > POST /api/orders > fails closed for an insufficient trusted proxy chain
+{"event":"ORDER_SAVE_FAILED","at":"2026-08-29T12:00:00.000Z"}
+{"event":"REQUEST_FAILED","at":"2026-08-29T12:00:00.000Z"}
+
+stderr | tests/integration/order-api.test.ts > POST /api/orders > maps idempotency conflicts, unavailable products, and internal failures safely
+{"event":"ORDER_SAVE_FAILED","at":"2026-08-29T12:00:00.000Z"}
+{"event":"REQUEST_FAILED","at":"2026-08-29T12:00:00.000Z"}
+
+stderr | tests/integration/order-api.test.ts > POST /api/orders > keeps every POST failure response inside the six-code public contract
+{"event":"ORDER_SAVE_FAILED","at":"2026-08-29T12:00:00.000Z"}
+{"event":"REQUEST_FAILED","at":"2026-08-29T12:00:00.000Z"}
+
+stderr | tests/integration/order-api.test.ts > POST /api/orders > rolls back the successful-phone bucket when a late order write fails
+{"event":"ORDER_SAVE_FAILED","at":"2026-08-29T12:00:00.000Z"}
+{"event":"REQUEST_FAILED","at":"2026-08-29T12:00:00.000Z"}
+
+ ✓ tests/integration/order-api.test.ts (17 tests) 1536ms
+ ✓ tests/integration/create-order.test.ts (16 tests) 1450ms
+stderr | tests/integration/auth-config.test.ts > Better Auth configuration > returns the same generic response for an unknown email and wrong password
+{"event":"AUTH_FAILURE","at":"2026-10-17T23:58:55.407Z"}
+
+stderr | tests/integration/auth-config.test.ts > Better Auth configuration > returns the same generic response for an unknown email and wrong password
+{"event":"AUTH_FAILURE","at":"2026-10-17T23:58:55.409Z"}
+
+stderr | tests/integration/auth-config.test.ts > Better Auth configuration > provisions UUID owners and persists their login session in the database
+{"event":"AUTH_FAILURE","at":"2026-10-17T23:58:55.605Z"}
+
+ ❯ tests/integration/auth-config.test.ts (5 tests | 2 failed) 665ms
+   ✓ Better Auth configuration > migrates the generated Better Auth tables with the normal journal 94ms
+   ✓ Better Auth configuration > rejects public sign-up through the Next.js handler 88ms
+   × Better Auth configuration > returns the same generic response for an unknown email and wrong password 209ms
+     → expected 503 to be 401 // Object.is equality
+   × Better Auth configuration > provisions UUID owners and persists their login session in the database 196ms
+     → expected 503 to be 200 // Object.is equality
+   ✓ Better Auth configuration > keeps provider errors, customer data and credentials out of authentication logs 76ms
+ ✓ tests/integration/whatsapp-automation.test.ts (9 tests) 997ms
+ ✓ tests/integration/checkout-summary.test.ts (9 tests) 858ms
+ ✓ tests/integration/checkout-pricing.test.ts (5 tests) 541ms
+ ✓ tests/integration/checkout-session.test.ts (4 tests) 399ms
+ ✓ tests/integration/privacy-retention.test.ts (2 tests) 214ms
+ ✓ tests/integration/public-products.test.ts (3 tests) 228ms
+ ✓ tests/integration/create-order-concurrency.test.ts (2 tests) 233ms
+ ✓ tests/integration/receipt-api.test.ts (2 tests) 242ms
+ ✓ tests/integration/order-schema.test.ts (2 tests) 150ms
+ ✓ tests/integration/promotion-catalog.test.ts (1 test) 105ms
+ ✓ tests/integration/catalog-schema.test.ts (1 test) 117ms
+ ✓ tests/integration/admin-analytics.test.ts (2 tests) 109ms
+ ✓ tests/integration/db-health.test.ts (1 test) 9ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/auth-config.test.ts > Better Auth configuration > returns the same generic response for an unknown email and wrong password
+AssertionError: expected 503 to be 401 // Object.is equality
+
+- Expected
++ Received
+
+- 401
++ 503
+
+ ❯ tests/integration/auth-config.test.ts:132:28
+    130|     });
+    131|
+    132|     expect(unknown.status).toBe(401);
+       |                            ^
+    133|     expect(wrongPassword.status).toBe(401);
+    134|     expect(await unknown.json()).toEqual(await wrongPassword.json());
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/integration/auth-config.test.ts > Better Auth configuration > provisions UUID owners and persists their login session in the database
+AssertionError: expected 503 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 503
+
+ ❯ tests/integration/auth-config.test.ts:166:29
+    164|       .returning();
+    165|
+    166|     expect(response.status).toBe(200);
+       |                             ^
+    167|     expect(response.headers.get('set-cookie')).toContain('better-auth'…
+    168|     expect(provisionedUser.id).toMatch(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 24 passed (25)
+      Tests  2 failed | 171 passed (173)
+   Start at  17:56:27
+   Duration  159.82s (transform 1.08s, setup 93ms, collect 15.90s, tests 139.09s, environment 3ms, prepare 1.28s)

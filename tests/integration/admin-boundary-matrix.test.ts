@@ -44,6 +44,7 @@ vi.mock('next/navigation', async (importOriginal) => ({
   notFound: pageTransport.notFound,
 }));
 
+import { GET as GET_ANALYTICS } from '@/app/api/admin/analytics/route';
 import AdminPromotionsPage from '@/app/admin/promotions/page';
 import {
   GET as GET_PROMOTIONS,
@@ -289,6 +290,17 @@ function routeMatrix(headersFor: () => Headers): MatrixRoute[] {
     enabled: false,
   };
   return [
+    {
+      name: 'GET /api/admin/analytics',
+      mutation: false,
+      allowedStatus: 200,
+      call: () =>
+        GET_ANALYTICS(
+          new Request('http://localhost:3000/api/admin/analytics', {
+            headers: headersFor(),
+          }),
+        ),
+    },
     {
       name: 'GET /api/admin/promotions',
       mutation: false,

@@ -25,3 +25,10 @@ export const adminOrdersAuthFixture = {
   setupPassword: 'orders-setup-password-at-least-14-characters',
   password: 'orders-changed-password-at-least-14-characters',
 } as const;
+
+export const adminUxAuthFixture = {
+  email: 'browser-admin-ux@example.test',
+  name: 'Propietaria UX de prueba',
+  setupPassword: 'ux-setup-password-at-least-14-characters',
+  password: 'ux-changed-password-at-least-14-characters',
+} as const;

@@ -18,6 +18,7 @@ test('private HTML, API errors and redirects cannot be cached or indexed', async
     '/api/order-status/CANARY_RECEIPT_SECRET',
     '/api/checkout-review',
     '/api/admin/orders',
+    '/api/admin/analytics?period=7',
   ]) {
     const response = await request.get(path);
     expect(response.headers()['cache-control']).toContain('no-store');

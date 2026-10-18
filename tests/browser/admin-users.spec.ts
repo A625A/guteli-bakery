@@ -152,6 +152,7 @@ test('an owner creates an admin whose one-time credential requires replacement a
     page.getByRole('heading', { name: 'Usuarios administrativos' }),
   ).toBeVisible();
 
+  await page.getByText('Agregar administradora', { exact: true }).click();
   const email = 'browser-created-admin@example.test';
   await page.getByLabel('Nombre').fill('Administradora creada');
   await page.getByLabel('Correo electrónico').fill(email);
@@ -187,6 +188,7 @@ test('an owner creates an admin whose one-time credential requires replacement a
   await expect(paginatedUser).toContainText('Desactivada');
 
   await page.goto('/admin');
+  await page.getByText('Mi cuenta', { exact: true }).click();
   await page.getByRole('button', { name: 'Cerrar esta sesión' }).click();
   await page.getByLabel('Correo electrónico').fill(email);
   await page.getByLabel('Contraseña').fill(setupCredential!);

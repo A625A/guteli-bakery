@@ -1,0 +1,292 @@
+[
+  {
+    "file": "artifacts/admin-ux-2/after/a11y-categories-1440.json",
+    "sha256": "1e7d666d706b75b9b0413af521a48a1da55f89cd948a6803b8eedb9e7cbbc1a7",
+    "bytes": 163606
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/a11y-categories-390.json",
+    "sha256": "0b468efe4409f0830b27bc58863f4101c4f0041cf5a0a1f6c8025056f746fcf5",
+    "bytes": 135051
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/a11y-categories-editor-1440.json",
+    "sha256": "78a234aa54f3d529454290261c7a814cfc0c7221a501428a13816a79cc43ba8e",
+    "bytes": 17
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/a11y-categories-editor-390.json",
+    "sha256": "78a234aa54f3d529454290261c7a814cfc0c7221a501428a13816a79cc43ba8e",
+    "bytes": 17
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/a11y-category-create-1440.json",
+    "sha256": "78a234aa54f3d529454290261c7a814cfc0c7221a501428a13816a79cc43ba8e",
+    "bytes": 17
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/a11y-category-create-390.json",
+    "sha256": "78a234aa54f3d529454290261c7a814cfc0c7221a501428a13816a79cc43ba8e",
+    "bytes": 17
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/a11y-dashboard-1440.json",
+    "sha256": "16894ef920b538e12c8b15823e113e76e8da8da129c94446d3b1880f4a8c54eb",
+    "bytes": 276935
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/a11y-dashboard-390.json",
+    "sha256": "a5bd9369aaffecc6249e6a16d0b5b2186db0e45a645c8fe81257af098d48e3b2",
+    "bytes": 249069
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/a11y-orders-1440.json",
+    "sha256": "2b185bf64b11a0ca7bd7f482f665c1da24cf5d4bfd251e1a2af868055b0e9edc",
+    "bytes": 433457
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/a11y-orders-390.json",
+    "sha256": "c46e310139f92dd0783c1bc3b2bf26fd852ab8554482f512590acbdf3914aca8",
+    "bytes": 402683
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/a11y-orders-GUT-26-UX000000-1440.json",
+    "sha256": "453cc04073459490dc6a5d98b938a0262e27ff43e6f133bf4bdc16c24332b354",
+    "bytes": 194401
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/a11y-orders-GUT-26-UX000000-390.json",
+    "sha256": "481dfa1921c73513e99913daace08a63213b6ca9d00802de5245008242a8f1ed",
+    "bytes": 169753
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/a11y-product-create-1440.json",
+    "sha256": "78a234aa54f3d529454290261c7a814cfc0c7221a501428a13816a79cc43ba8e",
+    "bytes": 17
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/a11y-product-create-390.json",
+    "sha256": "78a234aa54f3d529454290261c7a814cfc0c7221a501428a13816a79cc43ba8e",
+    "bytes": 17
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/a11y-product-edit-1440.json",
+    "sha256": "78a234aa54f3d529454290261c7a814cfc0c7221a501428a13816a79cc43ba8e",
+    "bytes": 17
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/a11y-product-edit-390.json",
+    "sha256": "78a234aa54f3d529454290261c7a814cfc0c7221a501428a13816a79cc43ba8e",
+    "bytes": 17
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/a11y-products-1440.json",
+    "sha256": "78912e5fb6d4df696e1249ffd31877996350a979778728149dd6855a72fdbbcf",
+    "bytes": 294280
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/a11y-products-390.json",
+    "sha256": "1683e722b084b616547349f02f80f3f282bb9774c0e6cf99ca51e88d330e6e48",
+    "bytes": 264986
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/a11y-promotion-create-1440.json",
+    "sha256": "78a234aa54f3d529454290261c7a814cfc0c7221a501428a13816a79cc43ba8e",
+    "bytes": 17
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/a11y-promotion-create-390.json",
+    "sha256": "78a234aa54f3d529454290261c7a814cfc0c7221a501428a13816a79cc43ba8e",
+    "bytes": 17
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/a11y-promotions-1440.json",
+    "sha256": "d8cdc8e3bc8cee95d5dc44722049f01a4269281309cf997bf4308493bd7b87f5",
+    "bytes": 141357
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/a11y-promotions-390.json",
+    "sha256": "d5a984cd9085a78736cfc968a07f56d0151bbfe65dc052f34f726ab8d9d208cf",
+    "bytes": 112041
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/a11y-promotions-editor-1440.json",
+    "sha256": "78a234aa54f3d529454290261c7a814cfc0c7221a501428a13816a79cc43ba8e",
+    "bytes": 17
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/a11y-promotions-editor-390.json",
+    "sha256": "78a234aa54f3d529454290261c7a814cfc0c7221a501428a13816a79cc43ba8e",
+    "bytes": 17
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/a11y-users-1440.json",
+    "sha256": "a1d6e8c05ed7e0a30f623a74e787db168b2f44f70fe45365fd65e5fb286aedca",
+    "bytes": 209662
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/a11y-users-390.json",
+    "sha256": "295fc315a91af14ef6731d09331389575f65f49645bfcd00fd681ba361d62037",
+    "bytes": 181146
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/a11y-users-create-1440.json",
+    "sha256": "78a234aa54f3d529454290261c7a814cfc0c7221a501428a13816a79cc43ba8e",
+    "bytes": 17
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/a11y-users-create-390.json",
+    "sha256": "78a234aa54f3d529454290261c7a814cfc0c7221a501428a13816a79cc43ba8e",
+    "bytes": 17
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/categories-1440.png",
+    "sha256": "1da67ec1e4cf8b70e0e0a0ee2d4482b6aebe36087eedf8c01c4825dbcdb6b3c2",
+    "bytes": 146253
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/categories-390.png",
+    "sha256": "dba6b57eb9aafd92ac6e27c4590cf7162ffa064d8f95d8f3b6075226ee1dbbb2",
+    "bytes": 68870
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/categories-edit-1440.png",
+    "sha256": "2a2feb66c51e5c3e21a759b189cc30721ce58606d04c7ae3575e6cdbf94a2d63",
+    "bytes": 108634
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/categories-edit-390.png",
+    "sha256": "03e6e8ac5c5cc87943bfd3d5e5d0196c707422968f6db886c98310c8324b6bc2",
+    "bytes": 30411
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/category-create-1440.png",
+    "sha256": "0f51bdbc2e37ad7a929333a9a1f9580cfcd8d25a1c0c68a090f74a38f8a6eaca",
+    "bytes": 102050
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/category-create-390.png",
+    "sha256": "fb1fd49db230bdc09bac0c3f601a4d448b0d8bf065080aec45a7a9aa56391f45",
+    "bytes": 24127
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/dashboard-1440.png",
+    "sha256": "ece468d2c8ba7c982d5f2520b9b8723bf08c5f7024feb2efea29974d8a2427b1",
+    "bytes": 353753
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/dashboard-390.png",
+    "sha256": "39d1e317b61431a921ac4564cbbbc2934a50abeb0092fbdfa47e7cf49f697dae",
+    "bytes": 279899
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/orders-1440.png",
+    "sha256": "b5be2243641c8a42f349f968cd12a728f600e8c9a34eb40ce743029f3397a9eb",
+    "bytes": 406829
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/orders-390.png",
+    "sha256": "81519bd342431f8e4a7f9c7770532d9e47a7ee18600d9775a6b7f2aa62c0927c",
+    "bytes": 468786
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/orders-GUT-26-UX000000-1440.png",
+    "sha256": "b1f8c381d11923746025d37f3bf76a2beab0f97751fb3e6306e64f80631e762a",
+    "bytes": 245347
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/orders-GUT-26-UX000000-390.png",
+    "sha256": "9ab95938ca885377b2ac17b171a471e85b85866ac90793171d0b245a98f13f0e",
+    "bytes": 157020
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/product-create-1440.png",
+    "sha256": "f1efa183461ee36d107b9388fc42bffd9c9717e22e324487d28990ce3735a145",
+    "bytes": 219378
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/product-create-390.png",
+    "sha256": "e460ad78dc062f9258e90df849aa590d0ca92d1f92ba8bbf5c63ccee7febff26",
+    "bytes": 45074
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/product-direct-1440.png",
+    "sha256": "67abc15466e41744a4609d6865b62c3e74b0a33d9e391d5dc5337d652d5856af",
+    "bytes": 398993
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/product-direct-390.png",
+    "sha256": "aa9f83a69452fe3c6932d2da6b5a82a24489928fba3045ef98fde7798786d0bb",
+    "bytes": 290036
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/product-edit-1440.png",
+    "sha256": "2010eee26e011b23c88c50fdeb45d41102a83ab29a02c84ca842f13a3e388cd4",
+    "bytes": 235396
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/product-edit-390.png",
+    "sha256": "fa0f1395b044bf5040500d07a94352115267f417ee592c3c5acbc71cdb5c52e2",
+    "bytes": 60824
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/products-1440.png",
+    "sha256": "ea36279a0e6fdcf259524466f3c7311a7790b3217b433c7e34e9a1525bbddd9f",
+    "bytes": 268360
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/products-390.png",
+    "sha256": "e3508daa2aa604374dfc4ee75a4416e1836dba0ea51e2a5a470183c9465126c7",
+    "bytes": 230762
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/promotion-create-1440.png",
+    "sha256": "5a2207e00aa4d81fc862f71d834e7eeb3332ba3ee942279155de58e49df8fab8",
+    "bytes": 158921
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/promotion-create-390.png",
+    "sha256": "f9924dc78f753aa49b887db2d2767ece4060bd4965dfb11e1fcaa3a430520e71",
+    "bytes": 60697
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/promotions-1440.png",
+    "sha256": "111008a8d934cdd6ee1b548e0788209e1f414aa530da8031132dcee588767727",
+    "bytes": 160511
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/promotions-390.png",
+    "sha256": "da8d008beed1619d6e0fe564f3fa98f5bc432f001b6399d37f519884b0e848ad",
+    "bytes": 72853
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/promotions-edit-1440.png",
+    "sha256": "2a9f07ab98cc4812cc7cfc0d907be689e79c7607f4ea933fa503c442ea80a10d",
+    "bytes": 167017
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/promotions-edit-390.png",
+    "sha256": "baf86fb2e699a36c7758d1b7c1c078333e254c78d6d5948422897b25eac616ea",
+    "bytes": 65874
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/users-1440.png",
+    "sha256": "55a0f9c3a0f0b823d2db8133217eb8eeb5224ccf02884eb273503f81669debee",
+    "bytes": 202283
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/users-390.png",
+    "sha256": "177ed50f6840c7578d6ac4cd96c6a1ed2ca96539a3992e025a7941b9e116fe05",
+    "bytes": 117027
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/users-create-1440.png",
+    "sha256": "901f352e9427cfa4014ac0baa5cc729ba2c792a3650f9ef29c57764fcc828757",
+    "bytes": 210482
+  },
+  {
+    "file": "artifacts/admin-ux-2/after/users-create-390.png",
+    "sha256": "d433a7fade562a3f7b9a5fc356b48b9c2e5ef9b3cebaf6bf262a91fd314b71b2",
+    "bytes": 127138
+  }
+]

@@ -1,0 +1,395 @@
+[WebServer] (node:36731) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:36747) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:36767) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:36768) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 113 tests using 1 worker
+
+(node:36793) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:36826) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:36830) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:36833) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:36841) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:36860) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓    1 [storefront] › tests/browser/artifacts.spec.ts:120:7 › Milestone 3 evidence capture › captures the desktop customer journey and one field-error state (14.0s)
+[WebServer] (node:36866) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:36869) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:36887) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:36904) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:36905) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓    2 [storefront] › tests/browser/artifacts.spec.ts:170:7 › Milestone 3 evidence capture › captures the mobile customer journey (6.5s)
+  ✓    3 [storefront] › tests/browser/banner-redesign.spec.ts:3:5 › homepage uses the approved banner-led structure (571ms)
+  ✓    4 [storefront] › tests/browser/banner-redesign.spec.ts:35:7 › banner remains intact at 320px (493ms)
+  ✓    5 [storefront] › tests/browser/banner-redesign.spec.ts:35:7 › banner remains intact at 390px (500ms)
+  ✓    6 [storefront] › tests/browser/banner-redesign.spec.ts:35:7 › banner remains intact at 768px (537ms)
+  ✓    7 [storefront] › tests/browser/banner-redesign.spec.ts:35:7 › banner remains intact at 1024px (518ms)
+  ✓    8 [storefront] › tests/browser/banner-redesign.spec.ts:35:7 › banner remains intact at 1440px (504ms)
+  -    9 [storefront] › tests/browser/checkout-summary.spec.ts:64:9 › desktop › records customer WhatsApp consent only after an explicit selection
+  -   10 [storefront] › tests/browser/checkout-summary.spec.ts:80:9 › desktop › previews only on request and opens/copies a fresh correctly encoded unpaid summary
+  -   11 [storefront] › tests/browser/checkout-summary.spec.ts:134:9 › desktop › requires review on a refreshed conflict and clears private text after session failure
+  -   12 [storefront] › tests/browser/checkout-summary.spec.ts:177:9 › desktop › offers complete selectable text for long messages and clipboard failure
+  -   13 [storefront] › tests/browser/checkout-summary.spec.ts:214:9 › desktop › discards previews on focus and at a known pricing boundary
+  -   14 [storefront] › tests/browser/checkout-summary.spec.ts:64:9 › mobile › records customer WhatsApp consent only after an explicit selection
+  -   15 [storefront] › tests/browser/checkout-summary.spec.ts:80:9 › mobile › previews only on request and opens/copies a fresh correctly encoded unpaid summary
+  -   16 [storefront] › tests/browser/checkout-summary.spec.ts:134:9 › mobile › requires review on a refreshed conflict and clears private text after session failure
+  -   17 [storefront] › tests/browser/checkout-summary.spec.ts:177:9 › mobile › offers complete selectable text for long messages and clipboard failure
+  -   18 [storefront] › tests/browser/checkout-summary.spec.ts:214:9 › mobile › discards previews on focus and at a known pricing boundary
+[WebServer] (node:36916) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:36917) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:36918) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   19 [storefront] › tests/browser/checkout-summary.spec.ts:246:5 › demo mode allows a private preview and copy but no live WhatsApp navigation (2.7s)
+  ✓   20 [storefront] › tests/browser/foundation.spec.ts:27:5 › uses Carrito as the only checkout destination (1.1s)
+  ✓   21 [storefront] › tests/browser/foundation.spec.ts:45:7 › / renders the final Spanish site shell (523ms)
+[WebServer] (node:36938) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   22 [storefront] › tests/browser/foundation.spec.ts:45:7 › /menu/ renders the final Spanish site shell (625ms)
+  ✓   23 [storefront] › tests/browser/foundation.spec.ts:45:7 › /cart/ renders the final Spanish site shell (518ms)
+  ✓   24 [storefront] › tests/browser/foundation.spec.ts:45:7 › /contact/ renders the final Spanish site shell (535ms)
+  ✓   25 [storefront] › tests/browser/foundation.spec.ts:86:5 › slashless storefront routes render directly without redirects (268ms)
+  ✓   26 [storefront] › tests/browser/foundation.spec.ts:99:5 › default portfolio mode is identified and exposes no WhatsApp destination (884ms)
+  ✓   27 [storefront] › tests/browser/foundation.spec.ts:122:5 › homepage uses the approved accessible banner treatment (507ms)
+[WebServer] (node:36946) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   28 [storefront] › tests/browser/foundation.spec.ts:140:5 › menu uses approved product photography with one honest fallback (649ms)
+  ✓   29 [storefront] › tests/browser/foundation.spec.ts:168:7 › compact shell has no horizontal overflow (468ms)
+  ✓   30 [storefront] › tests/browser/foundation.spec.ts:168:7 › mobile shell has no horizontal overflow (436ms)
+  ✓   31 [storefront] › tests/browser/foundation.spec.ts:168:7 › tablet shell has no horizontal overflow (440ms)
+  ✓   32 [storefront] › tests/browser/foundation.spec.ts:168:7 › intermediate shell has no horizontal overflow (435ms)
+  ✓   33 [storefront] › tests/browser/foundation.spec.ts:168:7 › desktop shell has no horizontal overflow (441ms)
+  ✓   34 [storefront] › tests/browser/foundation.spec.ts:184:5 › reduced motion disables smooth scrolling and shortens link transitions (486ms)
+  ✓   35 [storefront] › tests/browser/foundation.spec.ts:202:7 › the skip link moves focus to main on desktop (514ms)
+  ✓   36 [storefront] › tests/browser/foundation.spec.ts:217:7 › the footer reaches the document bottom on desktop (494ms)
+  ✓   37 [storefront] › tests/browser/foundation.spec.ts:202:7 › the skip link moves focus to main on mobile (487ms)
+  ✓   38 [storefront] › tests/browser/foundation.spec.ts:217:7 › the footer reaches the document bottom on mobile (481ms)
+  ✓   39 [storefront] › tests/browser/foundation.spec.ts:236:5 › desktop navigation exposes the approved four destinations (476ms)
+[WebServer] (node:36963) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   40 [storefront] › tests/browser/foundation.spec.ts:252:5 › header identifies the current destination and keeps its icons decorative (632ms)
+[WebServer] (node:36965) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   41 [storefront] › tests/browser/foundation.spec.ts:273:5 › desktop header omits the hanging decorative seal (559ms)
+  ✓   42 [storefront] › tests/browser/foundation.spec.ts:280:5 › mobile menu exposes the approved four destinations (555ms)
+  ✓   43 [storefront] › tests/browser/foundation.spec.ts:296:5 › mobile menu closes after selecting a destination (688ms)
+[WebServer] (node:36970) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   44 [storefront] › tests/browser/foundation.spec.ts:308:5 › contact exposes factual guidance without an active demo destination (511ms)
+  ✓   45 [storefront] › tests/browser/foundation.spec.ts:348:7 › / has no mobile overflow and exposes 44 pixel interactive targets (681ms)
+[WebServer] (node:36976) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   46 [storefront] › tests/browser/foundation.spec.ts:348:7 › /menu/ has no mobile overflow and exposes 44 pixel interactive targets (932ms)
+  ✓   47 [storefront] › tests/browser/foundation.spec.ts:348:7 › /cart/ has no mobile overflow and exposes 44 pixel interactive targets (679ms)
+  ✓   48 [storefront] › tests/browser/foundation.spec.ts:348:7 › /contact/ has no mobile overflow and exposes 44 pixel interactive targets (665ms)
+  ✓   49 [storefront] › tests/browser/foundation.spec.ts:385:5 › desktop shows its navigation and keeps the mobile control hidden (491ms)
+  ✓   50 [storefront] › tests/browser/foundation.spec.ts:396:7 › /contact/ keeps the footer at the desktop document bottom (485ms)
+  ✓   51 [storefront] › tests/browser/foundation.spec.ts:396:7 › /ruta-inexistente/ keeps the footer at the desktop document bottom (589ms)
+  ✓   52 [storefront] › tests/browser/foundation.spec.ts:415:5 › cart badge restores a safe saved quantity after hydration (489ms)
+  ✓   53 [storefront] › tests/browser/foundation.spec.ts:433:7 › populated cart rows stay inside their panel at 768px (585ms)
+[WebServer] (node:36986) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   54 [storefront] › tests/browser/foundation.spec.ts:433:7 › populated cart rows stay inside their panel at 900px (590ms)
+  ✓   55 [storefront] › tests/browser/foundation.spec.ts:474:5 › the missing route keeps the final shell and a focusable main target (589ms)
+  ✓   56 [storefront] › tests/browser/foundation.spec.ts:495:5 › footer exposes navigation and factual request guidance (524ms)
+  ✓   57 [storefront] › tests/browser/foundation.spec.ts:535:5 › footer links provide 44 pixel touch targets (575ms)
+  ✓   58 [storefront] › tests/browser/health.spec.ts:5:5 › GET /health returns database availability and a matching request ID (137ms)
+  ✓   59 [storefront] › tests/browser/menu.spec.ts:46:5 › keeps add controls unavailable until the persisted cart can hydrate (379ms)
+[WebServer] (node:37006) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   60 [storefront] › tests/browser/menu.spec.ts:61:5 › homepage presents the banner-led factual ordering path (524ms)
+  ✓   61 [storefront] › tests/browser/menu.spec.ts:110:5 › ordering guide uses decorative bakery symbols instead of visible step numbers (489ms)
+  ✓   62 [storefront] › tests/browser/menu.spec.ts:128:5 › phone handset is centered inside its ordering-guide speech bubble (488ms)
+[WebServer] (node:37020) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   63 [storefront] › tests/browser/menu.spec.ts:167:5 › shows all confirmed products and adds a selected quantity (1.1s)
+[WebServer] (node:37022) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   64 [storefront] › tests/browser/menu.spec.ts:217:5 › filters the product grid with clear pressed state and keyboard access (822ms)
+[WebServer] (node:37028) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   65 [storefront] › tests/browser/menu.spec.ts:255:5 › uses a four-card product row on wide screens (652ms)
+[WebServer] (node:37031) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37032) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   66 [storefront] › tests/browser/menu.spec.ts:272:5 › uses the supplied product photographs in the menu and cart (3.3s)
+[WebServer] (node:37035) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   67 [storefront] › tests/browser/menu.spec.ts:332:5 › prioritizes only the first two product photos in a populated cart (697ms)
+[WebServer] (node:37038) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   68 [storefront] › tests/browser/menu.spec.ts:357:5 › small caramel labels retain readable contrast on cream surfaces (1.2s)
+[WebServer] (node:37041) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   69 [storefront] › tests/browser/menu.spec.ts:396:5 › re-announces an identical repeated addition and updates the badge (1.9s)
+[WebServer] (node:37046) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   70 [storefront] › tests/browser/menu.spec.ts:417:5 › reports only the effective addition and disables adding at 99 (1.7s)
+[WebServer] (node:37048) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   71 [storefront] › tests/browser/menu.spec.ts:448:5 › all ten menu variants can be added with a keyboard (1.0s)
+[WebServer] (node:37051) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37053) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   72 [storefront] › tests/browser/menu.spec.ts:479:5 › menu controls remain usable without horizontal overflow on mobile (2.4s)
+[WebServer] (node:37066) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   73 [storefront] › tests/browser/order-journey.spec.ts:29:5 › creates a durable delivery order and renders only its public receipt (2.0s)
+[WebServer] (node:37067) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37068) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   74 [storefront] › tests/browser/order-journey.spec.ts:101:5 › offers a menu recovery path when the cart is empty (1.0s)
+[WebServer] (node:37073) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37076) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   75 [storefront] › tests/browser/order-journey.spec.ts:122:5 › persists cart changes across reload and removes a line on request (2.0s)
+  ✓   76 [storefront] › tests/browser/order-journey.spec.ts:152:5 › recovers malformed saved cart data as an empty cart (516ms)
+  ✓   77 [storefront] › tests/browser/order-journey.spec.ts:171:5 › expires legacy slug carts without guessing product identity (528ms)
+  ✓   78 [storefront] › tests/browser/order-journey.spec.ts:196:5 › retains an unavailable selection until the customer explicitly removes it (554ms)
+[WebServer] (node:37081) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   79 [storefront] › tests/browser/order-journey.spec.ts:229:5 › shows pickup guidance and omits a delivery location from the API payload (2.1s)
+  ✓   80 [storefront] › tests/browser/order-journey.spec.ts:264:5 › selected fulfillment exposes clear state (570ms)
+[WebServer] (node:37085) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   81 [storefront] › tests/browser/order-journey.spec.ts:272:5 › blocks rapid double submission synchronously and disables the action (737ms)
+[WebServer] (node:37089) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   82 [storefront] › tests/browser/order-journey.spec.ts:313:5 › retains form and cart after a 500 and reuses the same key unchanged (2.4s)
+[WebServer] (node:37091) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   83 [storefront] › tests/browser/order-journey.spec.ts:356:5 › keeps the recovery key after a conflict instead of silently creating another order (2.4s)
+[WebServer] (node:37096) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   84 [storefront] › tests/browser/order-journey.spec.ts:387:5 › keeps the recovery key after edits while a failed submission may still exist (6.0s)
+[WebServer] (node:37099) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   85 [storefront] › tests/browser/order-journey.spec.ts:432:5 › requires delivery location and preserves active form progress on error (3.7s)
+[WebServer] (node:37102) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   86 [storefront] › tests/browser/order-journey.spec.ts:457:5 › clears a delivery-only error when switching back to pickup without stealing focus (4.5s)
+  ✓   87 [storefront] › tests/browser/order-journey.spec.ts:487:5 › gives the focused error summary and recovery links visible target geometry (738ms)
+[WebServer] (node:37118) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   88 [storefront] › tests/browser/order-journey.spec.ts:519:5 › marks every custom-validated required order field in the markup (754ms)
+  ✓   89 [storefront] › tests/browser/order-journey.spec.ts:545:5 › order fields follow a logical keyboard sequence (759ms)
+[WebServer] (node:37121) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37123) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   90 [storefront] › tests/browser/order-journey.spec.ts:602:5 › rejects a requested date earlier than the Guatemala minimum (2.2s)
+[WebServer] (node:37126) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   91 [storefront] › tests/browser/order-journey.spec.ts:625:5 › refreshes the two-day minimum after Guatemala midnight (2.1s)
+[WebServer] (node:37128) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   92 [storefront] › tests/browser/order-journey.spec.ts:646:5 › uses one generic experience for malformed and unknown receipt tokens (1.0s)
+[WebServer] (node:37130) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   93 [storefront] › tests/browser/order-journey.spec.ts:658:5 › describes the 99 cap as applying to each menu option (639ms)
+[WebServer] (node:37143) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37146) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   94 [storefront] › tests/browser/order-journey.spec.ts:676:5 › recovers a saved order after a lost response and reload without resubmitting (2.8s)
+[WebServer] (node:37149) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37150) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37152) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   95 [storefront] › tests/browser/order-journey.spec.ts:714:5 › does not submit customer data when the browser cannot retain its recovery credential (2.1s)
+[WebServer] (node:37155) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37156) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37157) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   96 [storefront] › tests/browser/order-journey.spec.ts:738:5 › concurrent tabs share one recoverable checkout instead of creating two orders (2.2s)
+[WebServer] (node:37159) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   97 [storefront] › tests/browser/order-journey.spec.ts:796:5 › rejects edited details when retrying an order whose response was lost (3.0s)
+[WebServer] (node:37163) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37168) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   98 [storefront] › tests/browser/order-journey.spec.ts:822:5 › does not retry an older form as a new order after another tab starts over (3.0s)
+[WebServer] (node:37171) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37185) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37186) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   99 [storefront] › tests/browser/order-journey.spec.ts:848:5 › refreshes an open cart when its promotion expires and keeps form data during a failed refresh (7.6s)
+[WebServer] (node:37191) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37193) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37194) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37195) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37202) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37203) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37205) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  100 [storefront] › tests/browser/order-journey.spec.ts:944:5 › requires explicit acceptance again when a saved unpaid promotional total expires (10.3s)
+  ✓  101 [storefront] › tests/browser/products-api.spec.ts:7:5 › public catalog returns ten minimal DTO products and nine safe media objects (190ms)
+[WebServer] (node:37207) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37208) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  102 [storefront] › tests/browser/products-api.spec.ts:68:5 › public routes return request-aware safe errors and reject traversal/hidden media (677ms)
+[WebServer] (node:37209) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+(node:37211) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37217) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] {"event":"AUTH_FAILURE","at":"2026-10-18T00:01:38.910Z"}
+  ✓  103 [admin] › tests/browser/admin-auth.spec.ts:9:5 › the protected Spanish admin login does not reveal whether an account exists (2.4s)
+[WebServer] (node:37234) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37235) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37237) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37244) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37266) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  104 [admin] › tests/browser/admin-auth.spec.ts:23:5 › the real admin lifecycle requires password change, TOTP, and explicit logout (22.7s)
+  ✓  105 [admin] › tests/browser/admin-auth.spec.ts:106:5 › unauthenticated users cannot open MFA enrollment (744ms)
+  ✓  106 [admin] › tests/browser/admin-auth.spec.ts:115:5 › the MFA challenge is distinct from TOTP enrollment (641ms)
+[WebServer] (node:37281) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37283) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37286) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37287) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37288) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37289) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37290) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37291) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37292) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37302) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37307) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37312) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37313) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37314) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37316) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37317) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37320) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37323) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37326) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37327) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37329) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  107 [admin] › tests/browser/admin-catalog.spec.ts:50:5 › an owner creates, edits, reorders, and deactivates a product with immediate public visibility (21.1s)
+[WebServer] ⨯ Error: The destination stream closed early.
+[WebServer]     at ignore-listed frames {
+[WebServer]   digest: '3271619493'
+[WebServer] }
+[WebServer] {"event":"REQUEST_FAILED","at":"2026-10-18T00:02:25.006Z"}
+[WebServer] (node:37330) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37341) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37342) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37348) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37363) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37364) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37365) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37369) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37370) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37373) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37375) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37376) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37377) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37378) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37380) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  108 [admin] › tests/browser/admin-orders.spec.ts:52:5 › an owner sees operational detail, quotes delivery, and advances an order with accessible feedback (16.7s)
+[WebServer] (node:37383) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  109 [admin] › tests/browser/admin-shell.spec.ts:9:5 › anonymous visitors are redirected to the private admin login (1.6s)
+[WebServer] (node:37386) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37387) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37388) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  110 [admin] › tests/browser/admin-shell.spec.ts:33:5 › verified admins receive the operational shell without storefront chrome (16.2s)
+[WebServer] (node:37407) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  111 [admin] › tests/browser/admin-shell.spec.ts:204:5 › the storefront keeps its public layout and URL (573ms)
+[WebServer] (node:37414) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37416) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  112 [admin] › tests/browser/admin-users.spec.ts:129:5 › the Users navigation and page are hidden from regular admins (2.9s)
+[WebServer] (node:37421) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37422) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37424) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37426) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37427) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  113 [admin] › tests/browser/admin-users.spec.ts:144:5 › an owner creates an admin whose one-time credential requires replacement and TOTP enrollment (6.4s)
+
+  10 skipped
+  103 passed (4.0m)

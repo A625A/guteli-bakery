@@ -1,0 +1,22 @@
+{
+  "browser-final": 0,
+  "e2e-final": 1,
+  "live-final": 0,
+  "integration-final": 0,
+  "lint-final": 0,
+  "typecheck-final": 0,
+  "build-final": 0,
+  "orders-final": 0,
+  "handoff-live-final": 0,
+  "handoff-unavailable-final": 0,
+  "unit-final": 1,
+  "e2e_resolution": {
+    "general_passed": 102,
+    "mode_skipped": 10,
+    "general_failure": "Old order item/subtotal text selectors after table redesign",
+    "corrected_test": "tests/browser/admin-orders.spec.ts",
+    "focused_passed": 1,
+    "focused_exit_code": 0,
+    "docker_restart": "not runnable; daemon unavailable"
+  }
+}

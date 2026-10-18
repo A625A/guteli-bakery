@@ -944,6 +944,7 @@ test('refreshes an open cart when its promotion expires and keeps form data duri
 test('requires explicit acceptance again when a saved unpaid promotional total expires', async ({
   page,
   browser,
+  baseURL,
 }) => {
   const { Pool } = await import('pg');
   const pool = new Pool({ connectionString: process.env.DATABASE_URL_TEST });
@@ -965,7 +966,7 @@ test('requires explicit acceptance again when a saved unpaid promotional total e
   const visitor = await visitorContext.newPage();
   try {
     const prepared = await page.request.post('/api/checkout-session', {
-      headers: { origin: 'http://127.0.0.1:3000' },
+      headers: { origin: baseURL! },
     });
     const { idempotencyKey } = await prepared.json();
     const submitted = await page.request.post('/api/orders', {
@@ -990,17 +991,19 @@ test('requires explicit acceptance again when a saved unpaid promotional total e
     await expect(page.getByText(/Total aceptado: Q150/)).toBeVisible();
     await visitor.goto(page.url());
     await expect(
-      visitor.getByText('Total: Q150', { exact: true }),
+      visitor.getByRole('main').getByText('Total: Q150', { exact: true }),
     ).toBeVisible();
     await expect(
       visitor.getByRole('button', { name: /Acepto el total/ }),
     ).toHaveCount(0);
-    await expect(page.getByText('Total: Q500', { exact: true })).toBeVisible({
+    await expect(
+      page.getByRole('main').getByText('Total: Q500', { exact: true }),
+    ).toBeVisible({
       timeout: 15000,
     });
-    await expect(visitor.getByText('Total: Q500', { exact: true })).toBeVisible(
-      { timeout: 5000 },
-    );
+    await expect(
+      visitor.getByRole('main').getByText('Total: Q500', { exact: true }),
+    ).toBeVisible({ timeout: 5000 });
     await expect(page.getByText(/Total aceptado: Q150/)).toHaveCount(0);
     await page
       .getByRole('button', { name: 'Acepto el total de Q500', exact: true })

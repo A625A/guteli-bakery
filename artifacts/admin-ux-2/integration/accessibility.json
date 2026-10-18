@@ -1,0 +1,119 @@
+{
+  "mainParent": "4845ecfd693eca20a8d5628cfb6796e87acefe9f",
+  "featureParent": "18703b1e711507753b1f45aa5c0cf57414ecd250",
+  "reports": [
+    {
+      "file": "a11y-categories-1440.json",
+      "violations": 0
+    },
+    {
+      "file": "a11y-categories-390.json",
+      "violations": 0
+    },
+    {
+      "file": "a11y-categories-editor-1440.json",
+      "violations": 0
+    },
+    {
+      "file": "a11y-categories-editor-390.json",
+      "violations": 0
+    },
+    {
+      "file": "a11y-category-create-1440.json",
+      "violations": 0
+    },
+    {
+      "file": "a11y-category-create-390.json",
+      "violations": 0
+    },
+    {
+      "file": "a11y-dashboard-1440.json",
+      "violations": 0
+    },
+    {
+      "file": "a11y-dashboard-390.json",
+      "violations": 0
+    },
+    {
+      "file": "a11y-orders-1440.json",
+      "violations": 0
+    },
+    {
+      "file": "a11y-orders-390.json",
+      "violations": 0
+    },
+    {
+      "file": "a11y-orders-GUT-26-UX000000-1440.json",
+      "violations": 0
+    },
+    {
+      "file": "a11y-orders-GUT-26-UX000000-390.json",
+      "violations": 0
+    },
+    {
+      "file": "a11y-product-create-1440.json",
+      "violations": 0
+    },
+    {
+      "file": "a11y-product-create-390.json",
+      "violations": 0
+    },
+    {
+      "file": "a11y-product-edit-1440.json",
+      "violations": 0
+    },
+    {
+      "file": "a11y-product-edit-390.json",
+      "violations": 0
+    },
+    {
+      "file": "a11y-products-1440.json",
+      "violations": 0
+    },
+    {
+      "file": "a11y-products-390.json",
+      "violations": 0
+    },
+    {
+      "file": "a11y-promotion-create-1440.json",
+      "violations": 0
+    },
+    {
+      "file": "a11y-promotion-create-390.json",
+      "violations": 0
+    },
+    {
+      "file": "a11y-promotions-1440.json",
+      "violations": 0
+    },
+    {
+      "file": "a11y-promotions-390.json",
+      "violations": 0
+    },
+    {
+      "file": "a11y-promotions-editor-1440.json",
+      "violations": 0
+    },
+    {
+      "file": "a11y-promotions-editor-390.json",
+      "violations": 0
+    },
+    {
+      "file": "a11y-users-1440.json",
+      "violations": 0
+    },
+    {
+      "file": "a11y-users-390.json",
+      "violations": 0
+    },
+    {
+      "file": "a11y-users-create-1440.json",
+      "violations": 0
+    },
+    {
+      "file": "a11y-users-create-390.json",
+      "violations": 0
+    }
+  ],
+  "totalViolations": 0
+}

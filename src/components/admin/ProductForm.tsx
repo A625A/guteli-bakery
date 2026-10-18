@@ -38,13 +38,14 @@ function imageUrl(storageKey: string) {
 export function ProductForm({
   categories,
   categoryTotal,
-  product,
+  product: initialProduct,
 }: Readonly<{
   categories: readonly CategoryOption[];
   categoryTotal: number;
   product?: AdminProductDto;
 }>) {
   const router = useRouter();
+  const [product, setProduct] = useState(initialProduct);
   const [slug, setSlug] = useState(product?.slug ?? '');
   const [slugEdited, setSlugEdited] = useState(false);
   const [duplicateSlug, setDuplicateSlug] = useState('');
@@ -161,6 +162,10 @@ export function ProductForm({
       setActive(payload.product.active);
       setDeleted(payload.product.deletedAt !== null);
       setMessage(product ? 'Producto actualizado.' : 'Producto creado.');
+      setProduct(payload.product);
+      document
+        .getElementById('product-name')
+        ?.dispatchEvent(new Event('admin:saved', { bubbles: true }));
       router.refresh();
     } catch (error) {
       setMessage(ownerErrorMessage(error, 'No se pudo guardar el producto.'));
@@ -186,6 +191,9 @@ export function ProductForm({
       }
       setVersion(payload.product.version);
       setActive(false);
+      document
+        .getElementById('product-name')
+        ?.dispatchEvent(new Event('admin:saved', { bubbles: true }));
       setMessage('Producto desactivado.');
       router.refresh();
     } catch (error) {
@@ -298,6 +306,9 @@ export function ProductForm({
       }
       setVersion(payload.product.version);
       setImages(payload.product.images);
+      document
+        .getElementById('product-image')
+        ?.dispatchEvent(new Event('admin:saved', { bubbles: true }));
       setMessage('Imagen actualizada.');
       router.refresh();
     } catch (error) {
@@ -339,323 +350,351 @@ export function ProductForm({
   return (
     <section
       className="admin-auth-card"
+      aria-busy={pending || imagePending}
       aria-label={product ? 'Editar producto' : 'Crear producto'}
     >
-      <form
-        onSubmit={(event) => {
-          event.preventDefault();
-          if (pending) return;
-          const submitter = (event.nativeEvent as SubmitEvent).submitter;
-          const data = new FormData(event.currentTarget);
-          void (submitter?.getAttribute('data-action') === 'deactivate'
-            ? deactivate(data)
-            : save(data));
-        }}
-      >
-        <label htmlFor="product-name">Nombre</label>
-        <input
-          id="product-name"
-          name="name"
-          aria-label="Nombre del producto"
-          onChange={(event) => {
-            if (!product && !slugEdited)
-              setSlug(suggestSlug(event.target.value));
-          }}
-          defaultValue={product?.name}
-          maxLength={160}
-          required
-        />
-        <label htmlFor="product-slug">Identificador del enlace</label>
-        <input
-          id="product-slug"
-          name="slug"
-          aria-label="Identificador del enlace del producto"
-          value={slug}
-          onChange={(event) => {
-            setSlugEdited(true);
-            setSlug(event.target.value);
-          }}
-          aria-describedby="product-slug-help"
-          maxLength={120}
-          pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
-          required
-        />
-        <p id="product-slug-help">
-          Se sugiere a partir del nombre. Usa letras minúsculas sin tildes,
-          números y guiones. Cambiar un enlace existente puede afectar enlaces
-          guardados.
-        </p>
-        <label htmlFor="product-category">Categoría</label>
-        <label htmlFor="product-category-search">Buscar categoría</label>
-        <input
-          id="product-category-search"
-          type="search"
-          value={categorySearch}
-          onChange={(event) => setCategorySearch(event.target.value)}
-          maxLength={160}
-        />
-        <button
-          type="button"
-          onClick={() => loadCategories(1, true)}
-          disabled={pending || categoryLoading}
-        >
-          Buscar categorías
-        </button>
-        <select
-          id="product-category"
-          name="categoryId"
-          value={selectedCategoryId}
-          onChange={(event) => setSelectedCategoryId(event.target.value)}
-          required
-        >
-          {categoryOptions.map((category) => (
-            <option
-              key={category.id}
-              value={category.id}
-              disabled={!category.active && category.id !== product?.categoryId}
-            >
-              {category.name}
-              {category.active ? '' : ' (inactiva)'}
-            </option>
-          ))}
-        </select>
-        {categoryPage * 100 < categoryResultTotal ? (
-          <button
-            type="button"
-            onClick={() => loadCategories(categoryPage + 1, false)}
-            disabled={pending || categoryLoading}
-          >
-            Más categorías
-          </button>
+      <fieldset disabled={pending || imagePending} className="admin-fields">
+        <legend className="visually-hidden">Datos del producto</legend>
+        {product && images[0] ? (
+          <div className="admin-editor-photo">
+            <Image
+              src={imageUrl(images[0].storageKey)}
+              width={80}
+              height={80}
+              alt=""
+              unoptimized
+            />
+            <div>
+              <strong>{product.name}</strong>
+              <p>Imagen actual del producto</p>
+            </div>
+          </div>
         ) : null}
-        <label htmlFor="product-description">Descripción</label>
-        <textarea
-          id="product-description"
-          name="description"
-          defaultValue={product?.description}
-          maxLength={4_000}
-        />
-        <label htmlFor="product-sale-unit">Unidad de venta</label>
-        <input
-          id="product-sale-unit"
-          name="saleUnit"
-          defaultValue={product?.saleUnit ?? ''}
-          maxLength={80}
-        />
-        <p>
-          Indica la presentación que compra el cliente, por ejemplo: bolsa de 5
-          unidades.
-        </p>
-        <label htmlFor="product-sku">Código interno (SKU)</label>
-        <input
-          id="product-sku"
-          name="sku"
-          defaultValue={product?.sku ?? ''}
-          maxLength={80}
-        />
-        <label htmlFor="product-price">Precio en quetzales (Q)</label>
-        <input
-          id="product-price"
-          name="priceQuetzales"
-          type="number"
-          min="0"
-          step="0.01"
-          defaultValue={quetzalesInput(product?.priceMinor ?? 0)}
-          required
-        />
-        <label htmlFor="product-stock">Existencia</label>
-        <input
-          id="product-stock"
-          name="stockQuantity"
-          type="number"
-          min="0"
-          step="1"
-          defaultValue={product?.stockQuantity ?? ''}
-          placeholder="Sin control"
-        />
-        <p>
-          Deja la existencia vacía si no llevas un conteo. Cero indica que está
-          agotado; esto no limita la producción diaria.
-        </p>
-        <label htmlFor="product-sort">Orden</label>
-        <input
-          id="product-sort"
-          name="sortOrder"
-          aria-label="Orden del producto"
-          type="number"
-          min="0"
-          step="1"
-          defaultValue={product?.sortOrder ?? 0}
-          required
-        />
-        <label>
-          <input
-            name="featured"
-            type="checkbox"
-            defaultChecked={product?.featured ?? false}
-          />{' '}
-          Destacado
-        </label>
-        <label>
-          <input
-            name="active"
-            type="checkbox"
-            checked={active}
-            onChange={(event) => setActive(event.target.checked)}
-            disabled={deleted}
-          />{' '}
-          Activo
-        </label>
-        <button
-          type="submit"
-          disabled={pending || !selectedCategoryId || deleted}
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (pending) return;
+            const submitter = (event.nativeEvent as SubmitEvent).submitter;
+            const data = new FormData(event.currentTarget);
+            void (submitter?.getAttribute('data-action') === 'deactivate'
+              ? deactivate(data)
+              : save(data));
+          }}
         >
-          {product ? 'Guardar producto' : 'Crear producto'}
-        </button>
-        {product && active && !deleted ? (
-          <>
-            <p>
-              {available
-                ? 'Este producto está disponible; desactivarlo lo ocultará del menú.'
-                : 'Este producto está agotado; desactivarlo lo ocultará del menú.'}
-            </p>
-            <button type="submit" data-action="deactivate" disabled={pending}>
-              Desactivar producto
-            </button>
-          </>
-        ) : null}
-      </form>
-      {product && !deleted ? (
-        <>
-          <form
-            onSubmit={(event) => {
-              event.preventDefault();
-              if (!pending) void duplicate(new FormData(event.currentTarget));
+          <label htmlFor="product-name">Nombre</label>
+          <input
+            id="product-name"
+            name="name"
+            aria-label="Nombre del producto"
+            onChange={(event) => {
+              if (!product && !slugEdited)
+                setSlug(suggestSlug(event.target.value));
             }}
-          >
-            <h2>Duplicar producto</h2>
-            <label htmlFor="duplicate-name">Nombre de la copia</label>
+            defaultValue={product?.name}
+            maxLength={160}
+            required
+          />
+          <label htmlFor="product-category">Categoría</label>
+          <details>
+            <summary>Buscar otra categoría</summary>{' '}
+            <label htmlFor="product-category-search">Buscar categoría</label>
             <input
-              id="duplicate-name"
-              name="duplicateName"
-              onChange={(event) => {
-                if (!duplicateSlugEdited)
-                  setDuplicateSlug(suggestSlug(event.target.value));
-              }}
-              required
+              id="product-category-search"
+              type="search"
+              value={categorySearch}
+              onChange={(event) => setCategorySearch(event.target.value)}
               maxLength={160}
             />
-            <label htmlFor="duplicate-slug">
-              Identificador del enlace de la copia
-            </label>
-            <input
-              id="duplicate-slug"
-              name="duplicateSlug"
-              value={duplicateSlug}
-              onChange={(event) => {
-                setDuplicateSlugEdited(true);
-                setDuplicateSlug(event.target.value);
-              }}
-              required
-              maxLength={120}
-            />
-            <button type="submit" disabled={pending}>
-              Crear copia inactiva
-            </button>
-          </form>
-          <div>
-            <p>
-              Retirar conserva pedidos históricos y elimina el producto del
-              catálogo público.
-            </p>
-            <label>
-              <input
-                type="checkbox"
-                checked={confirmRemoval}
-                onChange={(event) => setConfirmRemoval(event.target.checked)}
-              />
-              Entiendo que el producto dejará de aparecer en el catálogo.
-            </label>
             <button
               type="button"
-              onClick={remove}
-              disabled={pending || !confirmRemoval}
+              onClick={() => loadCategories(1, true)}
+              disabled={pending || categoryLoading}
             >
-              Retirar producto
+              Buscar categorías
             </button>
-          </div>
-        </>
-      ) : null}
-      {product && !deleted ? (
-        <section aria-labelledby="current-images-title">
-          <h2 id="current-images-title">Administrar imagen</h2>
-          <p id="product-image-help">
-            JPEG, PNG o WebP. Máximo 8 MB; se publicará como WebP optimizado.
-          </p>
-          <form
-            onSubmit={(event) => {
-              event.preventDefault();
-              if (!imagePending)
-                void uploadImage(new FormData(event.currentTarget));
-            }}
-            aria-describedby="product-image-help"
+          </details>{' '}
+          <select
+            id="product-category"
+            name="categoryId"
+            value={selectedCategoryId}
+            onChange={(event) => setSelectedCategoryId(event.target.value)}
+            required
           >
-            <label htmlFor="product-image">Imagen del producto</label>
+            {categoryOptions.map((category) => (
+              <option
+                key={category.id}
+                value={category.id}
+                disabled={
+                  !category.active && category.id !== product?.categoryId
+                }
+              >
+                {category.name}
+                {category.active ? '' : ' (inactiva)'}
+              </option>
+            ))}
+          </select>
+          {categoryPage * 100 < categoryResultTotal ? (
+            <button
+              type="button"
+              onClick={() => loadCategories(categoryPage + 1, false)}
+              disabled={pending || categoryLoading}
+            >
+              Más categorías
+            </button>
+          ) : null}
+          <label htmlFor="product-description">Descripción</label>
+          <textarea
+            id="product-description"
+            name="description"
+            defaultValue={product?.description}
+            maxLength={4_000}
+          />
+          <label htmlFor="product-price">Precio en quetzales (Q)</label>
+          <input
+            id="product-price"
+            name="priceQuetzales"
+            type="number"
+            min="0"
+            step="0.01"
+            defaultValue={quetzalesInput(product?.priceMinor ?? 0)}
+            required
+          />
+          <label htmlFor="product-stock">Existencia</label>
+          <input
+            id="product-stock"
+            name="stockQuantity"
+            type="number"
+            min="0"
+            step="1"
+            defaultValue={product?.stockQuantity ?? ''}
+            placeholder="Sin control"
+          />
+          <p>
+            Deja la existencia vacía si no llevas un conteo. Cero indica que
+            está agotado; esto no limita la producción diaria.
+          </p>
+          <label>
             <input
-              id="product-image"
-              name="image"
-              type="file"
-              accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
-              disabled={pending}
+              name="featured"
+              type="checkbox"
+              defaultChecked={product?.featured ?? false}
+            />{' '}
+            Destacado
+          </label>
+          <label>
+            <input
+              name="active"
+              type="checkbox"
+              checked={active}
+              onChange={(event) => setActive(event.target.checked)}
+              disabled={deleted}
+            />{' '}
+            Activo
+          </label>
+          <details>
+            <summary>Opciones del catálogo</summary>{' '}
+            <label htmlFor="product-slug">Identificador del enlace</label>
+            <input
+              id="product-slug"
+              name="slug"
+              aria-label="Identificador del enlace del producto"
+              value={slug}
+              onChange={(event) => {
+                setSlugEdited(true);
+                setSlug(event.target.value);
+              }}
+              aria-describedby="product-slug-help"
+              maxLength={120}
+              pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
               required
             />
-            <button type="submit" disabled={pending}>
-              Cargar imagen
-            </button>
-          </form>
-          {imagePending ? (
-            <progress aria-label="Progreso de imagen">Procesando</progress>
+            <p id="product-slug-help">
+              Se sugiere a partir del nombre. Usa letras minúsculas sin tildes,
+              números y guiones. Cambiar un enlace existente puede afectar
+              enlaces guardados.
+            </p>
+            <label htmlFor="product-sale-unit">Unidad de venta</label>
+            <input
+              id="product-sale-unit"
+              name="saleUnit"
+              defaultValue={product?.saleUnit ?? ''}
+              maxLength={80}
+            />
+            <p>
+              Indica la presentación que compra el cliente, por ejemplo: bolsa
+              de 5 unidades.
+            </p>
+            <label htmlFor="product-sku">Código interno (SKU)</label>
+            <input
+              id="product-sku"
+              name="sku"
+              defaultValue={product?.sku ?? ''}
+              maxLength={80}
+            />
+            <label htmlFor="product-sort">Orden</label>
+            <input
+              id="product-sort"
+              name="sortOrder"
+              aria-label="Orden del producto"
+              type="number"
+              min="0"
+              step="1"
+              defaultValue={product?.sortOrder ?? 0}
+              required
+            />
+          </details>
+          <button
+            type="submit"
+            disabled={pending || !selectedCategoryId || deleted}
+          >
+            {product ? 'Guardar producto' : 'Crear producto'}
+          </button>
+          {product && active && !deleted ? (
+            <>
+              <p>
+                {available
+                  ? 'Este producto está disponible; desactivarlo lo ocultará del menú.'
+                  : 'Este producto está agotado; desactivarlo lo ocultará del menú.'}
+              </p>
+              <button type="submit" data-action="deactivate" disabled={pending}>
+                Desactivar producto
+              </button>
+            </>
           ) : null}
-          {images.length ? (
-            <ul>
-              {images.map((image) => (
-                <li key={image.id}>
-                  <Image
-                    src={imageUrl(image.storageKey)}
-                    alt={`Vista previa de ${product.name}`}
-                    width={Math.min(image.width, 320)}
-                    height={Math.max(
-                      1,
-                      Math.round(
-                        (Math.min(image.width, 320) * image.height) /
-                          image.width,
-                      ),
-                    )}
-                    unoptimized
-                  />
-                  <p>
-                    {image.width} × {image.height} px · WebP
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => removeImage(image.id)}
-                    disabled={pending}
-                  >
-                    Eliminar imagen
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>Este producto no tiene imagen.</p>
-          )}
-        </section>
-      ) : null}
-      {message ? (
-        <p role="status" aria-live="polite">
-          {message}
-        </p>
-      ) : null}
+        </form>
+        {product && !deleted ? (
+          <details>
+            <summary>Duplicar o retirar producto</summary>
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                if (!pending) void duplicate(new FormData(event.currentTarget));
+              }}
+            >
+              <h2>Duplicar producto</h2>
+              <label htmlFor="duplicate-name">Nombre de la copia</label>
+              <input
+                id="duplicate-name"
+                name="duplicateName"
+                onChange={(event) => {
+                  if (!duplicateSlugEdited)
+                    setDuplicateSlug(suggestSlug(event.target.value));
+                }}
+                required
+                maxLength={160}
+              />
+              <label htmlFor="duplicate-slug">
+                Identificador del enlace de la copia
+              </label>
+              <input
+                id="duplicate-slug"
+                name="duplicateSlug"
+                value={duplicateSlug}
+                onChange={(event) => {
+                  setDuplicateSlugEdited(true);
+                  setDuplicateSlug(event.target.value);
+                }}
+                required
+                maxLength={120}
+              />
+              <button type="submit" disabled={pending}>
+                Crear copia inactiva
+              </button>
+            </form>
+            <div>
+              <p>
+                Retirar conserva pedidos históricos y elimina el producto del
+                catálogo público.
+              </p>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={confirmRemoval}
+                  onChange={(event) => setConfirmRemoval(event.target.checked)}
+                />
+                Entiendo que el producto dejará de aparecer en el catálogo.
+              </label>
+              <button
+                type="button"
+                onClick={remove}
+                disabled={pending || !confirmRemoval}
+              >
+                Retirar producto
+              </button>
+            </div>
+          </details>
+        ) : null}
+        {product && !deleted ? (
+          <section aria-labelledby="current-images-title">
+            <h2 id="current-images-title">Administrar imagen</h2>
+            <p id="product-image-help">
+              JPEG, PNG o WebP. Máximo 8 MB; se publicará como WebP optimizado.
+            </p>
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                if (!imagePending)
+                  void uploadImage(new FormData(event.currentTarget));
+              }}
+              aria-describedby="product-image-help"
+            >
+              <label htmlFor="product-image">Imagen del producto</label>
+              <input
+                id="product-image"
+                name="image"
+                type="file"
+                accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                disabled={pending}
+                required
+              />
+              <button type="submit" disabled={pending}>
+                Cargar imagen
+              </button>
+            </form>
+            {imagePending ? (
+              <progress aria-label="Progreso de imagen">Procesando</progress>
+            ) : null}
+            {images.length ? (
+              <ul>
+                {images.map((image) => (
+                  <li key={image.id}>
+                    <Image
+                      src={imageUrl(image.storageKey)}
+                      alt={`Vista previa de ${product.name}`}
+                      width={Math.min(image.width, 320)}
+                      height={Math.max(
+                        1,
+                        Math.round(
+                          (Math.min(image.width, 320) * image.height) /
+                            image.width,
+                        ),
+                      )}
+                      unoptimized
+                    />
+                    <p>
+                      {image.width} × {image.height} px · WebP
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => removeImage(image.id)}
+                      disabled={pending}
+                    >
+                      Eliminar imagen
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>Este producto no tiene imagen.</p>
+            )}
+          </section>
+        ) : null}
+        {message ? (
+          <p role="status" aria-live="polite">
+            {message}
+          </p>
+        ) : null}
+      </fieldset>
     </section>
   );
 }

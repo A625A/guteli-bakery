@@ -1,0 +1,448 @@
+
+> guteli-bakery@0.1.0 test
+> vitest run
+
+
+ RUN  v3.2.7 /Users/andrewarana/.codex/worktrees/guteli-admin-ux-2/Guteli Bakery
+
+ ❯ tests/unit/docker-runtime.test.ts (7 tests | 2 failed) 56ms
+   ✓ compose runtime contract > defines only app, database, and opt-in provisioning services 17ms
+   ✓ compose runtime contract > keeps catalog provisioning explicit and builder-stage only 3ms
+   ✓ compose runtime contract > configures health checks and named persistent volumes 3ms
+   ✓ compose runtime contract > pins the runtime invariants and keeps migrations explicit 4ms
+   ✓ compose runtime contract > keeps local env files out of the Docker build context 1ms
+   × compose runtime contract > documents ordinary docker compose commands without repo-local overrides 6ms
+     → expected '<div align="center">\n\n# Güteli Bake…' to match /^docker compose up --build -d$/m
+   × compose runtime contract > documents explicit migration prerequisites and production secret injection 20ms
+     → expected '<div align="center">\n\n# Güteli Bake…' to contain 'docker compose --profile provision ru…'
+ ✓ tests/unit/production-runtime.test.ts (5 tests) 869ms
+   ✓ runs the operator preflight without printing credentials and exits nonzero for unsafe settings  843ms
+stderr | tests/unit/health-timeout.test.ts > GET /health database deadlines > returns a safe 503 before a stalled PostgreSQL connection can hang the route
+{"event":"DATABASE_UNAVAILABLE","at":"2026-10-17T23:56:15.955Z"}
+
+ ✓ tests/unit/image-validation.test.ts (14 tests) 752ms
+   ✓ product image validation > auto-orients, bounds dimensions, and strips EXIF from WebP output  498ms
+ ✓ tests/unit/whatsapp-automation-provider.test.ts (5 tests) 1523ms
+   ✓ disabled operator command exits without opening even an invalid database or printing secrets  1504ms
+ ✓ tests/unit/whatsapp-provider.test.ts (36 tests) 192ms
+stderr | tests/unit/health-timeout.test.ts > GET /health database deadlines > returns a safe 503 when PostgreSQL accepts a client but stalls the health query
+{"event":"DATABASE_UNAVAILABLE","at":"2026-10-17T23:56:16.779Z"}
+
+ ✓ tests/unit/health-timeout.test.ts (3 tests) 2720ms
+   ✓ GET /health database deadlines > returns a safe 503 before a stalled PostgreSQL connection can hang the route  1615ms
+   ✓ GET /health database deadlines > returns a safe 503 when PostgreSQL accepts a client but stalls the health query  820ms
+ ✓ tests/unit/owner-notification.test.ts (4 tests) 80ms
+ ✓ tests/unit/sites-deployment.test.ts (5 tests) 248ms
+ ✓ tests/unit/client-subject.test.ts (11 tests) 52ms
+ ✓ tests/unit/test-database-contract.test.ts (6 tests) 3893ms
+   ✓ Playwright test database isolation > refuses to configure E2E without DATABASE_URL_TEST  657ms
+   ✓ isolated Docker test database lifecycle > targets only the fixed guteli_test project for up  1371ms
+   ✓ isolated Docker test database lifecycle > targets only the fixed guteli_test project for down  606ms
+   ✓ isolated Docker test database lifecycle > uses the standalone Compose executable when the Docker plugin is unavailable  1082ms
+ ✓ tests/unit/admin-security.test.ts (6 tests) 25ms
+ ✓ tests/unit/admin-period.test.ts (3 tests) 140ms
+ ✓ tests/unit/order-contract.test.ts (12 tests) 42ms
+ ✓ tests/unit/checkout-summary.test.ts (11 tests) 34ms
+ ❯ tests/unit/create-owner-cli.test.ts (3 tests | 1 failed) 5091ms
+   × owner CLI errors > starts through the npm script and reaches the non-TTY denial 5088ms
+     → expected Error: spawnSync npm ETIMEDOUT { …(5) } to be undefined
+   ✓ owner CLI errors > preserves only expected interactive validation messages 2ms
+   ✓ owner CLI errors > does not expose raw database or adapter exceptions 0ms
+ ✓ tests/unit/request-id.test.ts (2 tests) 16ms
+ ✓ tests/unit/order-state.test.ts (7 tests) 11ms
+ ✓ tests/unit/cart.test.ts (19 tests) 26ms
+ ✓ tests/unit/admin-catalog-filters.test.ts (1 test) 150ms
+stderr | tests/unit/health-route.test.ts > GET /health > returns a safe 503 response when the database is unavailable
+{"event":"DATABASE_UNAVAILABLE","at":"2026-10-17T23:56:20.454Z"}
+
+ ✓ tests/unit/health-route.test.ts (1 test) 26ms
+ ✓ tests/unit/retention.test.ts (7 tests) 28ms
+ ✓ tests/unit/order-api.test.ts (16 tests) 168ms
+ ✓ tests/unit/admin-auth-route-policy.test.ts (26 tests) 9ms
+ ✓ tests/unit/promotion-pricing.test.ts (5 tests) 67ms
+ ❯ tests/unit/eslint-config.test.ts (1 test | 1 failed) 6406ms
+   × ESLint portability > ignores generated files inside repository-owned worktrees 6405ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ✓ tests/unit/handoff-cleanup.test.ts (2 tests) 5ms
+ ✓ tests/unit/whatsapp-consent.test.ts (3 tests) 16ms
+ ✓ tests/unit/public-site-config.test.ts (13 tests) 7ms
+ ✓ tests/unit/whatsapp-webhook.test.ts (2 tests) 15ms
+ ✓ tests/unit/order.test.ts (7 tests) 10ms
+ ✓ tests/unit/server-env.test.ts (5 tests) 14ms
+ ✓ tests/unit/menu-and-money.test.ts (6 tests) 10ms
+ ✓ tests/unit/order-identifiers.test.ts (4 tests) 11ms
+ ✓ tests/unit/dashboard-refresh.test.ts (1 test) 6ms
+ ✓ tests/unit/business.test.ts (2 tests) 7ms
+ ✓ tests/unit/image-assets.test.ts (2 tests) 5ms
+ ✓ tests/unit/privacy-observability.test.ts (11 tests) 10ms
+ ✓ tests/unit/admin-authorization-policy.test.ts (2 tests) 5ms
+ ✓ tests/unit/owner-money.test.ts (2 tests) 6ms
+ ✓ tests/unit/spanish-status-labels.test.ts (3 tests) 12ms
+ ✓ tests/unit/operations-status.test.ts (4 tests) 17ms
+ ✓ tests/unit/privacy-failures.test.ts (4 tests) 22ms
+ ✓ tests/unit/owner-experience.test.ts (3 tests) 12ms
+ ✓ tests/unit/privacy-cli.test.ts (3 tests) 4665ms
+   ✓ rejects WhatsApp cleanup before loading the database or deleting receipts  3393ms
+   ✓ rejects privacy apply before loading database settings  1189ms
+ ✓ tests/unit/admin-page-access.test.ts (3 tests) 14ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/create-owner-cli.test.ts > owner CLI errors > starts through the npm script and reaches the non-TTY denial
+AssertionError: expected Error: spawnSync npm ETIMEDOUT { …(5) } to be undefined
+
+- Expected:
+undefined
+
++ Received:
+Error {
+  "message": "spawnSync npm ETIMEDOUT",
+  "errno": -60,
+  "code": "ETIMEDOUT",
+  "syscall": "spawnSync npm",
+  "path": "npm",
+  "spawnargs": [
+    "run",
+    "owner:create",
+  ],
+}
+
+ ❯ tests/unit/create-owner-cli.test.ts:19:26
+     17|     });
+     18|
+     19|     expect(result.error).toBeUndefined();
+       |                          ^
+     20|     expect(result.status).toBe(1);
+     21|     expect(result.stderr).toContain(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tests/unit/docker-runtime.test.ts > compose runtime contract > documents ordinary docker compose commands without repo-local overrides
+AssertionError: expected '<div align="center">\n\n# Güteli Bake…' to match /^docker compose up --build -d$/m
+
+- Expected:
+/^docker compose up --build -d$/m
+
++ Received:
+"<div align=\"center\">
+
+# Güteli Bakery
+
+**Full-stack bakery ordering experience built with Next.js, TypeScript, PostgreSQL, and Docker.**
+
+Spanish-first, mobile-first storefront for browsing baked goods, building an order request, choosing pickup or delivery, and handing the request to the bakery for human confirmation
+
+![Güteli Bakery storefront](artifacts/screenshots/desktop/milestone-3-homepage.png)
+
+![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=nextdotjs)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-persistent%20data-4169E1?logo=postgresql&logoColor=white)
+![Drizzle](https://img.shields.io/badge/Drizzle-ORM-C5F74F)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
+![Playwright](https://img.shields.io/badge/Playwright-E2E-2EAD33?logo=playwright&logoColor=white)
+![Vitest](https://img.shields.io/badge/Vitest-tests-6E9F18?logo=vitest&logoColor=white)
+
+</div>
+
+## What It Demonstrates
+
+Güteli began as a storefront MVP and evolved into a full-stack application with persistent catalog and order workflows, protected administrative routes, product media handling, and a bounded WhatsApp notification integration.
+
+| Area | Implemented |
+| --- | --- |
+| Storefront | Responsive home, menu, cart, order, confirmation, and contact experiences |
+| Commerce UX | GTQ totals, editable quantities, pickup/delivery, date validation, and Spanish order summaries |
+| Backend | Next.js server routes, validation, PostgreSQL persistence, and health checks |
+| Data layer | Drizzle ORM with versioned SQL migrations |
+| Admin | Protected order, product, category, user, and media-management workflows |
+| Integration | User-controlled WhatsApp handoff plus an owner-notification provider boundary |
+| Quality | Vitest, integration tests, Playwright E2E, linting, formatting, and type checking |
+
+## Product Walkthrough
+
+<table>
+  <tr>
+    <td width=\"50%\" align=\"center\">
+      <a href=\"artifacts/screenshots/desktop/milestone-3-homepage.png\"><img src=\"artifacts/screenshots/desktop/milestone-3-homepage.png\" height=\"250\" alt=\"Güteli Bakery homepage\"></a><br>
+      <strong>Storefront</strong><br>
+      Branded Spanish-first landing experience with a clear ordering journey.
+    </td>
+    <td width=\"50%\" align=\"center\">
+      <a href=\"artifacts/screenshots/desktop/milestone-3-cart.png\"><img src=\"artifacts/screenshots/desktop/milestone-3-cart.png\" height=\"250\" alt=\"Güteli Bakery cart and order form\"></a><br>
+      <strong>Cart & order request</strong><br>
+      Editable products, GTQ subtotal, fulfillment choice, and customer details.
+    </td>
+  </tr>
+  <tr>
+    <td align=\"center\">
+      <a href=\"artifacts/screenshots/desktop/milestone-3-confirmation.png\"><img src=\"artifacts/screenshots/desktop/milestone-3-confirmation.png\" height=\"250\" alt=\"Güteli Bakery order confirmation\"></a><br>
+      <strong>Order confirmation</strong><br>
+      Receipt-style confirmation with order state and requested products.
+    </td>
+    <td align=\"center\">
+      <a href=\"artifacts/screenshots/mobile/milestone-3-homepage.png\"><img src=\"artifacts/screenshots/mobile/milestone-3-homepage.png\" height=\"250\" alt=\"Güteli Bakery mobile homepage\"></a><br>
+      <strong>Mobile-first UX</strong><br>
+      The same customer journey verified on a narrow mobile viewport.
+    </td>
+  </tr>
+</table>
+
+## Architecture at a Glance
+
+```mermaid
+flowchart LR
+    CUSTOMER[Customer] --> UI[Next.js storefront]
+    UI --> API[Server routes]
+    API --> DB[(PostgreSQL)]
+    API --> ORDER[Order workflow]
+    ORDER --> WA[WhatsApp handoff]
+    ADMIN[Protected admin] --> API
+    ADMIN --> MEDIA[Product media]
+```
+
+The customer-facing flow stays intentionally simple while persistence, administration, media handling, and integrations remain separate backend concerns.
+
+## Engineering Highlights
+
+- **Persistent commerce state:** product catalog and order workflows use PostgreSQL rather than browser-only demo state.
+- **Explicit migrations:** schema changes are versioned under `drizzle/`; the application does not silently migrate on request handling.
+- **Admin boundary:** separate routes exist for orders, products, categories, users, and media operations.
+- **Image handling:** product image storage and validation are implemented behind dedicated server/storage modules.
+- **Order safety:** order contracts, request hashing, validation, and status handling are server-side concerns.
+- **Testing isolation:** database-backed tests use an isolated test database, while Playwright validates the browser journey.
+- **Operational baseline:** Docker Compose and a `/health` route support repeatable local runtime checks.
+
+## Tech Stack
+
+**Frontend:** Next.js 16 · React 19 · TypeScript
+**Backend:** Next.js server routes · Zod · Better Auth
+**Data:** PostgreSQL · Drizzle ORM
+**Testing:** Vitest · Playwright · integration tests
+**Infrastructure:** Docker · Docker Compose
+
+## Run Locally
+
+Requirements: Node.js 20.19+ and npm 10+.
+
+```bash
+npm install
+cp .env.example .env
+docker compose up -d database
+npm run db:migrate
+npm run db:seed
+npm run dev
+```
+
+Useful quality checks:
+
+```bash
+npm run format:check
+npm run lint
+npm run typecheck
+npm test
+npm run test:integration
+npm run test:e2e
+npm run build
+```
+
+See the repository scripts and `.env.example` for the local test/runtime configuration.
+
+## Scope
+
+This is a portfolio/demo implementation for a real bakery workflow. It intentionally does **not** claim public payment processing or a fully automated checkout. Orders are request-based and remain subject to human confirmation.
+
+A public deployment is not currently provided from this repository.
+
+## Evidence & Documentation
+
+- [Running-app screenshots and implementation evidence](artifacts/README.md)
+- [Milestone history](docs/MILESTONES.md)
+- [Engineering handbook](AI/AI-EOS/00_START_HERE.md)
+
+The screenshots in this README come from the running application, not design mockups.
+"
+
+ ❯ tests/unit/docker-runtime.test.ts:145:20
+    143|     const readme = readReadme();
+    144|
+    145|     expect(readme).toMatch(/^docker compose up --build -d$/m);
+       |                    ^
+    146|     expect(readme).toMatch(/^docker compose down$/m);
+    147|     expect(readme).not.toMatch(/DOCKER_CONFIG=.*\.superpowers/);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  tests/unit/docker-runtime.test.ts > compose runtime contract > documents explicit migration prerequisites and production secret injection
+AssertionError: expected '<div align="center">\n\n# Güteli Bake…' to contain 'docker compose --profile provision ru…'
+
+- Expected
++ Received
+
+- docker compose --profile provision run --rm provision
++ <div align="center">
++
++ # Güteli Bakery
++
++ **Full-stack bakery ordering experience built with Next.js, TypeScript, PostgreSQL, and Docker.**
++
++ Spanish-first, mobile-first storefront for browsing baked goods, building an order request, choosing pickup or delivery, and handing the request to the bakery for human confirmation
++
++ ![Güteli Bakery storefront](artifacts/screenshots/desktop/milestone-3-homepage.png)
++
++ ![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=nextdotjs)
++ ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
++ ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-persistent%20data-4169E1?logo=postgresql&logoColor=white)
++ ![Drizzle](https://img.shields.io/badge/Drizzle-ORM-C5F74F)
++ ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
++ ![Playwright](https://img.shields.io/badge/Playwright-E2E-2EAD33?logo=playwright&logoColor=white)
++ ![Vitest](https://img.shields.io/badge/Vitest-tests-6E9F18?logo=vitest&logoColor=white)
++
++ </div>
++
++ ## What It Demonstrates
++
++ Güteli began as a storefront MVP and evolved into a full-stack application with persistent catalog and order workflows, protected administrative routes, product media handling, and a bounded WhatsApp notification integration.
++
++ | Area | Implemented |
++ | --- | --- |
++ | Storefront | Responsive home, menu, cart, order, confirmation, and contact experiences |
++ | Commerce UX | GTQ totals, editable quantities, pickup/delivery, date validation, and Spanish order summaries |
++ | Backend | Next.js server routes, validation, PostgreSQL persistence, and health checks |
++ | Data layer | Drizzle ORM with versioned SQL migrations |
++ | Admin | Protected order, product, category, user, and media-management workflows |
++ | Integration | User-controlled WhatsApp handoff plus an owner-notification provider boundary |
++ | Quality | Vitest, integration tests, Playwright E2E, linting, formatting, and type checking |
++
++ ## Product Walkthrough
++
++ <table>
++   <tr>
++     <td width="50%" align="center">
++       <a href="artifacts/screenshots/desktop/milestone-3-homepage.png"><img src="artifacts/screenshots/desktop/milestone-3-homepage.png" height="250" alt="Güteli Bakery homepage"></a><br>
++       <strong>Storefront</strong><br>
++       Branded Spanish-first landing experience with a clear ordering journey.
++     </td>
++     <td width="50%" align="center">
++       <a href="artifacts/screenshots/desktop/milestone-3-cart.png"><img src="artifacts/screenshots/desktop/milestone-3-cart.png" height="250" alt="Güteli Bakery cart and order form"></a><br>
++       <strong>Cart & order request</strong><br>
++       Editable products, GTQ subtotal, fulfillment choice, and customer details.
++     </td>
++   </tr>
++   <tr>
++     <td align="center">
++       <a href="artifacts/screenshots/desktop/milestone-3-confirmation.png"><img src="artifacts/screenshots/desktop/milestone-3-confirmation.png" height="250" alt="Güteli Bakery order confirmation"></a><br>
++       <strong>Order confirmation</strong><br>
++       Receipt-style confirmation with order state and requested products.
++     </td>
++     <td align="center">
++       <a href="artifacts/screenshots/mobile/milestone-3-homepage.png"><img src="artifacts/screenshots/mobile/milestone-3-homepage.png" height="250" alt="Güteli Bakery mobile homepage"></a><br>
++       <strong>Mobile-first UX</strong><br>
++       The same customer journey verified on a narrow mobile viewport.
++     </td>
++   </tr>
++ </table>
++
++ ## Architecture at a Glance
++
++ ```mermaid
++ flowchart LR
++     CUSTOMER[Customer] --> UI[Next.js storefront]
++     UI --> API[Server routes]
++     API --> DB[(PostgreSQL)]
++     API --> ORDER[Order workflow]
++     ORDER --> WA[WhatsApp handoff]
++     ADMIN[Protected admin] --> API
++     ADMIN --> MEDIA[Product media]
++ ```
++
++ The customer-facing flow stays intentionally simple while persistence, administration, media handling, and integrations remain separate backend concerns.
++
++ ## Engineering Highlights
++
++ - **Persistent commerce state:** product catalog and order workflows use PostgreSQL rather than browser-only demo state.
++ - **Explicit migrations:** schema changes are versioned under `drizzle/`; the application does not silently migrate on request handling.
++ - **Admin boundary:** separate routes exist for orders, products, categories, users, and media operations.
++ - **Image handling:** product image storage and validation are implemented behind dedicated server/storage modules.
++ - **Order safety:** order contracts, request hashing, validation, and status handling are server-side concerns.
++ - **Testing isolation:** database-backed tests use an isolated test database, while Playwright validates the browser journey.
++ - **Operational baseline:** Docker Compose and a `/health` route support repeatable local runtime checks.
++
++ ## Tech Stack
++
++ **Frontend:** Next.js 16 · React 19 · TypeScript
++ **Backend:** Next.js server routes · Zod · Better Auth
++ **Data:** PostgreSQL · Drizzle ORM
++ **Testing:** Vitest · Playwright · integration tests
++ **Infrastructure:** Docker · Docker Compose
++
++ ## Run Locally
++
++ Requirements: Node.js 20.19+ and npm 10+.
++
++ ```bash
++ npm install
++ cp .env.example .env
++ docker compose up -d database
++ npm run db:migrate
++ npm run db:seed
++ npm run dev
++ ```
++
++ Useful quality checks:
++
++ ```bash
++ npm run format:check
++ npm run lint
++ npm run typecheck
++ npm test
++ npm run test:integration
++ npm run test:e2e
++ npm run build
++ ```
++
++ See the repository scripts and `.env.example` for the local test/runtime configuration.
++
++ ## Scope
++
++ This is a portfolio/demo implementation for a real bakery workflow. It intentionally does **not** claim public payment processing or a fully automated checkout. Orders are request-based and remain subject to human confirmation.
++
++ A public deployment is not currently provided from this repository.
++
++ ## Evidence & Documentation
++
++ - [Running-app screenshots and implementation evidence](artifacts/README.md)
++ - [Milestone history](docs/MILESTONES.md)
++ - [Engineering handbook](AI/AI-EOS/00_START_HERE.md)
++
++ The screenshots in this README come from the running application, not design mockups.
++
+
+ ❯ tests/unit/docker-runtime.test.ts:158:20
+    156|
+    157|     expect(readme).toContain('docker compose up -d database');
+    158|     expect(readme).toContain(
+       |                    ^
+    159|       'docker compose --profile provision run --rm provision',
+    160|     );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  tests/unit/eslint-config.test.ts > ESLint portability > ignores generated files inside repository-owned worktrees
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/eslint-config.test.ts:7:3
+      5|
+      6| describe('ESLint portability', () => {
+      7|   it('ignores generated files inside repository-owned worktrees', asyn…
+       |   ^
+      8|     const eslint = new ESLint({ cwd: process.cwd() });
+      9|     const generatedFile = path.join(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  3 failed | 42 passed (45)
+      Tests  4 failed | 294 passed (298)
+   Start at  17:56:13
+   Duration  13.34s (transform 3.07s, setup 729ms, collect 14.49s, tests 27.50s, environment 13ms, prepare 10.41s)

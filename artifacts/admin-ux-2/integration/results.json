@@ -1,0 +1,50 @@
+{
+  "mainParent": "4845ecfd693eca20a8d5628cfb6796e87acefe9f",
+  "featureParent": "18703b1e711507753b1f45aa5c0cf57414ecd250",
+  "unit": {
+    "exitCode": 1,
+    "passed": 296,
+    "failed": 2,
+    "knownFailures": "README command assertions in unchanged tests/unit/docker-runtime.test.ts"
+  },
+  "integration": {
+    "exitCode": 0,
+    "passed": 173
+  },
+  "e2e": {
+    "exitCode": 0,
+    "passed": 103,
+    "skipped": 10
+  },
+  "ux": {
+    "exitCode": 0,
+    "passed": 1,
+    "axeReports": 28,
+    "axeViolations": 0
+  },
+  "checkout-live": {
+    "exitCode": 0,
+    "passed": 10,
+    "skipped": 1
+  },
+  "handoff-live": {
+    "exitCode": 0,
+    "passed": 1
+  },
+  "handoff-unavailable": {
+    "exitCode": 0,
+    "passed": 1
+  },
+  "privacy-build": {
+    "exitCode": 0,
+    "passed": 1
+  },
+  "lint": {
+    "exitCode": 0
+  },
+  "typecheck": {
+    "exitCode": 0
+  },
+  "dockerRestart": "Not run: Docker daemon unavailable",
+  "initialRuns": "unit-initial.txt includes two parallel-run timeouts absent in serial rerun; integration-initial.txt includes two auth-config failures caused by browser proxy environment, absent in full rerun without browser variables."
+}

@@ -79,8 +79,16 @@ test('verified admins receive the operational shell without storefront chrome', 
     page.getByRole('heading', { name: 'Estado de la tienda', exact: true }),
   ).toBeVisible();
   await expect(
+    page
+      .getByRole('region', { name: 'Estado de la tienda' })
+      .getByRole('article'),
+  ).toHaveCount(7);
+  await expect(
     page.getByText('Pendiente del Ticket 11.', { exact: false }),
   ).toBeVisible();
+  await page
+    .getByText('Actualización y seguimiento del panel', { exact: true })
+    .click();
   await expect(page.getByText(/Última consulta correcta:/)).toBeVisible();
   const firstConfirmed = await page
     .getByRole('region', { name: 'Actualización del panel' })
@@ -147,7 +155,7 @@ test('verified admins receive the operational shell without storefront chrome', 
     .getAttribute('datetime');
   await page.route(refreshRequest, (route) => route.abort('failed'));
   await refreshPanel.getByRole('button', { name: 'Actualizar panel' }).click();
-  await expect(refreshPanel.locator('time')).not.toHaveAttribute(
+  await expect(page.locator('.admin-refresh time')).not.toHaveAttribute(
     'datetime',
     beforeFallback!,
   );

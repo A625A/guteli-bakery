@@ -30,6 +30,9 @@ function filtersFrom(parameters: Awaited<SearchParams>) {
     'fulfillment',
     'date',
     'reference',
+    'from',
+    'to',
+    'sort',
   ]);
   for (const [key, value] of Object.entries(parameters)) {
     if (!allowed.has(key) || typeof value !== 'string') notFound();
@@ -64,6 +67,9 @@ export default async function AdminOrdersPage({
       ...(filters.status ? { status: filters.status } : {}),
       ...(filters.fulfillment ? { fulfillment: filters.fulfillment } : {}),
       ...(filters.date ? { date: filters.date } : {}),
+      ...(filters.from ? { from: filters.from } : {}),
+      ...(filters.to ? { to: filters.to } : {}),
+      sort: filters.sort,
     });
     return `/admin/orders?${query}`;
   };
@@ -79,50 +85,73 @@ export default async function AdminOrdersPage({
           </p>
         </div>
       </header>
-      <form method="get" className="admin-auth-card">
-        <label htmlFor="orders-reference">Referencia exacta del pedido</label>
-        <input
-          id="orders-reference"
-          name="reference"
-          defaultValue={filters.reference ?? ''}
-          maxLength={32}
-          placeholder="GUT-26-ABC12345"
-        />
-        <label htmlFor="orders-status">Estado</label>
-        <select
-          id="orders-status"
-          name="status"
-          defaultValue={filters.status ?? ''}
-        >
-          <option value="">Todos</option>
-          <option value="RECEIVED">Recibido</option>
-          <option value="CONFIRMED">Confirmado</option>
-          <option value="PREPARING">En preparación</option>
-          <option value="READY">Listo</option>
-          <option value="OUT_FOR_DELIVERY">En camino</option>
-          <option value="COMPLETED">Completado</option>
-          <option value="CANCELLED">Cancelado</option>
-        </select>
-        <label htmlFor="orders-fulfillment">Entrega</label>
-        <select
-          id="orders-fulfillment"
-          name="fulfillment"
-          defaultValue={filters.fulfillment ?? ''}
-        >
-          <option value="">Todos</option>
-          <option value="PICKUP">Recoger</option>
-          <option value="DELIVERY">Entrega</option>
-        </select>
-        <label htmlFor="orders-date">Fecha solicitada</label>
-        <input
-          id="orders-date"
-          name="date"
-          type="date"
-          defaultValue={filters.date}
-        />
+      <form method="get" className="admin-toolbar">
+        <label htmlFor="orders-reference">
+          Referencia exacta del pedido
+          <input
+            id="orders-reference"
+            name="reference"
+            defaultValue={filters.reference ?? ''}
+            maxLength={32}
+            placeholder="GUT-26-ABC12345"
+          />
+        </label>
+        <label htmlFor="orders-status">
+          Estado
+          <select
+            id="orders-status"
+            name="status"
+            defaultValue={filters.status ?? ''}
+          >
+            <option value="">Todos</option>
+            <option value="RECEIVED">Recibido</option>
+            <option value="CONFIRMED">Confirmado</option>
+            <option value="PREPARING">En preparación</option>
+            <option value="READY">Listo</option>
+            <option value="OUT_FOR_DELIVERY">En camino</option>
+            <option value="COMPLETED">Completado</option>
+            <option value="CANCELLED">Cancelado</option>
+          </select>
+        </label>
+        <label htmlFor="orders-fulfillment">
+          Entrega
+          <select
+            id="orders-fulfillment"
+            name="fulfillment"
+            defaultValue={filters.fulfillment ?? ''}
+          >
+            <option value="">Todos</option>
+            <option value="PICKUP">Recoger</option>
+            <option value="DELIVERY">Entrega</option>
+          </select>
+        </label>
+        <label htmlFor="orders-date">
+          Fecha solicitada
+          <input
+            id="orders-date"
+            name="date"
+            type="date"
+            defaultValue={filters.date}
+          />
+        </label>
+        <label>
+          Desde (fecha solicitada)
+          <input type="date" name="from" defaultValue={filters.from} />
+        </label>
+        <label>
+          Hasta (fecha solicitada)
+          <input type="date" name="to" defaultValue={filters.to} />
+        </label>
+        <label>
+          Ordenar
+          <select name="sort" defaultValue={filters.sort}>
+            <option value="recent">Más recientes</option>
+            <option value="requested">Fecha solicitada</option>
+          </select>
+        </label>
         <button type="submit">Filtrar</button>
       </form>
-      <div className="admin-dashboard__table-wrap">
+      <div className="admin-dashboard__table-wrap admin-responsive-table">
         <table>
           <thead>
             <tr>
@@ -131,7 +160,6 @@ export default async function AdminOrdersPage({
               <th scope="col">Fecha solicitada</th>
               <th scope="col">Entrega</th>
               <th scope="col">Estado</th>
-              <th scope="col">Subtotal</th>
               <th scope="col">Pago</th>
               <th scope="col">Total</th>
               <th scope="col">Detalle</th>
@@ -141,24 +169,38 @@ export default async function AdminOrdersPage({
             {result.orders.map((order) => (
               <tr key={order.publicId}>
                 <th scope="row">{order.publicId}</th>
-                <td>{order.customerName}</td>
-                <td>{order.requestedDate}</td>
-                <td>
+                <td data-label="Cliente">{order.customerName}</td>
+                <td data-label="Fecha">{order.requestedDate}</td>
+                <td data-label="Entrega">
                   {order.fulfillment === 'DELIVERY' ? 'Entrega' : 'Recoger'}
                 </td>
-                <td>{orderStatusLabel(order.orderStatus)}</td>
-                <td>{money(order.subtotalMinor)}</td>
-                <td>{paymentStatusLabel(order.paymentStatus)}</td>
-                <td>{money(order.totalMinor)}</td>
+                <td data-label="Estado">
+                  <span className="admin-badge" data-state={order.orderStatus}>
+                    {orderStatusLabel(order.orderStatus)}
+                  </span>
+                </td>
+                <td data-label="Pago">
+                  {paymentStatusLabel(order.paymentStatus)}
+                </td>
+                <td data-label="Total">{money(order.totalMinor)}</td>
                 <td>
-                  <Link href={`/admin/orders/${order.publicId}`}>
-                    Ver {order.publicId}
+                  <Link
+                    className="admin-action"
+                    aria-label={`Ver ${order.publicId}`}
+                    href={`/admin/orders/${order.publicId}`}
+                  >
+                    Ver
                   </Link>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
+        {!result.total ? (
+          <p className="admin-empty">
+            No hay pedidos que coincidan con estos filtros.
+          </p>
+        ) : null}
       </div>
       <nav aria-label="Paginación de pedidos">
         {result.page > 1 ? (

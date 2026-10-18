@@ -65,6 +65,7 @@ export default async function AdminProductPage({
         <Link href="/admin/products">Volver a productos</Link>
       </header>
       <ProductForm
+        key={product.id}
         product={product}
         categories={completeCategories}
         categoryTotal={categoryResult.total}

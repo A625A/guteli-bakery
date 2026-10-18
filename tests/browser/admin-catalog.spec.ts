@@ -103,6 +103,9 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
     .getByRole('navigation', { name: 'Administración' })
     .getByRole('link', { name: 'Categorías' })
     .click();
+  await page
+    .getByRole('button', { name: 'Agregar categoría', exact: true })
+    .click();
   await page.getByLabel('Nombre de categoría').fill('Especiales navegador');
   await page
     .getByLabel('Identificador del enlace de categoría')
@@ -110,12 +113,17 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
   await page.getByLabel('Orden de categoría').fill('50');
   await page.getByRole('button', { name: 'Crear categoría' }).click();
   await expect(page.getByRole('status')).toHaveText('Categoría creada.');
+  await page.getByRole('button', { name: 'Cerrar editor' }).click();
 
   await page
     .getByRole('navigation', { name: 'Administración' })
     .getByRole('link', { name: 'Productos' })
     .click();
   await expect(page.getByRole('heading', { name: 'Productos' })).toBeVisible();
+  await page
+    .getByRole('button', { name: 'Agregar producto', exact: true })
+    .click();
+  await page.getByText('Opciones del catálogo', { exact: true }).click();
   await page.getByLabel('Nombre del producto').fill('Primero navegador');
   await expect(
     page.getByLabel('Identificador del enlace del producto'),
@@ -124,6 +132,7 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
     .getByLabel('Identificador del enlace del producto')
     .fill('primero-navegador');
   await page
+    .locator('.admin-auth-card')
     .getByLabel('Categoría', { exact: true })
     .selectOption({ label: 'Especiales navegador' });
   await page
@@ -143,15 +152,21 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
     product: { id: string };
   };
   await expect(page.getByRole('status')).toHaveText('Producto creado.');
+  await page.getByRole('button', { name: 'Cerrar editor' }).click();
   await expect(
     page.getByRole('row', { name: /Primero navegador/ }),
   ).toBeVisible();
 
+  await page
+    .getByRole('button', { name: 'Agregar producto', exact: true })
+    .click();
+  await page.getByText('Opciones del catálogo', { exact: true }).click();
   await page.getByLabel('Nombre del producto').fill('Segundo navegador');
   await page
     .getByLabel('Identificador del enlace del producto')
     .fill('segundo-navegador');
   await page
+    .locator('.admin-auth-card')
     .getByLabel('Categoría', { exact: true })
     .selectOption({ label: 'Especiales navegador' });
   await page
@@ -163,6 +178,7 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
   await page.getByLabel('Orden del producto').fill('10');
   await page.getByRole('button', { name: 'Crear producto' }).click();
   await expect(page.getByRole('status')).toHaveText('Producto creado.');
+  await page.getByRole('button', { name: 'Cerrar editor' }).click();
   await expect(
     page.getByRole('row', { name: /Segundo navegador/ }),
   ).toBeVisible();
@@ -183,7 +199,7 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
   await expect(page.getByRole('heading', { name: 'Productos' })).toBeVisible();
   const firstRow = page.getByRole('row', { name: /Primero navegador/ });
   await firstRow
-    .getByRole('link', { name: 'Editar Primero navegador' })
+    .getByRole('button', { name: 'Editar Primero navegador' })
     .click();
   await expect(
     page.getByRole('heading', { name: 'Editar Primero navegador' }),
@@ -192,6 +208,7 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
     .getByLabel('Nombre del producto')
     .fill('Primero navegador editado');
   await page.getByLabel('Precio en quetzales (Q)').fill('27.50');
+  await page.getByText('Opciones del catálogo', { exact: true }).click();
   await page.getByLabel('Orden del producto').fill('0');
   await page.route('**/api/admin/products/*', (route) =>
     route.request().method() === 'PATCH'
@@ -214,10 +231,7 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
   );
   const editRefreshResponse = page.waitForResponse((response) => {
     const url = new URL(response.url());
-    return (
-      url.pathname === `/admin/products/${firstCreated.product.id}` &&
-      url.searchParams.has('_rsc')
-    );
+    return url.pathname === '/admin/products' && url.searchParams.has('_rsc');
   });
   await page.getByRole('button', { name: 'Guardar producto' }).click();
   expect((await editResponse).status()).toBe(200);
@@ -248,10 +262,7 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
   );
   const uploadRefreshResponse = page.waitForResponse((response) => {
     const url = new URL(response.url());
-    return (
-      url.pathname === `/admin/products/${firstCreated.product.id}` &&
-      url.searchParams.has('_rsc')
-    );
+    return url.pathname === '/admin/products' && url.searchParams.has('_rsc');
   });
   await page.getByRole('button', { name: 'Cargar imagen' }).click();
   expect((await uploadResponse).status()).toBe(201);
@@ -291,6 +302,10 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
   await expect(
     page.getByRole('heading', { name: 'Categorías', exact: true }),
   ).toBeVisible();
+  await page
+    .getByRole('button', { name: 'Editar Especiales navegador', exact: true })
+    .click();
+  page.once('dialog', (dialog) => dialog.accept());
   await page
     .getByRole('button', { name: 'Desactivar Especiales navegador' })
     .click();
@@ -393,6 +408,11 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
   const overflowCategory = await seedOverflowCategories();
   await page.goto('/admin/products');
   await expect(page.getByRole('heading', { name: 'Productos' })).toBeVisible();
+  await page
+    .getByRole('button', { name: 'Agregar producto', exact: true })
+    .click();
+  await page.getByText('Buscar otra categoría', { exact: true }).click();
+  await page.getByText('Opciones del catálogo', { exact: true }).click();
   await page.getByLabel('Buscar categoría').fill(overflowCategory.name);
   const categorySearchResponse = page.waitForResponse((response) =>
     response.url().includes('/api/admin/categories?'),
@@ -400,6 +420,7 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
   await page.getByRole('button', { name: 'Buscar categorías' }).click();
   expect((await categorySearchResponse).status()).toBe(200);
   await page
+    .locator('.admin-auth-card')
     .getByLabel('Categoría', { exact: true })
     .selectOption({ label: overflowCategory.name });
   await page.getByLabel('Nombre del producto').fill('Producto categoría 105');
@@ -461,6 +482,7 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
   const refreshedOverflowProduct = await overflowRefreshResponse;
   expect(refreshedOverflowProduct.status()).toBe(200);
   expect(await refreshedOverflowProduct.finished()).toBeNull();
+  await page.getByText('Duplicar o retirar producto', { exact: true }).click();
   await page.getByLabel('Nombre de la copia').fill('Copia de prueba');
   await expect(
     page.getByLabel('Identificador del enlace de la copia'),
@@ -474,6 +496,10 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
   await expect(
     page.getByRole('heading', { name: 'Editar Copia de prueba' }),
   ).toBeVisible();
+  await expect(page.getByLabel('Nombre del producto')).toHaveValue(
+    'Copia de prueba',
+  );
+  await page.getByText('Duplicar o retirar producto', { exact: true }).click();
   const retire = page.getByRole('button', { name: 'Retirar producto' });
   await expect(retire).toBeDisabled();
   await page

@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { and, count, desc, eq } from 'drizzle-orm';
+import { and, asc, count, desc, eq, gte, lte } from 'drizzle-orm';
 
 import { requireAdmin } from '@/server/auth/authorize';
 import { db } from '@/server/db/client';
@@ -30,6 +30,9 @@ export type AdminOrderFilters = Readonly<{
   fulfillment?: unknown;
   date?: unknown;
   reference?: unknown;
+  from?: unknown;
+  to?: unknown;
+  sort?: unknown;
 }>;
 
 const isoDatePattern = /^\d{4}-\d{2}-\d{2}$/;
@@ -91,8 +94,24 @@ export function parseAdminOrderFilters(input: AdminOrderFilters = {}) {
   if (date !== undefined && (typeof date !== 'string' || !validIsoDate(date))) {
     throw new RangeError('Invalid date filter.');
   }
+  const from = input.from === '' ? undefined : input.from;
+  const to = input.to === '' ? undefined : input.to;
+  for (const value of [from, to])
+    if (
+      value !== undefined &&
+      (typeof value !== 'string' || !validIsoDate(value))
+    )
+      throw new RangeError('Invalid date range.');
+  if (typeof from === 'string' && typeof to === 'string' && from > to)
+    throw new RangeError('Invalid date range.');
+  const sort = input.sort ?? 'recent';
+  if (sort !== 'recent' && sort !== 'requested')
+    throw new RangeError('Invalid sort.');
   return {
     reference: reference as string | undefined,
+    from: from as string | undefined,
+    to: to as string | undefined,
+    sort,
     page,
     pageSize,
     offset,
@@ -123,6 +142,8 @@ export async function adminListOrders(
     parsed.status ? eq(orders.orderStatus, parsed.status) : undefined,
     parsed.fulfillment ? eq(orders.fulfillment, parsed.fulfillment) : undefined,
     parsed.date ? eq(orders.requestedDate, parsed.date) : undefined,
+    parsed.from ? gte(orders.requestedDate, parsed.from) : undefined,
+    parsed.to ? lte(orders.requestedDate, parsed.to) : undefined,
   ].filter(
     (condition): condition is NonNullable<typeof condition> => !!condition,
   );
@@ -146,7 +167,11 @@ export async function adminListOrders(
       .select(selection)
       .from(orders)
       .where(where)
-      .orderBy(desc(orders.createdAt), desc(orders.publicId))
+      .orderBy(
+        ...(parsed.sort === 'requested' ? [asc(orders.requestedDate)] : []),
+        desc(orders.createdAt),
+        desc(orders.publicId),
+      )
       .limit(parsed.pageSize)
       .offset(parsed.offset),
     db.select({ value: count() }).from(orders).where(where),

@@ -47,7 +47,7 @@ export default defineConfig({
   projects: [
     {
       name: 'storefront',
-      testIgnore: /admin-(auth|catalog|orders|shell|users)\.spec\.ts/,
+      testIgnore: /admin-(auth|catalog|orders|shell|users|ux)\.spec\.ts/,
       use: { ...devices['Desktop Chrome'] },
     },
     {

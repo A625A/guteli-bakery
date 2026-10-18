@@ -7,6 +7,7 @@ import { account, user } from '@/server/db/schema';
 import { requireTestDatabaseUrl } from '@/test/database-url';
 
 import {
+  adminUxAuthFixture,
   adminAuthFixture,
   adminCatalogAuthFixture,
   adminOrdersAuthFixture,
@@ -30,6 +31,7 @@ async function main() {
     });
     const authContext = await auth.$context;
     for (const fixture of [
+      { ...adminUxAuthFixture, role: 'OWNER' as const },
       { ...adminShellAuthFixture, role: 'ADMIN' as const },
       { ...adminCatalogAuthFixture, role: 'OWNER' as const },
       { ...adminOrdersAuthFixture, role: 'OWNER' as const },
