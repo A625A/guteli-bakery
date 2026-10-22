@@ -125,7 +125,7 @@ Seeding is for local fixtures, not an approved bakery catalog. Public order hand
 
 ### Existing local Compose workflow
 
-The root `compose.yaml` is a development/demo configuration, **not the Oracle production configuration**. Its database password is a local default and its app port is published on the host network. Run it only on an isolated development machine; do not expose it publicly. Docker execution of this candidate is still pending Ticket 02 validation.
+The root `compose.yaml` is a development/demo configuration, **not the Oracle production configuration**. Its database password is a local default and its app port is published on the host network. Run it only on an isolated development machine; do not expose it publicly. The separate Oracle candidate has [local Linux ARM64 Docker validation](artifacts/oracle-preparation/ticket-02/RESULTADO.md); this root development workflow was not part of that rehearsal.
 
 Check your installed daemon and Compose first; on macOS with an existing Colima installation, use `colima status`. Do not change Docker contexts or socket settings to bypass a failed check.
 

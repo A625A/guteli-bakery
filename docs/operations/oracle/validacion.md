@@ -70,3 +70,7 @@ La primera instalación debe usar el candidato que conserva la integración Admi
 ## Cierre y continuación económica
 
 [Checkpoint compacto](CHECKPOINT.md) contiene fuentes/evidencia/comandos y próximos pasos. [Seis tickets restantes](../../../.scratch/oracle-remaining/README.md) separan discrepancias locales, Linux ARM64 y acciones futuras autorizadas. No rehacer el trabajo ya demostrado; sólo invalidar evidencia si cambian los archivos que cubre o el entorno relevante.
+
+## Actualización — Ticket 02, 21/10/2026
+
+El bloqueo histórico Docker/ARM64 queda resuelto **localmente**. [Informe completo](../../../artifacts/oracle-preparation/ticket-02/RESULTADO.md) y [evidencia agregada](../../../artifacts/oracle-preparation/ticket-02/evidence.json): build y ejecución Linux ARM64 virtualizada, Compose/Caddy, persistencia, guards de almacenamiento, demo cerrada y ciclo install/update/backup/restore aprobados. Caddy necesitó una capacidad mínima de su binario y limitar protocolos a h1/h2. Esta ejecución no repite ni reemplaza los resultados históricos; tampoco valida Oracle, bare metal, ACME público o reinicio de VM. npm ci reportó 23 vulnerabilidades sin triage en este alcance.

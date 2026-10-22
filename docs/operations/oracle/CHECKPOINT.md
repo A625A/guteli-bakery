@@ -1,13 +1,13 @@
 # Checkpoint — Oracle Güteli
 
-21/10/2026, America/Guatemala. **TICKET 02 EN VALIDACIÓN LOCAL.** No instalado en Oracle. Este archivo es el ledger de continuidad; leerlo antes de investigar o ejecutar pruebas.
+21/10/2026, America/Guatemala. **TICKET 02 CERRADO LOCALMENTE EN DOCKER/LINUX ARM64.** No instalado en Oracle. Este archivo es el ledger de continuidad; leerlo antes de investigar o ejecutar pruebas.
 
 ## Identidad y límites
 
 - Worktree: `/Users/andrewarana/.codex/worktrees/guteli-oracle-always-free/Guteli Bakery`.
-- Rama: `infra/oracle-always-free-preparation`; base/HEAD `082959dafe57cf1ec5fdfed00a0aa71f99de64b4`. Cambios deliberadamente SIN COMMIT.
+- Rama: `infra/oracle-always-free-preparation`; base histórica `082959dafe57cf1ec5fdfed00a0aa71f99de64b4`. Preparación y Ticket 01 publicados en `9477d74`; correcciones Docker/ARM64 en `667b927`; el cierre documental está en el siguiente commit de esta rama.
 - Esa base ya integra Admin UX 2.0 y Ticket 12. No se hizo merge ni se requiere repetir esa integración observada.
-- Main original y worktree Admin UX permanecen separados. No tocar hackathon, Oracle/SSH/OCI, datos reales, servicios pagos ni enviar mensajes. No commit/push/merge/deploy ni tickets GitHub.
+- Main original y worktree Admin UX permanecen separados. No tocar hackathon, Oracle/SSH/OCI, datos reales, servicios pagos ni enviar mensajes. La autorización actual permite sólo commits/pushes a la rama de preparación. Sin merge/deploy ni tickets GitHub.
 - Prompt original: `/Users/andrewarana/.codex/attachments/816f4194-8fdb-45e1-b3fa-7f51110cd472/Pasted text.txt`. La instrucción posterior limita el trabajo a preservar resultados, cierre y tickets restantes.
 
 ## Terminado y evidencia reutilizable
@@ -25,7 +25,7 @@
 [Índice de seis tickets](../../../.scratch/oracle-remaining/README.md): 01 discrepancias locales; 02 Linux ARM64/Docker; 03 cuota/hostname; 04 aceptación dueños; 05 instalación autorizada; 06 operación/recuperación Oracle. Cada uno conserva dependencias y criterios verificables. Ninguno autoriza acceso externo.
 
 - 01: **CERRADO LOCALMENTE el 18/10/2026.** README 7/7 sin modificar assertions; captura desktop/mobile + regresión controlada 3/3; privacidad 1/1. Ver cierre siguiente. No repetir estas pruebas sin cambios relevantes.
-- 02: Docker daemon/Compose/Caddy no disponibles. No hubo build Linux Node 22, mounts/UID reales ni ciclo Docker. Local es macOS ARM64 Node23.9 y PostgreSQL 17.
+- 02: **CERRADO LOCALMENTE el 21/10/2026.** Docker Linux/aarch64 virtualizado, Node22, Caddy, mounts/UUID/permisos, reinicio, respaldo y recuperación verificados. [Resultado](../../../artifacts/oracle-preparation/ticket-02/RESULTADO.md). No sustituye Oracle.
 - 03–06: requieren decisiones, entorno o autorización futura. No iniciar automáticamente.
 - No se cierra producción comercial ni Tickets 10/11/14 por haber preparado archivos.
 
@@ -49,7 +49,7 @@ Reproducciones específicas están en `tests/oracle/test_ops.py`, `tests/oracle/
 3. Resolver el primer pendiente autorizado con un implementador. Registrar cambio, comando/prueba dirigida, resultado y límites aquí y en el ticket.
 4. No reiniciar auditoría, investigación ni suites completas por cambio de sesión. No crear agentes adicionales salvo independencia y beneficio concreto.
 
-## Cierre de esta sesión
+## Cierre histórico de la sesión inicial (18/10/2026)
 
 - Revisión final independiente de los diez documentos de entrega: sin hallazgos accionables; alcance y límite en `artifacts/oracle-preparation/closure-review.txt`. No reaudita código.
 - PostgreSQL sintético detenido correctamente; archivos y bases conservados.
@@ -78,3 +78,14 @@ Reproducciones específicas están en `tests/oracle/test_ops.py`, `tests/oracle/
 - Checkpoint 1 publicado y verificado por `git ls-remote`: `9477d74c8081d3163b1f789e1bf8b5e1c13e67ee`.
 - Checkpoint 2 preparado: build/runtime Linux ARM64 aprobados; digests fijados. Caddy corrigió EPERM con `NET_BIND_SERVICE` en el bounding set y dejó de anunciar HTTP/3 en el puerto interno no publicado. Regresiones Docker RED→GREEN; contratos Compose 3/3.
 - Instalación, reinicio persistente, guards de almacenamiento/esquema, update con backup cifrado y restore Docker pasaron. La app recuperada sirve `/readyz` 200 con la DB y uploads restaurados. Evidencia agregada sin secretos: `artifacts/oracle-preparation/ticket-02/evidence.json`. Cierre documental pendiente; no iniciar Ticket 03.
+
+## Cierre — Ticket 02 (21/10/2026)
+
+- **Cerrado sólo localmente.** [Resultado y límites](../../../artifacts/oracle-preparation/ticket-02/RESULTADO.md), [evidencia agregada](../../../artifacts/oracle-preparation/ticket-02/evidence.json), [digests](../../../infra/oracle/images.lock.json). Docker Engine29.5.2/Compose5.1.4, Node22.23.4, PostgreSQL17.11 y Caddy2.11.7 en Linux ARM64 bajo Colima VZ; no emulación de ISA ni Oracle.
+- Build y runtime ARM64 aprobados. Configuración producción y Caddyfile exacto validados. TLS del ensayo usa CA interna y puertos loopback. Dos correcciones: capacidad mínima del binario oficial Caddy y desactivación del anuncio HTTP/3 interno.
+- Pasaron persistencia tras reinicio, guards de almacenamiento/UUID/esquema, bloqueo demo, install, update con backup (mismo candidato), falla de backup, app detenida, restore cifrado y readiness de app recuperada. Los fallos de harness y su resolución están documentados; no hubo repetición de build ni de suites históricas.
+- `npm ci`: 23 vulnerabilidades reportadas (6 moderadas,14 altas,3 críticas), sin triage ni actualización en este ticket. No implica aprobación de seguridad/producción.
+- Checkpoint 2 publicado y verificado: `667b927e884c29aaad15a906219d88da9084246c`; checkpoint 1 `9477d74c8081d3163b1f789e1bf8b5e1c13e67ee`. Rama remota exclusiva `origin/infra/oracle-always-free-preparation`. El tercer commit contiene este cierre; su hash se entrega en el reporte final y Git.
+- Recursos de prueba detenidos, volúmenes de archivo desmontados y conservados; Colima devuelto a Stopped y contexto activo default; sin limpieza global. Logs privados host `/private/tmp/guteli-ticket02-xdp8p2kh`; archivos y discos de ensayo VM `/tmp/guteli-ticket02-xdp8p2kh`. No publicar secretos, backups, capturas ni logs crudos.
+- Decisión de ejecución ligera: un solo agente y revisión propia del diff nuevo y evidencia; sin reauditar preparación anterior ni generar otro plan. Se conservan todos los artefactos previos.
+- **Pendiente Oracle:** hardware/capacidad/cuota, discos reales y reboot VM, DNS/ACME/renovación, firewall externo, carga y operación programada. No acceso Oracle, despliegue público, comercio, pagos, mensajes ni avance a Ticket 03.

@@ -149,5 +149,11 @@
     "ops.py unchanged; test adapter selects isolated Compose/project and containerized PostgreSQL clients.",
     "Update reapplies same immutable candidate; no new application version or schema migration.",
     "npm ci reports 23 vulnerabilities (6 moderate, 14 high, 3 critical), untriaged and not remediated by this ticket."
-  ]
+  ],
+  "teardown": {
+    "services": "five task service containers stopped; no running containers remained",
+    "volumes": "two new ext4 loop mounts unmounted; backing files and all data preserved",
+    "colima": "returned to Stopped; active context default",
+    "cleanup": "no prune, image deletion, database deletion or global cleanup"
+  }
 }
