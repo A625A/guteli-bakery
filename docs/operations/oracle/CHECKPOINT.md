@@ -74,3 +74,7 @@ Reproducciones específicas están en `tests/oracle/test_ops.py`, `tests/oracle/
 - Remoto comprobado: `https://github.com/A625A/guteli-bakery.git`; rama de preparación inicialmente ausente. Base `082959dafe57cf1ec5fdfed00a0aa71f99de64b4`.
 - Docker local recuperado iniciando el perfil existente Colima con `--activate=false --save-config=false --ssh-config=false`; contexto activo `default` conservado. Docker Engine 29.5.2 Linux/aarch64; Compose 5.5.0 independiente. Sin tocar contenedores de otros proyectos.
 - Ejecución ligera: un implementador, ledger existente y pruebas dirigidas; sin nuevo plan ni borrado de evidencia.
+
+- Checkpoint 1 publicado y verificado por `git ls-remote`: `9477d74c8081d3163b1f789e1bf8b5e1c13e67ee`.
+- Checkpoint 2 preparado: build/runtime Linux ARM64 aprobados; digests fijados. Caddy corrigió EPERM con `NET_BIND_SERVICE` en el bounding set y dejó de anunciar HTTP/3 en el puerto interno no publicado. Regresiones Docker RED→GREEN; contratos Compose 3/3.
+- Instalación, reinicio persistente, guards de almacenamiento/esquema, update con backup cifrado y restore Docker pasaron. La app recuperada sirve `/readyz` 200 con la DB y uploads restaurados. Evidencia agregada sin secretos: `artifacts/oracle-preparation/ticket-02/evidence.json`. Cierre documental pendiente; no iniciar Ticket 03.

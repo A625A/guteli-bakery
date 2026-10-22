@@ -1,0 +1,33 @@
+{
+  "verified_date": "2026-10-21",
+  "timezone": "America/Guatemala",
+  "images": {
+    "node": {
+      "reference": "node:22-bookworm-slim@sha256:de170b39439eb0e5a3444ad7d60b015614a381e10fecae2e30ec9e735122f38d",
+      "arm64_manifest": "sha256:ceb43e5c219139035fb742900629e4abed89fe0997f7c03250c499e1f2710c9e",
+      "platform": {
+        "architecture": "arm64",
+        "os": "linux",
+        "variant": "v8"
+      }
+    },
+    "postgres": {
+      "reference": "postgres:17-bookworm@sha256:858bb5e98eed02eb8cafbcdc007f9a65d1b613972028944a8ec2133ccaf80d27",
+      "arm64_manifest": "sha256:f97ca6038b7641359fef23126949d824ac68edd8a7081b424d6a78e1f7076f8e",
+      "platform": {
+        "architecture": "arm64",
+        "os": "linux",
+        "variant": "v8"
+      }
+    },
+    "caddy": {
+      "reference": "caddy:2@sha256:3095ad245c353e3bdb27a38f22a095c1cfa9e295ab21c0214c3e72b0e2960525",
+      "arm64_manifest": "sha256:cc447f149425221422153c6cdf33a123b3f458839679f950298f68a690a54a5b",
+      "platform": {
+        "architecture": "arm64",
+        "os": "linux",
+        "variant": "v8"
+      }
+    }
+  }
+}

@@ -3,6 +3,10 @@
     http_port 8080
     https_port 8443
     admin off
+    # Only TCP is published; do not advertise internal UDP/HTTP3 port 8443.
+    servers {
+        protocols h1 h2
+    }
     auto_https disable_redirects
     # No access logging: URLs may carry private receipt tokens.
     log default {
