@@ -2,7 +2,11 @@ import { expect, test, type Page } from '@playwright/test';
 import path from 'node:path';
 
 const artifactPath = (...segments: string[]) =>
-  path.resolve(process.cwd(), 'artifacts', 'screenshots', ...segments);
+  path.resolve(
+    process.env.GUTELI_SCREENSHOT_ROOT ??
+      path.join(process.cwd(), 'artifacts', 'screenshots'),
+    ...segments,
+  );
 
 const screenshots = {
   desktop: {
@@ -66,6 +70,15 @@ async function capture(page: Page, screenshotPath: string) {
       document.documentElement.style.removeProperty('scroll-behavior');
     }
   }, scrollBehavior);
+}
+
+async function captureMenu(page: Page, screenshotPath: string) {
+  // SSR inputs are visible before CartProvider hydrates. Playwright temporarily
+  // writes caret styles during screenshots, so wait for the interactive menu.
+  await expect(
+    page.getByRole('button', { name: 'Agregar Originales de Pretzels' }),
+  ).toBeEnabled();
+  await capture(page, screenshotPath);
 }
 
 async function buildTwoItemCart(page: Page, mobile: boolean) {
@@ -133,7 +146,7 @@ test.describe.serial('Milestone 3 evidence capture', () => {
     await capture(page, screenshots.desktop.homepage);
 
     await page.goto('/menu/');
-    await capture(page, screenshots.desktop.menu);
+    await captureMenu(page, screenshots.desktop.menu);
 
     await buildTwoItemCart(page, false);
     await capture(page, screenshots.desktop.cart);
@@ -181,7 +194,7 @@ test.describe.serial('Milestone 3 evidence capture', () => {
     await capture(page, screenshots.mobile.homepage);
 
     await page.goto('/menu/');
-    await capture(page, screenshots.mobile.menu);
+    await captureMenu(page, screenshots.mobile.menu);
 
     await buildTwoItemCart(page, true);
     await capture(page, screenshots.mobile.cart);
@@ -201,4 +214,64 @@ test.describe.serial('Milestone 3 evidence capture', () => {
 
     expect(consoleErrors).toEqual([]);
   });
+});
+
+// Hold client scripts while the SSR menu is visible to exercise the screenshot /
+// hydration race. Observe DOM writes, without suppressing any console errors.
+test('menu capture waits for hydration before screenshot DOM changes', async ({
+  page,
+}, testInfo) => {
+  const consoleErrors: string[] = [];
+  page.on('console', (message) => {
+    if (message.type() === 'error') consoleErrors.push(message.text());
+  });
+  let releaseScripts!: () => void;
+  const scriptsReleased = new Promise<void>((resolve) => {
+    releaseScripts = resolve;
+  });
+  await page.route('**/_next/**/*.js*', async (route) => {
+    await scriptsReleased;
+    await route.continue();
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/menu/', { waitUntil: 'commit' });
+  const addButton = page.getByRole('button', {
+    name: 'Agregar Originales de Pretzels',
+  });
+  await expect(addButton).toBeVisible();
+  await expect(addButton).toBeDisabled();
+  const prematureWrites = await page.evaluateHandle(() => {
+    const writes: string[] = [];
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        const element = mutation.target;
+        if (
+          element instanceof HTMLInputElement &&
+          element.disabled &&
+          element.style.getPropertyValue('caret-color') === 'transparent'
+        ) {
+          writes.push(element.id);
+        }
+      }
+    });
+    observer.observe(document.body, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['style'],
+    });
+    return { writes, observer };
+  });
+  // Deliberately delay hydration, not a sleep used to make the application ready.
+  const releaseTimer = setTimeout(releaseScripts, 750);
+  try {
+    await captureMenu(page, testInfo.outputPath('menu-hydration.png'));
+    await expect(addButton).toBeEnabled();
+    expect(await prematureWrites.evaluate(({ writes }) => writes)).toEqual([]);
+    expect(consoleErrors).toEqual([]);
+  } finally {
+    clearTimeout(releaseTimer);
+    releaseScripts();
+    await prematureWrites.evaluate(({ observer }) => observer.disconnect());
+    await prematureWrites.dispose();
+  }
 });

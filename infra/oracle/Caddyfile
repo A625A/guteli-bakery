@@ -1,0 +1,40 @@
+{
+    email {$ACME_EMAIL}
+    http_port 8080
+    https_port 8443
+    admin off
+    auto_https disable_redirects
+    # No access logging: URLs may carry private receipt tokens.
+    log default {
+        level ERROR
+        output discard
+    }
+}
+http://{$GUTELI_HOSTNAME} {
+    redir https://{$GUTELI_HOSTNAME}{uri} 308
+}
+https://{$GUTELI_HOSTNAME} {
+    tls {
+        issuer acme {
+            dir https://acme-v02.api.letsencrypt.org/directory
+        }
+    }
+    header {
+        Strict-Transport-Security "max-age=31536000"
+        X-Robots-Tag "noindex, nofollow"
+        -Server
+    }
+    @privateFiles path /.env* /.git/* /backups/* /logs/*
+    respond @privateFiles 404
+    request_body {
+        max_size 12MB
+    }
+    reverse_proxy app:3000 {
+        header_up Host {$GUTELI_HOSTNAME}
+        header_up X-Forwarded-Host {$GUTELI_HOSTNAME}
+        header_up X-Forwarded-Proto https
+        header_up X-Forwarded-For {remote_host}
+        header_up -Forwarded
+        header_up -X-Real-IP
+    }
+}

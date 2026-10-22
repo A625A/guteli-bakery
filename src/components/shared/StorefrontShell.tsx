@@ -4,7 +4,7 @@ import { CartProvider } from '@/components/cart/CartProvider';
 import { DemoBanner } from '@/components/shared/DemoBanner';
 import { SiteFooter } from '@/components/shared/SiteFooter';
 import { SiteHeader } from '@/components/shared/SiteHeader';
-import { publicSiteConfig } from '@/config/public-site';
+import { commercialOrdersEnabled } from '@/server/config/commerce';
 import { getPublicCatalog } from '@/server/products/list-public-products';
 
 export async function StorefrontShell({ children }: { children: ReactNode }) {
@@ -16,7 +16,7 @@ export async function StorefrontShell({ children }: { children: ReactNode }) {
       <a className="skip-link" href="#main-content">
         Saltar al contenido
       </a>
-      <DemoBanner enabled={publicSiteConfig.isDemoMode} />
+      <DemoBanner enabled={!commercialOrdersEnabled()} />
       <CartProvider products={products}>
         <SiteHeader />
         {children}

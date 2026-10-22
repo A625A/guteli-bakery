@@ -11,6 +11,7 @@ export const metadata: Metadata = {
     default: siteConfig.name,
     template: `%s | ${siteConfig.name}`,
   },
+  robots: { index: false, follow: false },
   description:
     'Pretzels, bagels y panes artesanales por encargo de Güteli Bakery.',
 };

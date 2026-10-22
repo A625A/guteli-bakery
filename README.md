@@ -96,16 +96,70 @@ The customer-facing flow stays intentionally simple while persistence, administr
 
 ## Run Locally
 
-Requirements: Node.js 20.19+ and npm 10+.
+Requirements: Node.js 20.19+ and npm 10+. Use only a disposable local database and fictitious data for the commands below. The Node development workflow does not require Docker if PostgreSQL 17 is already available locally.
 
 ```bash
-npm install
+npm ci
 cp .env.example .env
+```
+
+Before starting, configure `.env` with the local `DATABASE_URL`, `UPLOADS_ROOT`, `BETTER_AUTH_URL=http://localhost:3000` and three distinct local secrets of at least 32 bytes: `BETTER_AUTH_SECRET`, `RATE_LIMIT_SECRET` and `RECEIPT_TOKEN_SECRET`. Set `TRUSTED_PROXY_HOPS=0` for direct local access. Keep this file private and out of Git. Never reuse local database credentials or example/build secrets for production.
+
+If using the repository's **local development** database container:
+
+```bash
 docker compose up -d database
+docker compose ps
+docker compose exec -T database pg_isready -U guteli -d guteli
+```
+
+Then explicitly initialize the disposable database before starting Node:
+
+```bash
 npm run db:migrate
 npm run db:seed
 npm run dev
 ```
+
+Seeding is for local fixtures, not an approved bakery catalog. Public order handlers remain disabled by default; only isolated checkout regression tests should opt into `COMMERCIAL_ORDERS_ENABLED=true`. Keep payments and automatic WhatsApp disabled.
+
+### Existing local Compose workflow
+
+The root `compose.yaml` is a development/demo configuration, **not the Oracle production configuration**. Its database password is a local default and its app port is published on the host network. Run it only on an isolated development machine; do not expose it publicly. Docker execution of this candidate is still pending Ticket 02 validation.
+
+Check your installed daemon and Compose first; on macOS with an existing Colima installation, use `colima status`. Do not change Docker contexts or socket settings to bypass a failed check.
+
+```bash
+docker compose config
+```
+
+This prints resolved configuration; inspect it locally and do not share output containing secrets. The root app does not inherit the shell's secrets or `.env` automatically. For a local container rehearsal, prepare a private supplemental Compose file outside Git, selected with `export COMPOSE_FILE=compose.yaml:/absolute/private/compose.local.yaml`, containing:
+
+```yaml
+services:
+  app:
+    env_file:
+      - /absolute/private/guteli-local.env
+```
+
+The private env file supplies the three independent local secrets above, `BETTER_AUTH_URL=http://localhost:3000`, `TRUSTED_PROXY_HOPS=0`, and `COMMERCIAL_ORDERS_ENABLED=false`, `PAYMENTS_ENABLED=false`, `WHATSAPP_NOTIFICATIONS_ENABLED=false`. Root Compose explicitly sets the app's internal database address and uploads path; those values take precedence over `env_file`. This HTTP rehearsal does not validate secure admin cookies or public TLS.
+
+For a new disposable database, provisioning builds from the Dockerfile's `builder` stage and mounts `uploads_data` at `/app/uploads`. It runs `npm run db:migrate && npm run db:seed` only when explicitly invoked:
+
+```bash
+docker compose up -d database
+docker compose --profile provision run --rm provision
+docker compose up --build -d
+docker compose ps
+```
+
+Ordinary startup does not migrate or seed. To stop this local stack without deleting its named volumes:
+
+```bash
+docker compose down
+```
+
+For Oracle, use only the [separate preparation guide](docs/operations/oracle/README.md). A production migration tool must receive DATABASE_URL from its secret environment, with the internal host `@database:5432/<database>`, never `localhost`. Do not pass database credentials in command-line arguments. Production migrations require separate approval; the development `provision` command also seeds fixtures and must not initialize a real catalog.
 
 Useful quality checks:
 
@@ -134,3 +188,7 @@ A public deployment is not currently provided from this repository.
 - [Engineering handbook](AI/AI-EOS/00_START_HERE.md)
 
 The screenshots in this README come from the running application, not design mockups.
+
+## Preparación local para Oracle
+
+La configuración independiente de demostración, guía de instalación manual y límites de validación están en [Oracle Always Free](docs/operations/oracle/README.md). No se ha desplegado esta preparación. El servidor mantiene pedidos públicos desactivados salvo `COMMERCIAL_ORDERS_ENABLED=true` explícito; el Compose de Oracle lo fuerza a `false`. Pagos y WhatsApp automático permanecen bloqueados.

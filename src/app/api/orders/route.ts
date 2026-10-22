@@ -1,3 +1,7 @@
+import {
+  commercialOrdersEnabled,
+  commercialDemoResponse,
+} from '@/server/config/commerce';
 import { logOperationalEvent } from '@/server/observability/safe-log';
 import { privateHeaders } from '@/server/privacy/headers';
 import { createOrderRequestSchema } from '@/domain/order-contract';
@@ -169,6 +173,7 @@ export function createPostOrderHandler(
   dependencies: OrdersRouteDependencies = {},
 ) {
   return async function POST(request: Request): Promise<Response> {
+    if (!commercialOrdersEnabled()) return commercialDemoResponse();
     const requestId = getRequestId(request.headers);
     const now = dependencies.now?.() ?? new Date();
     let settings: OrderSecuritySettings;

@@ -1,3 +1,4 @@
+import { commercialOrdersEnabled } from '@/server/config/commerce';
 import 'server-only';
 
 import { z } from 'zod';
@@ -85,6 +86,8 @@ export function createNotificationProviderFromEnv(
   input: NodeJS.ProcessEnv,
   options: MetaWhatsAppProviderOptions = {},
 ): NotificationProvider {
+  if (!commercialOrdersEnabled(input))
+    return new DisabledNotificationProvider();
   const env = parseServerEnv(input);
   if (!env.WHATSAPP_NOTIFICATIONS_ENABLED) {
     return new DisabledNotificationProvider();

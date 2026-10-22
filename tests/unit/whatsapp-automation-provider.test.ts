@@ -66,6 +66,7 @@ it('remains disabled with missing authorization, secrets or template approval', 
   expect(
     readAutomationSettings({
       NODE_ENV: 'test',
+      COMMERCIAL_ORDERS_ENABLED: 'true',
       WHATSAPP_NOTIFICATIONS_ENABLED: 'true',
       WHATSAPP_AUTOMATION_AUTHORIZED: 'true',
     }),
@@ -77,6 +78,7 @@ import { readWebhookSettings } from '@/server/notifications/automation-settings'
 import { notificationDeliveryLabel } from '@/lib/notification-status';
 it('requires every activation gate and leaves callbacks independent of the sending kill switch', () => {
   const env = {
+    COMMERCIAL_ORDERS_ENABLED: 'true',
     NODE_ENV: 'test',
     ...Object.fromEntries(
       Object.entries(automationSettings(new Date())).map(([k, v]) => [

@@ -28,6 +28,7 @@ export default defineConfig({
     reuseExistingServer: false,
     timeout: 180_000,
     env: {
+      COMMERCIAL_ORDERS_ENABLED: 'true', // Existing checkout regression scenarios only.
       DATABASE_URL: databaseUrl,
       DATABASE_URL_TEST: databaseUrl,
       BETTER_AUTH_SECRET: 'privacy-test-only-auth-secret-at-least-32-bytes',

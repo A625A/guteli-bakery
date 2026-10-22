@@ -96,16 +96,14 @@ test('slashless storefront routes render directly without redirects', async ({
   }
 });
 
-test('default portfolio mode is identified and exposes no WhatsApp destination', async ({
+test('checkout regression mode exposes no WhatsApp destination', async ({
   page,
 }) => {
   await page.goto('/');
 
   const demoBanner = page.getByRole('note', { name: 'Modo demostración' });
-  await expect(demoBanner).toContainText('Sitio de demostración');
-  await expect(demoBanner).toContainText(
-    'Explora el flujo completo; usa datos de prueba en este entorno.',
-  );
+  // This suite opts into server checkout; demo UI has its own fail-closed suite.
+  await expect(demoBanner).toHaveCount(0);
   await expect(page.locator('a[href*="wa.me"]')).toHaveCount(0);
 
   await page.goto('/contact/');

@@ -1,0 +1,8 @@
+[Unit]
+Description=Güteli semanal domingo 03:00 Guatemala
+[Timer]
+OnCalendar=Sun *-*-* 03:00:00 America/Guatemala
+Persistent=true
+RandomizedDelaySec=300
+[Install]
+WantedBy=timers.target

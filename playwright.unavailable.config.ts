@@ -29,6 +29,7 @@ export default defineConfig({
     env: {
       NEXT_PUBLIC_DEMO_MODE: 'false',
       NEXT_PUBLIC_WHATSAPP_DESTINATION: '50255555555',
+      COMMERCIAL_ORDERS_ENABLED: 'true', // Existing checkout regression scenarios only.
       DATABASE_URL: databaseUrlTest,
       DATABASE_URL_TEST: databaseUrlTest,
       UPLOADS_ROOT: uploadsRoot,

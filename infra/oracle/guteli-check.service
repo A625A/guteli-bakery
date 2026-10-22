@@ -1,0 +1,9 @@
+[Unit]
+Description=Comprobación interna Güteli sin datos personales
+After=docker.service
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/guteli/current
+ExecStart=/usr/bin/python3 scripts/oracle/ops.py status
+ExecStart=/usr/bin/python3 scripts/oracle/ops.py health
+UMask=0077

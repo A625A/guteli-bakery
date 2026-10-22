@@ -21,3 +21,7 @@ test-results/
 .vercel/
 
 *.log
+
+# Local infrastructure validation caches
+__pycache__/
+*.pyc

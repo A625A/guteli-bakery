@@ -1,7 +1,7 @@
 import { mkdtemp, rm, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 vi.mock('server-only', () => ({}));
 vi.mock('@/server/db/client', () => ({ db: {} }));
 vi.mock('@/server/auth/authorize', () => ({ requireAdmin: vi.fn() }));
@@ -13,6 +13,7 @@ import { requireAdmin } from '@/server/auth/authorize';
 import { safeAuthLog } from '@/server/observability/safe-log';
 import { createPostOrderHandler } from '@/app/api/orders/route';
 
+afterEach(() => vi.unstubAllEnvs());
 describe('privacy failure paths', () => {
   it('discards authentication diagnostic strings and arguments', () => {
     const sink = vi.spyOn(console, 'warn').mockImplementation(() => {});
@@ -23,6 +24,7 @@ describe('privacy failure paths', () => {
   });
   it('returns a generic order error and safe event for a failing database', async () => {
     const sink = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.stubEnv('COMMERCIAL_ORDERS_ENABLED', 'true');
     const database = {
       transaction: vi
         .fn()
