@@ -1,0 +1,22 @@
+{
+  "local_date": "2026-10-21",
+  "timezone": "America/Guatemala",
+  "source_sha": "9477d74c8081d3163b1f789e1bf8b5e1c13e67ee",
+  "configuration_sha": "667b927e884c29aaad15a906219d88da9084246c",
+  "scope": "final changed-file snapshot; runtime proof refers to source SHA plus documented proxy corrections",
+  "files": {
+    ".scratch/oracle-remaining/README.md": "56d87f7acf664cb49685e4dfb5a78ac4039f1629c285d319d0b4b7c669e80bb6",
+    ".scratch/oracle-remaining/issues/02-linux-arm64.md": "2cef70a81b91ef01de180526734207d7bdb7830583f6f65d12bbb58ebb9cd9b4",
+    "README.md": "ec5d4f14cd165188d49592bec455ab3bc1220e4398144110a88fc8bc24b28af2",
+    "artifacts/oracle-preparation/ticket-02/RESULTADO.md": "243a466ba5ec4ad42034119520d54e72b284c76006ec645cb7cc8959577796eb",
+    "artifacts/oracle-preparation/ticket-02/evidence.json": "5eccaed4725d70d97c03fb4b413bce9158bd810c87603bd2b4bb1cd1dab04a9d",
+    "docs/operations/oracle/CHECKPOINT.md": "c40d8f86474c33ab35260ff04c747a3f3b5235dcbca1329f25c408047540bfc7",
+    "docs/operations/oracle/validacion.md": "4512bce0262c7f8f8074d18464b4cc2784fbf8702c32393de23e16b1ec7bd22a",
+    "infra/oracle/Caddyfile": "bddefc58016d309486a76e69746c4b7aee45d5bb65b509d210bed841a909e997",
+    "infra/oracle/compose.env.example": "2f21fc85ff938e1fa8a8c2f67907607338c17fb57ff93e3bfaa86cf3ef18fa63",
+    "infra/oracle/compose.yaml": "cf83b536646568512c21e151824cca3d80a7449d71a3030aa7b307aa274a8976",
+    "infra/oracle/images.lock.json": "e1f35bf1c7e062f0821c34544e02ae3662a4f3c10e5a91a5aac66c9e65b07818",
+    "tests/oracle/caddy-runtime.mjs": "d33e2d806c5532b0ea0cc0c240347cee64ef534aac437781809963db7ee7b36f",
+    "tests/oracle/docker_drill.py": "5c568ebe3b0a4506d81280b4b018775d7b44534ac2e165d3bb8c39f550f855fd"
+  }
+}

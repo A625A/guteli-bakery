@@ -47,6 +47,7 @@ export default defineConfig({
     command:
       'node scripts/reset-test-database.mjs && npm run db:migrate && npm run db:seed && node --conditions=react-server --import tsx tests/support/seed-admin-owner.ts && node tests/support/production-tls-server.mjs',
     env: {
+      COMMERCIAL_ORDERS_ENABLED: 'true', // Existing checkout regression scenarios only.
       DATABASE_URL: databaseUrlTest,
       DATABASE_URL_TEST: databaseUrlTest,
       BETTER_AUTH_SECRET:

@@ -12,6 +12,7 @@ const databaseUrlTest = requireTestDatabaseUrl(
 );
 
 process.env.DATABASE_URL = databaseUrlTest;
+process.env.COMMERCIAL_ORDERS_ENABLED = 'true'; // Existing checkout regression scenarios only.
 
 export default defineConfig({
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },

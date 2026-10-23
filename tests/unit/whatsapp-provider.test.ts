@@ -16,6 +16,7 @@ const databaseEnv = {
 
 const readyEnv = {
   ...databaseEnv,
+  COMMERCIAL_ORDERS_ENABLED: 'true',
   WHATSAPP_NOTIFICATIONS_ENABLED: 'true',
   WHATSAPP_ACCOUNT_READY: 'true',
   WHATSAPP_OWNER_CONSENT_CONFIRMED: 'true',

@@ -1,3 +1,4 @@
+import { commercialOrdersEnabled } from '@/server/config/commerce';
 import Link from 'next/link';
 
 import { operationalCopy, siteConfig } from '@/content/business';
@@ -84,48 +85,62 @@ export default function HomePage() {
             Ver el menú
           </Link>
           <Link className="button-link button-link--secondary" href="/cart/">
-            Preparar mi pedido
+            {commercialOrdersEnabled()
+              ? 'Preparar mi pedido'
+              : 'Explorar mi carrito'}
           </Link>
         </div>
-        <p>Pedidos con {siteConfig.advanceDays} días de anticipación.</p>
-      </section>
-
-      <section className="ordering-guide">
-        <div className="section-heading ordering-guide__heading">
-          <p className="eyebrow">Tu solicitud, paso a paso</p>
-          <h2>Cómo hacer un pedido</h2>
-        </div>
-        <ol className="ordering-guide__steps" aria-label="Cómo hacer un pedido">
-          <li>
-            <OrderingStepIcon name="bread-basket" />
-            <div>
-              <h3>Elige del menú</h3>
-              <p>Agrega productos y cantidades al carrito.</p>
-            </div>
-          </li>
-          <li>
-            <OrderingStepIcon name="calendar" />
-            <div>
-              <h3>Completa los datos</h3>
-              <p>Indica fecha y si deseas recogida o envío.</p>
-            </div>
-          </li>
-          <li>
-            <OrderingStepIcon name="whatsapp" />
-            <div>
-              <h3>Confirma por WhatsApp</h3>
-              <p>Envía el resumen para coordinar los detalles.</p>
-            </div>
-          </li>
-        </ol>
-
-        <aside className="ordering-guide__notice" aria-label="Antes de pedir">
+        {commercialOrdersEnabled() ? (
+          <p>Pedidos con {siteConfig.advanceDays} días de anticipación.</p>
+        ) : (
           <p>
-            Haz tu pedido con {siteConfig.advanceDays} días de anticipación.
+            Demostración del catálogo. Todavía no recibimos pedidos desde este
+            sitio.
           </p>
-          <p>{operationalCopy.confirmation}</p>
-        </aside>
+        )}
       </section>
+
+      {commercialOrdersEnabled() ? (
+        <section className="ordering-guide">
+          <div className="section-heading ordering-guide__heading">
+            <p className="eyebrow">Tu solicitud, paso a paso</p>
+            <h2>Cómo hacer un pedido</h2>
+          </div>
+          <ol
+            className="ordering-guide__steps"
+            aria-label="Cómo hacer un pedido"
+          >
+            <li>
+              <OrderingStepIcon name="bread-basket" />
+              <div>
+                <h3>Elige del menú</h3>
+                <p>Agrega productos y cantidades al carrito.</p>
+              </div>
+            </li>
+            <li>
+              <OrderingStepIcon name="calendar" />
+              <div>
+                <h3>Completa los datos</h3>
+                <p>Indica fecha y si deseas recogida o envío.</p>
+              </div>
+            </li>
+            <li>
+              <OrderingStepIcon name="whatsapp" />
+              <div>
+                <h3>Confirma por WhatsApp</h3>
+                <p>Envía el resumen para coordinar los detalles.</p>
+              </div>
+            </li>
+          </ol>
+
+          <aside className="ordering-guide__notice" aria-label="Antes de pedir">
+            <p>
+              Haz tu pedido con {siteConfig.advanceDays} días de anticipación.
+            </p>
+            <p>{operationalCopy.confirmation}</p>
+          </aside>
+        </section>
+      ) : null}
     </main>
   );
 }

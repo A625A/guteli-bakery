@@ -1,0 +1,7 @@
+[Unit]
+Description=Estado interno de Güteli cada cinco minutos
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=5min
+[Install]
+WantedBy=timers.target

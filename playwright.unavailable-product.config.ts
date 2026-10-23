@@ -29,6 +29,7 @@ export default defineConfig({
     reuseExistingServer: false,
     env: {
       NEXT_PUBLIC_DEMO_MODE: 'false',
+      COMMERCIAL_ORDERS_ENABLED: 'true', // Existing checkout regression scenarios only.
       DATABASE_URL: databaseUrlTest,
       DATABASE_URL_TEST: databaseUrlTest,
       UPLOADS_ROOT: uploadsRoot,

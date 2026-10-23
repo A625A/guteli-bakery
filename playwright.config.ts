@@ -32,6 +32,7 @@ export default defineConfig({
     command:
       'node scripts/reset-test-database.mjs && npm run db:migrate && npm run db:seed && node --conditions=react-server --import tsx tests/support/seed-admin-owner.ts && npm run dev -- --hostname 127.0.0.1',
     env: {
+      COMMERCIAL_ORDERS_ENABLED: 'true', // Existing checkout regression scenarios only.
       DATABASE_URL: databaseUrlTest,
       DATABASE_URL_TEST: databaseUrlTest,
       BETTER_AUTH_SECRET: 'playwright-auth-secret-must-be-at-least-32-bytes',

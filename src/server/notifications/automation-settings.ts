@@ -1,3 +1,4 @@
+import { commercialOrdersEnabled } from '@/server/config/commerce';
 import 'server-only';
 import { z } from 'zod';
 const template = z.string().regex(/^[a-z0-9_]{1,512}$/);
@@ -38,6 +39,7 @@ export type AutomationSettings = z.infer<typeof schema>;
 export function readAutomationSettings(
   env: NodeJS.ProcessEnv = process.env,
 ): AutomationSettings | null {
+  if (!commercialOrdersEnabled(env)) return null;
   if (env.PAYMENTS_ENABLED === 'true') return null;
   const parsed = schema.safeParse(env);
   return parsed.success ? parsed.data : null;

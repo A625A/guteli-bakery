@@ -1,3 +1,4 @@
+import { commercialOrdersEnabled } from '@/server/config/commerce';
 import { NextResponse, type NextRequest } from 'next/server';
 
 import { isPrivatePath, privateHeaders } from '@/server/privacy/headers';
@@ -36,6 +37,8 @@ export function proxy(request: NextRequest) {
     for (const [name, value] of Object.entries(privateHeaders))
       response.headers.set(name, value);
   }
+  if (!commercialOrdersEnabled())
+    response.headers.set('x-robots-tag', 'noindex, nofollow');
   return response;
 }
 

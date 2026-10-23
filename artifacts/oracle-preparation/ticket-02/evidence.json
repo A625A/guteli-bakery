@@ -1,0 +1,159 @@
+{
+  "local_date": "2026-10-21",
+  "timezone": "America/Guatemala",
+  "scope": "Linux ARM64 virtualizado en Apple Silicon; sin emulación de ISA ni Oracle",
+  "source_sha": "9477d74c8081d3163b1f789e1bf8b5e1c13e67ee",
+  "app_image": "sha256:96bf0bbfbe2e6059b19cde29e2445741aa938b071ec937f208ea64e00dab92ff",
+  "environment": {
+    "docker_engine": "29.5.2",
+    "compose_linux": "5.1.4",
+    "compose_macos": "5.5.0",
+    "node": "22.23.4",
+    "postgres": "17.11",
+    "caddy": "2.11.7"
+  },
+  "checks": [
+    {
+      "check": "production-compose-config-and-demo-switches",
+      "result": "PASS"
+    },
+    {
+      "check": "local-override",
+      "result": "project guteli-ticket02; loopback 18080/18443; internal TLS; private raw config"
+    },
+    {
+      "check": "real-mount-uuid-permissions-space-preflight",
+      "result": "PASS"
+    },
+    {
+      "check": "postgres-provision-migrations-and-fictional-fixtures",
+      "result": "PASS"
+    },
+    {
+      "check": "real-mount-uuid-permissions-space-preflight",
+      "result": "PASS"
+    },
+    {
+      "check": "next-postgres-readiness",
+      "result": "PASS"
+    },
+    {
+      "check": "production-runtime-configuration",
+      "result": "PASS"
+    },
+    {
+      "check": "native-runtime",
+      "result": "linux/arm64 v22.23.4 sharp=90"
+    },
+    {
+      "check": "demo-endpoints",
+      "result": "4 routes rejected before parsing"
+    },
+    {
+      "check": "restart-database-catalog-images",
+      "result": "PASS"
+    },
+    {
+      "check": "missing-mount",
+      "result": "REJECTED: VOLUMEN_NO_MONTADO"
+    },
+    {
+      "check": "wrong-uuid",
+      "result": "REJECTED: UUID_DE_VOLUMEN_INCORRECTO"
+    },
+    {
+      "check": "app-without-upload-mount",
+      "result": "REJECTED: GUTELI_STORAGE_UNAVAILABLE"
+    },
+    {
+      "check": "database-without-data-mount",
+      "result": "REJECTED: GUTELI_DATABASE_VOLUME_UNAVAILABLE"
+    },
+    {
+      "check": "missing-PG_VERSION",
+      "result": "REJECTED"
+    },
+    {
+      "check": "install-over-existing-app",
+      "result": "REJECTED: INSTALACION_EXISTENTE"
+    },
+    {
+      "check": "update-with-encrypted-backup",
+      "result": "9.0 seconds; same immutable candidate reapplied"
+    },
+    {
+      "check": "update-incompatible-schema",
+      "result": "REJECTED: ESQUEMA_DIFIERE"
+    },
+    {
+      "check": "readiness-lost-storage",
+      "result": "503 generic response"
+    },
+    {
+      "check": "missing-bind-source",
+      "result": "REJECTED without creating path"
+    },
+    {
+      "check": "update-backup-failure",
+      "result": "REJECTED: RETENCION_LLENA"
+    },
+    {
+      "check": "backup-failure-keeps-previous-app-healthy",
+      "result": "PASS"
+    },
+    {
+      "check": "weekly-backup-stopped-app",
+      "result": "REJECTED: APP_DETENIDA"
+    },
+    {
+      "check": "weekly-backup-preserves-stopped-state",
+      "result": "PASS"
+    },
+    {
+      "check": "docker-encrypted-restore-data-images-pending-work",
+      "result": "0.73 seconds; six table digests and image bytes equal"
+    },
+    {
+      "check": "restore-existing-database",
+      "result": "REJECTED: OPERACION_FALLIDA"
+    },
+    {
+      "check": "backup-tamper",
+      "result": "REJECTED: BACKUP_INTEGRIDAD_INVALIDA"
+    },
+    {
+      "check": "manual-recovery-without-implicit-migration",
+      "result": "PASS"
+    },
+    {
+      "check": "recovered-app-readiness",
+      "result": "200 using restored database and restored uploads; pending work untouched"
+    }
+  ],
+  "additional_checks": {
+    "caddy_regression": "RED EPERM -> GREEN production capabilities",
+    "caddy_protocol_regression": "RED protocols absent / Alt-Svc :8443 -> GREEN h1/h2 and no Alt-Svc",
+    "production_caddy_validate": "PASS UID1001 read-only root and network none",
+    "proxy_headers": "PASS actual Caddy adapter: Host, X-Forwarded-Host/Proto/For replaced, Forwarded and X-Real-IP deleted",
+    "local_tls": "HTTP2 200 /readyz, HSTS, noindex, no-store; internal CA only",
+    "http_redirect": "308 Location https://guteli.invalid/ (external default 443)",
+    "runtime_isolation": "app/database have no published ports; proxy loopback 18080/18443; backend internal only app/database; all root filesystems read-only",
+    "whatsapp": "Linux ARM64 disabled provider and null automation even with sending flags true; zero network calls",
+    "payments_and_outbox": "5 synthetic orders UNPAID; 1 PENDING event, attempts=0",
+    "unit_compose": "3/3",
+    "syntax_lint": "Python compile and ESLint of new proxy regression passed"
+  },
+  "limitations": [
+    "No Oracle, bare-metal ARM64, public ACME/DNS/TLS, VM reboot or real cloud disk durability tested.",
+    "Local overrides: isolated project/network names, loopback ports, internal TLS; production Compose and Caddy validated separately.",
+    "ops.py unchanged; test adapter selects isolated Compose/project and containerized PostgreSQL clients.",
+    "Update reapplies same immutable candidate; no new application version or schema migration.",
+    "npm ci reports 23 vulnerabilities (6 moderate, 14 high, 3 critical), untriaged and not remediated by this ticket."
+  ],
+  "teardown": {
+    "services": "five task service containers stopped; no running containers remained",
+    "volumes": "two new ext4 loop mounts unmounted; backing files and all data preserved",
+    "colima": "returned to Stopped; active context default",
+    "cleanup": "no prune, image deletion, database deletion or global cleanup"
+  }
+}

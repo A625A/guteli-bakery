@@ -1,3 +1,7 @@
+import {
+  commercialOrdersEnabled,
+  commercialDemoResponse,
+} from '@/server/config/commerce';
 import { NextResponse } from 'next/server';
 
 import {
@@ -31,6 +35,7 @@ type Dependencies = Readonly<{
 
 export function createCheckoutSessionHandlers(dependencies: Dependencies = {}) {
   async function handle(request: Request, prepare: boolean) {
+    if (!commercialOrdersEnabled()) return commercialDemoResponse();
     const requestId = getRequestId(request.headers);
     try {
       if (prepare)

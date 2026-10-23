@@ -1,0 +1,13 @@
+[Unit]
+Description=Respaldo semanal cifrado de Güteli
+Requires=docker.service
+After=docker.service
+RequiresMountsFor=/srv/guteli-data /srv/guteli-backups
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=/opt/guteli/current
+EnvironmentFile=/etc/guteli/release.env
+ExecStart=/usr/bin/python3 scripts/oracle/ops.py weekly-backup --sha ${GUTELI_RELEASE_SHA} --apply --ack AUTORIZADO_LOCAL
+UMask=0077
+TimeoutStartSec=1h

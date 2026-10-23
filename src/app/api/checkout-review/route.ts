@@ -1,3 +1,7 @@
+import {
+  commercialOrdersEnabled,
+  commercialDemoResponse,
+} from '@/server/config/commerce';
 import { z } from 'zod';
 import {
   getOrderSecuritySettings,
@@ -36,6 +40,7 @@ type Dependencies = {
 
 export function createCheckoutReviewHandlers(dependencies: Dependencies = {}) {
   async function handle(request: Request, accept: boolean) {
+    if (!commercialOrdersEnabled()) return commercialDemoResponse();
     const requestId = getRequestId(request.headers);
     const fail = (code: string, status: number) =>
       errorResponse(

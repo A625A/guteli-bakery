@@ -1,3 +1,4 @@
+import { commercialOrdersEnabled } from '@/server/config/commerce';
 import Link from 'next/link';
 
 import {
@@ -22,9 +23,17 @@ export function SiteFooter() {
       <div className="site-footer__inner">
         <div className="site-footer__facts">
           <p className="site-footer__brand">{siteConfig.name}</p>
-          <p>Pedidos con {siteConfig.advanceDays} días de anticipación.</p>
-          <p>{operationalCopy.deliveryCost}</p>
-          <p>{operationalCopy.confirmation}</p>
+          {commercialOrdersEnabled() ? (
+            <p>Pedidos con {siteConfig.advanceDays} días de anticipación.</p>
+          ) : (
+            <p>Demostración: pedidos todavía no habilitados.</p>
+          )}
+          {commercialOrdersEnabled() ? (
+            <>
+              <p>{operationalCopy.deliveryCost}</p>
+              <p>{operationalCopy.confirmation}</p>
+            </>
+          ) : null}
         </div>
 
         <nav

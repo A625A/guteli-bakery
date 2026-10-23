@@ -11,7 +11,11 @@ import { OrderRequest } from '@/components/order/OrderRequest';
 import { operationalCopy } from '@/content/business';
 import { formatGTQ } from '@/lib/money';
 
-export function CartView() {
+export function CartView({
+  commercialEnabled = false,
+}: {
+  commercialEnabled?: boolean;
+}) {
   const [checkoutAvailable, setCheckoutAvailable] = useState(false);
   const {
     items,
@@ -40,13 +44,17 @@ export function CartView() {
       <header className="request-page__intro">
         <p className="eyebrow">Revisa tu selección</p>
         <h1>Carrito</h1>
-        <p>
-          Ajusta cada cantidad antes de preparar tu solicitud. Puedes solicitar
-          hasta 99 unidades por cada opción del menú.
-        </p>
+        <p>Explora productos y ajusta las cantidades de tu carrito.</p>
       </header>
 
-      <CheckoutRecovery onAvailable={setCheckoutAvailable} />
+      {commercialEnabled ? (
+        <CheckoutRecovery onAvailable={setCheckoutAvailable} />
+      ) : (
+        <p role="status">
+          Modo demostración: puedes explorar productos y ajustar tu carrito. Los
+          pedidos y cobros todavía no están habilitados.
+        </p>
+      )}
       {!pricingAvailable ? (
         <p role="status">Comprobando precios actuales antes de continuar.</p>
       ) : null}
@@ -69,9 +77,7 @@ export function CartView() {
           </p>
           <div>
             <h2 id="empty-cart-title">Tu carrito está vacío</h2>
-            <p>
-              Elige productos y cantidades para iniciar una solicitud de pedido.
-            </p>
+            <p>Elige productos y cantidades para explorar el catálogo.</p>
             <Link className="button-link button-link--primary" href="/menu/">
               Explorar el menú
             </Link>
@@ -149,17 +155,27 @@ export function CartView() {
               <p className="cart-totals__subtotal">
                 Subtotal estimado: {formatGTQ(subtotal)}
               </p>
-              <p>{operationalCopy.confirmation}.</p>
-              <p>{operationalCopy.deliveryCost}.</p>
+              {commercialEnabled ? (
+                <>
+                  <p>{operationalCopy.confirmation}.</p>
+                  <p>{operationalCopy.deliveryCost}.</p>
+                </>
+              ) : (
+                <p>Este subtotal es de referencia. No se genera un pedido.</p>
+              )}
               <button className="cart-totals__payment" type="button" disabled>
                 Pagar en línea — Próximamente
               </button>
-              <a className="cart-totals__continue" href="#cart-checkout">
-                Continuar con mi pedido
-              </a>
+              {commercialEnabled ? (
+                <a className="cart-totals__continue" href="#cart-checkout">
+                  Continuar con mi pedido
+                </a>
+              ) : null}
             </aside>
           </div>
-          {checkoutAvailable ? <OrderRequest embedded /> : null}
+          {commercialEnabled && checkoutAvailable ? (
+            <OrderRequest embedded />
+          ) : null}
         </>
       )}
     </main>

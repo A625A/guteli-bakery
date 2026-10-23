@@ -1,3 +1,7 @@
+import {
+  commercialOrdersEnabled,
+  commercialDemoResponse,
+} from '@/server/config/commerce';
 import { createHash } from 'node:crypto';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
@@ -46,6 +50,7 @@ type Dependencies = {
 
 export function createCheckoutSummaryHandler(dependencies: Dependencies = {}) {
   return async function POST(request: Request) {
+    if (!commercialOrdersEnabled()) return commercialDemoResponse();
     const fail = (status: number) =>
       Response.json(
         {
