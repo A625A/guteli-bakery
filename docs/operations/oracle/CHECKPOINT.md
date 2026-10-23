@@ -1,6 +1,6 @@
 # Checkpoint — Oracle Güteli
 
-22/10/2026, America/Guatemala. **INTEGRACIÓN ORACLE + ADMIN UX 2.0 + TICKET 12 VALIDADA LOCALMENTE.** Ticket 02 conserva su cierre local Docker/Linux ARM64. No instalado en Oracle. Este archivo es el ledger de continuidad; leerlo antes de investigar o ejecutar pruebas.
+23/10/2026, America/Guatemala. **TICKET 04: PAQUETE DE ACEPTACIÓN PREPARADO SOBRE EVIDENCIA; REVISIÓN DE DUEÑOS PENDIENTE Y SESIÓN INTERACTIVA BLOQUEADA POR ENTORNO LOCAL INCOMPLETO.** Ticket 03 conserva pendientes y bloqueo npm; Ticket 02 cerrado localmente en Docker/Linux ARM64. No instalado en Oracle. Este archivo es el ledger de continuidad; leerlo antes de investigar o ejecutar pruebas.
 
 ## Continuación vigente — integración del 22/10/2026
 
@@ -37,7 +37,9 @@ Las secciones siguientes conservan el historial y las autorizaciones de sesiones
 
 - 01: **CERRADO LOCALMENTE el 18/10/2026.** README 7/7 sin modificar assertions; captura desktop/mobile + regresión controlada 3/3; privacidad 1/1. Ver cierre siguiente. No repetir estas pruebas sin cambios relevantes.
 - 02: **CERRADO LOCALMENTE el 21/10/2026.** Docker Linux/aarch64 virtualizado, Node22, Caddy, mounts/UUID/permisos, reinicio, respaldo y recuperación verificados. [Resultado](../../../artifacts/oracle-preparation/ticket-02/RESULTADO.md). No sustituye Oracle.
-- 03–06: requieren decisiones, entorno o autorización futura. No iniciar automáticamente.
+- 03: decisiones de cuota/hostname pendientes; documentación posterior conservada localmente fuera de este commit.
+- 04: preparado sobre evidencia; ensayo interactivo bloqueado y aceptación de dueños pendiente. Ver [reporte](../../../artifacts/oracle-preparation/ticket-04/RESULTADO.md).
+- 05–06: no iniciados; requieren autorización futura.
 - No se cierra producción comercial ni Tickets 10/11/14 por haber preparado archivos.
 
 ## Entorno sintético conservado
@@ -100,3 +102,19 @@ Reproducciones específicas están en `tests/oracle/test_ops.py`, `tests/oracle/
 - Recursos de prueba detenidos, volúmenes de archivo desmontados y conservados; Colima devuelto a Stopped y contexto activo default; sin limpieza global. Logs privados host `/private/tmp/guteli-ticket02-xdp8p2kh`; archivos y discos de ensayo VM `/tmp/guteli-ticket02-xdp8p2kh`. No publicar secretos, backups, capturas ni logs crudos.
 - Decisión de ejecución ligera: un solo agente y revisión propia del diff nuevo y evidencia; sin reauditar preparación anterior ni generar otro plan. Se conservan todos los artefactos previos.
 - **Pendiente Oracle:** hardware/capacidad/cuota, discos reales y reboot VM, DNS/ACME/renovación, firewall externo, carga y operación programada. No acceso Oracle, despliegue público, comercio, pagos, mensajes ni avance a Ticket 03.
+
+## Continuación — Ticket 04 (23/10/2026)
+
+- Un solo agente en este worktree/rama, HEAD `6eb72da`. Sin commit/push/merge, Oracle/hackathon, despliegue, cuentas reales ni activaciones. Tickets 01–03 preservados; 05/06 no iniciados.
+- [Ficha única](aceptacion-duenos.md): checklist comercial, inventario existente de 10 productos/4 categorías, guía rápida que reutiliza la Guía del dueño, roles, ejercicios ficticios, decisiones y espacio de aprobación. **Ningún criterio comercial marcado como aceptado.**
+- Reutilizados admin11/demo3, casos pertinentes de integración y Admin UX móvil/escritorio; 107 archivos relevantes coincidían con manifiesto/base integrada antes de editar. Capturas previas revisadas y enlazadas, sin regenerar.
+- Corrección mínima: buscador y 4 rutas privadas de pedidos aceptan las referencias exactas PRUEBA del cargador existente y conservan sufijos minúsculos. No altera identificadores públicos, roles, pagos, catálogo ni datos. Regresión nueva RED6/GREEN10; ESLint dirigido y TypeScript sin build aprobados. No suites completas, Docker/ARM64 ni audit.
+- Cinco referencias/estados verificados contra manifiesto original + carga exitosa histórica, **no contra DB actual**. El cluster nativo temporal carece de `PG_VERSION`; no se arrancó, reconstruyó ni limpió. Reunión sobre evidencia disponible; sesión interactiva requiere recuperar entorno ficticio en destino nuevo y verificar solo flujo cambiado.
+- Pendientes de dueños: cuatro presentaciones, foto de Nuditos, precios/fotos/disponibilidad/promociones, contacto, horarios, entregas, pagos/políticas, personas OWNER/ADMIN y conservación de PRUEBA. Fixtures afectan métricas; no limpieza automática.
+- Estado: **preparación documental/técnica sobre evidencia lista; ensayo interactivo bloqueado; aceptación comercial pendiente.** Publicación mantiene bloqueo por 23 vulnerabilidades npm de Ticket 03. [Reporte y límites](../../../artifacts/oracle-preparation/ticket-04/RESULTADO.md).
+
+## Integración local autorizada — 23/10/2026
+
+La instrucción posterior «mergea al main» autoriza el commit del Ticket 04 y su merge local a `main`. Se conserva el bloqueo de publicación por dependencias y la aceptación comercial pendiente. No autoriza push, deploy, comercio ni acceso Oracle. Los cambios no publicados del Ticket 03 permanecen en el worktree de preparación y no se incluyen en este commit.
+
+Se integran corrección, prueba dirigida, ficha y evidencia agregada. Logs crudos y capturas previas permanecen locales en el worktree de preparación; sus enlaces pueden no resolver en otros checkouts. Las pruebas 10/10, ESLint y TypeScript se reutilizan: los siete archivos coinciden con los hashes de la ejecución final y main no aporta diferencias funcionales ni de dependencias.

@@ -1,3 +1,4 @@
+import { isAdminOrderReference } from '@/server/orders/admin-order-reference';
 import { getRequestId } from '@/server/observability/request-id';
 import {
   assignPaymentMethod,
@@ -12,8 +13,6 @@ import {
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
-
-const publicIdPattern = /^GUT-\d{2}-[A-Z0-9]{8}$/;
 
 export async function PATCH(
   request: Request,
@@ -38,7 +37,7 @@ export async function PATCH(
   try {
     const { id } = await context.params;
     const parsed = schema.safeParse(body);
-    if (!publicIdPattern.test(id) || !parsed.success) {
+    if (!isAdminOrderReference(id) || !parsed.success) {
       return adminOrderValidationError(requestId);
     }
     const result = await assignPaymentMethod(

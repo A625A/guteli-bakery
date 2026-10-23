@@ -4,6 +4,10 @@ import { and, asc, count, desc, eq, gte, lte } from 'drizzle-orm';
 
 import { requireAdmin } from '@/server/auth/authorize';
 import { db } from '@/server/db/client';
+import {
+  isAdminOrderReference,
+  normalizeAdminOrderReference,
+} from './admin-order-reference';
 import { reviewOrderPricing } from './review-pricing';
 import { orders } from '@/server/db/schema';
 import { orderStatuses, type OrderStatus } from '@/domain/order-state';
@@ -60,12 +64,11 @@ function positiveInteger(value: unknown, fallback: number) {
 export function parseAdminOrderFilters(input: AdminOrderFilters = {}) {
   const reference =
     typeof input.reference === 'string'
-      ? input.reference.trim().toUpperCase() || undefined
+      ? normalizeAdminOrderReference(input.reference) || undefined
       : input.reference;
   if (
     reference !== undefined &&
-    (typeof reference !== 'string' ||
-      !/^GUT-\d{2}-[A-Z0-9]{8}$/.test(reference))
+    (typeof reference !== 'string' || !isAdminOrderReference(reference))
   )
     throw new RangeError('Invalid reference filter.');
   const page = positiveInteger(input.page, 1);
