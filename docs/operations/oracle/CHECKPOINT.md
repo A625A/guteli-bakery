@@ -1,6 +1,17 @@
 # Checkpoint — Oracle Güteli
 
-21/10/2026, America/Guatemala. **TICKET 02 CERRADO LOCALMENTE EN DOCKER/LINUX ARM64.** No instalado en Oracle. Este archivo es el ledger de continuidad; leerlo antes de investigar o ejecutar pruebas.
+22/10/2026, America/Guatemala. **INTEGRACIÓN ORACLE + ADMIN UX 2.0 + TICKET 12 VALIDADA LOCALMENTE.** Ticket 02 conserva su cierre local Docker/Linux ARM64. No instalado en Oracle. Este archivo es el ledger de continuidad; leerlo antes de investigar o ejecutar pruebas.
+
+## Continuación vigente — integración del 22/10/2026
+
+- Rama nueva `main-integracion-oracle-admin-ux-20261022`, desde `origin/main` en `082959d`; `main` local permanece en `4845ecf` y no se modifica ni publica.
+- Admin UX `18703b1` y Ticket 12 ya eran ancestros de main remoto y Oracle. Se incorporaron sólo los tres commits Oracle hasta `6eb72da`, mediante merge `db6c7e38d760b694e36f2b97482cacb36bc875c6`, sin conflictos ni duplicación. Árbol funcional idéntico a Oracle.
+- Nuevas pruebas aprobadas: 152 unitarias dirigidas, 32 integración, 8 operación Python, 3 navegador demo; lint, typecheck y build. Evidencia ARM64 y Admin UX reutilizada; sin suites/auditorías completas ni agentes adicionales.
+- [Informe, hashes, incidencias de entorno y pendientes](INTEGRACION-2026-10-22.md). Los únicos cambios posteriores al merge son este checkpoint y el informe.
+- Autorización vigente: commits y push exclusivamente a la rama nueva. Sin merge/push a main, despliegue Oracle, activación comercial/pagos/WhatsApp ni modificación del hackathon. Worktrees, products/ y evidencias previas preservados.
+- Pendiente antes de main: revisión y autorización del merge, confirmar base remota vigente. El reporte histórico de vulnerabilidades y los tickets Oracle 03–06 siguen abiertos para la aprobación de producción/despliegue.
+
+Las secciones siguientes conservan el historial y las autorizaciones de sesiones anteriores; para esta integración prevalece la continuación vigente.
 
 ## Identidad y límites
 
