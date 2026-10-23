@@ -1,3 +1,4 @@
+import { isAdminOrderReference } from '@/server/orders/admin-order-reference';
 import { z } from 'zod';
 
 import { getRequestId } from '@/server/observability/request-id';
@@ -18,7 +19,6 @@ const schema = z
     expectedVersion: z.number().int().positive(),
   })
   .strict();
-const publicIdPattern = /^GUT-\d{2}-[A-Z0-9]{8}$/;
 
 export async function PATCH(
   request: Request,
@@ -43,7 +43,7 @@ export async function PATCH(
   try {
     const { id } = await context.params;
     const parsed = schema.safeParse(body);
-    if (!publicIdPattern.test(id) || !parsed.success) {
+    if (!isAdminOrderReference(id) || !parsed.success) {
       return adminOrderValidationError(requestId);
     }
     const result = await quoteDelivery(

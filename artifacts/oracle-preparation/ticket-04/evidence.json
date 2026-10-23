@@ -1,0 +1,648 @@
+{
+  "date": "2026-10-23",
+  "baseline_checks": {
+    "artifacts/oracle-preparation/browser-admin.txt": {
+      "expected": "eb3fdd629f626fd9ee7c8f50916dde7795055af3afc7f4daefc1607e694b2308",
+      "actual": "eb3fdd629f626fd9ee7c8f50916dde7795055af3afc7f4daefc1607e694b2308",
+      "match": true
+    },
+    "artifacts/oracle-preparation/browser-demo-final.txt": {
+      "expected": "830870847dee00600d0250159807a07594a1111efb829e93a1f18e1da762b256",
+      "actual": "830870847dee00600d0250159807a07594a1111efb829e93a1f18e1da762b256",
+      "match": true
+    },
+    "artifacts/oracle-preparation/demo-cart-1440.png": {
+      "expected": "3bfc38bd716512150da675cbf624aec0d4c55b70169191553ec35be71e0ff9a9",
+      "actual": "3bfc38bd716512150da675cbf624aec0d4c55b70169191553ec35be71e0ff9a9",
+      "match": true
+    },
+    "artifacts/oracle-preparation/demo-cart-390.png": {
+      "expected": "94b35c60276c06b77a8447c2cf457b0349f5581e9f8d2dc3157091b321e8d7d7",
+      "actual": "94b35c60276c06b77a8447c2cf457b0349f5581e9f8d2dc3157091b321e8d7d7",
+      "match": true
+    },
+    "artifacts/oracle-preparation/integration.txt": {
+      "expected": "ef141ee4f22d6cd34dbe0e1133b5a3a57c0ba76a14365744a244f90287a9ef49",
+      "actual": "ef141ee4f22d6cd34dbe0e1133b5a3a57c0ba76a14365744a244f90287a9ef49",
+      "match": true
+    },
+    "artifacts/oracle-preparation/practice-orders.txt": {
+      "expected": "c3a83f5f337bd169543308f2d43c62de9e2f0d996e560df1d57873c2fb1c6b9b",
+      "actual": "c3a83f5f337bd169543308f2d43c62de9e2f0d996e560df1d57873c2fb1c6b9b",
+      "match": true
+    },
+    "artifacts/oracle-preparation/practice-rejection.txt": {
+      "expected": "2b4f97244e657ad2b06ca67519ce9ce6983659e72db74361f60182fb67e832b9",
+      "actual": "2b4f97244e657ad2b06ca67519ce9ce6983659e72db74361f60182fb67e832b9",
+      "match": true
+    },
+    "scripts/oracle/practice-orders.ts": {
+      "expected": "b7c69416315045e6747b89fbb65a1d53cc663aa3a829cbcacea6f53a83aa73e5",
+      "actual": "b7c69416315045e6747b89fbb65a1d53cc663aa3a829cbcacea6f53a83aa73e5",
+      "match": true
+    },
+    "src/app/(storefront)/cart/page.tsx": {
+      "expected": "5ecda0f035700d15c7b8503efe7c1bb9ec14d8e4a7c09843dbc9f489d6425d0b",
+      "actual": "5ecda0f035700d15c7b8503efe7c1bb9ec14d8e4a7c09843dbc9f489d6425d0b",
+      "match": true
+    },
+    "src/app/(storefront)/page.tsx": {
+      "expected": "26c96b8ab8ead62487abbfbc66bb4bc794ecf9d89d1ca7f8f59e5f1ca8d22d45",
+      "actual": "26c96b8ab8ead62487abbfbc66bb4bc794ecf9d89d1ca7f8f59e5f1ca8d22d45",
+      "match": true
+    },
+    "src/app/api/checkout-review/route.ts": {
+      "expected": "4d614b59287caccf08a4151b8d88af822133ef0f797794648c3edabf8a2ea8da",
+      "actual": "4d614b59287caccf08a4151b8d88af822133ef0f797794648c3edabf8a2ea8da",
+      "match": true
+    },
+    "src/app/api/checkout-session/route.ts": {
+      "expected": "d9b8767e3482159dfb88bbdaa221518f08b4fe50f69a31ee90a8f9ce6f8eba05",
+      "actual": "d9b8767e3482159dfb88bbdaa221518f08b4fe50f69a31ee90a8f9ce6f8eba05",
+      "match": true
+    },
+    "src/app/api/checkout-summary/route.ts": {
+      "expected": "5b97af7372dbe97aee5b87da0b5d9fe9e06db44351f1c5cd0767d9ccc1ef0f3f",
+      "actual": "5b97af7372dbe97aee5b87da0b5d9fe9e06db44351f1c5cd0767d9ccc1ef0f3f",
+      "match": true
+    },
+    "src/app/api/orders/route.ts": {
+      "expected": "0d1cf50dd17a1ca001d9e942159f42eb4b0bd61eee2d4b324308c4ccf622e528",
+      "actual": "0d1cf50dd17a1ca001d9e942159f42eb4b0bd61eee2d4b324308c4ccf622e528",
+      "match": true
+    },
+    "src/app/layout.tsx": {
+      "expected": "4c668f2765a2707516c424dc64e3029cb6fa1a7ab8da8db443b23a7352c25964",
+      "actual": "4c668f2765a2707516c424dc64e3029cb6fa1a7ab8da8db443b23a7352c25964",
+      "match": true
+    },
+    "src/app/readyz/route.ts": {
+      "expected": "959a26facfee8c0ac5be4b8feb83faf762a78638c38284077fde417a90d60a15",
+      "actual": "959a26facfee8c0ac5be4b8feb83faf762a78638c38284077fde417a90d60a15",
+      "match": true
+    },
+    "src/components/cart/CartView.tsx": {
+      "expected": "e90ae88fb3018d4353dfa399b45e6594fb87a1d2bc00e9d5ff1ffe345b54cf3b",
+      "actual": "e90ae88fb3018d4353dfa399b45e6594fb87a1d2bc00e9d5ff1ffe345b54cf3b",
+      "match": true
+    },
+    "src/components/shared/DemoBanner.tsx": {
+      "expected": "7f84fd7dc036859ea0bcfdcb2153e3ef815df1b445aa74869cac36287bd4b95a",
+      "actual": "7f84fd7dc036859ea0bcfdcb2153e3ef815df1b445aa74869cac36287bd4b95a",
+      "match": true
+    },
+    "src/components/shared/SiteFooter.tsx": {
+      "expected": "a5fa0dabdadac3f12b448adc5dfc680e81252ea6ad717c917f223ad7c48950e9",
+      "actual": "a5fa0dabdadac3f12b448adc5dfc680e81252ea6ad717c917f223ad7c48950e9",
+      "match": true
+    },
+    "src/components/shared/StorefrontShell.tsx": {
+      "expected": "d6fe8e1f81d7f801b527b1c41ebef1d0cd0ea19c41725673f77171bc9801113f",
+      "actual": "d6fe8e1f81d7f801b527b1c41ebef1d0cd0ea19c41725673f77171bc9801113f",
+      "match": true
+    },
+    "src/proxy.ts": {
+      "expected": "24fe23c07f6f6522a8cb930706a39e98089baed6c52b0b7684e4b0a8706f024e",
+      "actual": "24fe23c07f6f6522a8cb930706a39e98089baed6c52b0b7684e4b0a8706f024e",
+      "match": true
+    },
+    "src/server/config/commerce.ts": {
+      "expected": "9f1af08e705a793e6572816f3ddef180813f58cc9f357ffc0da987604772330b",
+      "actual": "9f1af08e705a793e6572816f3ddef180813f58cc9f357ffc0da987604772330b",
+      "match": true
+    },
+    "src/server/notifications/automation-settings.ts": {
+      "expected": "851a2d2c108186a0f3f71cb6d7f1b879e84f4cd00b96d0d2761f419e74d22df6",
+      "actual": "851a2d2c108186a0f3f71cb6d7f1b879e84f4cd00b96d0d2761f419e74d22df6",
+      "match": true
+    },
+    "src/server/notifications/provider.ts": {
+      "expected": "c3124e6f224333da199f85fc2c96908e4d69e4101a589ca4a2cb60b1ef2f2c69",
+      "actual": "c3124e6f224333da199f85fc2c96908e4d69e4101a589ca4a2cb60b1ef2f2c69",
+      "match": true
+    },
+    "tests/oracle-browser/demo.spec.ts": {
+      "expected": "0c9e33949c94c895899b3b28ddff0ccd3c35a5d78521da781e792b9e728f0545",
+      "actual": "0c9e33949c94c895899b3b28ddff0ccd3c35a5d78521da781e792b9e728f0545",
+      "match": true
+    },
+    "src/app/admin/admin.css": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "74e887b61ac2f9b972288e46f3f918daeaf6bef6ad4387470344d9963d6c6a70"
+    },
+    "src/app/admin/layout.tsx": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "331ee99ad13bc7c2eb568edb491e034e6154c63dc48cbcc643ec5e5bbbe8d522"
+    },
+    "src/app/admin/page.tsx": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "852430f30065a3685b64994d4d4f4d02fe575ac5ffa3e80f13357cf50eccd288"
+    },
+    "src/app/admin/not-found.tsx": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "87562b02040242271f8c5d37f9d723fe6cd87cf2bb03fb430dc9c30fa2f28cc3"
+    },
+    "src/app/admin/verify-mfa/page.tsx": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "a7dc8fc471e5d5fbf5836d9324ad4f981596c10553a27f1e715b2f39464f4223"
+    },
+    "src/app/admin/products/page.tsx": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "f14979eb8c3665239eb7cd66beb6f8ddf8de284a9a8974a89cb1e7719f02f748"
+    },
+    "src/app/admin/enroll-mfa/page.tsx": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "97b2d1178fab7c0c0ca40451fe1f8bbefd48e1bf1cc4aa4658a9db392ce5023e"
+    },
+    "src/app/admin/promotions/page.tsx": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "162e296cbc6f9681bded0af99fdaff743c696711653e2f8dfdea06ab0804dbf0"
+    },
+    "src/app/admin/users/page.tsx": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "4437a205805cde749db0861bc1d3d00db0bdfc781397a1c2e9d16d3989af9048"
+    },
+    "src/app/admin/[...missing]/page.tsx": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "a17ac11eff4ac678976dd4448f615fce9398276602425f45f2cd56d1b7c9ee06"
+    },
+    "src/app/admin/orders/page.tsx": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "266a8f391848e8b4611880c82bdfe5f5a13dae3f740d793eb74f4d1e4c84e890"
+    },
+    "src/app/admin/categories/page.tsx": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "181f4e4d99fa9ff678f3ff99c9135573837357ce7e383d2fc39c7ff81169ecb9"
+    },
+    "src/app/admin/change-password/page.tsx": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "fabfea91ee9851643610ebf081733b3d542b81e6b7e2301a28b0a1044f2635aa"
+    },
+    "src/app/admin/login/page.tsx": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "c9396a4e32ef1205f0cec48a01c9043e1666903ce1bb7e6ad1f1545ab895c86e"
+    },
+    "src/app/admin/orders/[id]/page.tsx": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "8c7084bac8bae442674b75272eb73ba88af38d6d9ab1d76cd2a134ae010a688c"
+    },
+    "src/app/admin/products/[id]/page.tsx": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "c78662582ef7bb771802e1e74e62047bfee0323a9b12da729ae335a26a3131a2"
+    },
+    "src/app/api/admin/orders/route.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "a64ea5433a86d796178c4b6c65eb919cc2dc61ab3a26e54463f8105d2ae6b8b4"
+    },
+    "src/app/api/admin/orders/[id]/route.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "1d015e12f933aeb4e23816293528dc212e2c89556b64ea9b819af10442b67969"
+    },
+    "src/app/api/admin/orders/[id]/delivery-quote/route.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "261d99771ecc80b66bfc3ef1b2884ebabca320b26e1d8b7d3b83c994cdee8731"
+    },
+    "src/app/api/admin/orders/[id]/status/route.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "4f6a4c730eda9e5ad567308433356f60ec664889a2e96bc670ecdf56d1e62219"
+    },
+    "src/app/api/admin/orders/[id]/payment-method/route.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "8554042785d035a9f9e874edb94e8201c430126cddc8a7dd1c19acd685f0a26a"
+    },
+    "src/server/auth/admin-auth-route-policy.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "0adb3f79aec59113b4189e244278dcc4bad18fede8fc4d98628da996e327e682"
+    },
+    "src/server/auth/reauth.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "5620b8d27ba92901f4af6d088ccd65af39ea7d744a119e66fa059b6c235518af"
+    },
+    "src/server/auth/policies.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "ea31d4bf3efca627d56cf19ee7c99659ade2e0144bba92eda9bc7d689c84d4a3"
+    },
+    "src/server/auth/admin-users.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "fcd02714004d9832d65fae88bc67728d05324bc0b4b110d3136452f032114dd5"
+    },
+    "src/server/auth/login-protection.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "9db76c619ad70a2147063e222ef8d2ad7ca46fc4be652f7cac40a3a04000d40b"
+    },
+    "src/server/auth/admin-session-policy.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "a20348086247724bee1a2f5662724ce50f6856a4efe8358bcd8d19f13a7ab6c1"
+    },
+    "src/server/auth/provision-owner.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "953b517a9e7ce9c5cb69a85ff382cc112d42ffd055f18e2568ac6330c1bc6cd2"
+    },
+    "src/server/auth/session.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "ca4d0d5a006f98b62fdbedf04b7070415c74b3cb58ed14f76ab412d9b6ffdb24"
+    },
+    "src/server/auth/authorize.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "737e8e73b731bd97cfe086976c96619d3c73b482c7494195239064487157a8f4"
+    },
+    "src/server/auth/admin-page-access.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "2b2913b944d86a2189cb3be8e510955467ff3264d3b3902ee1e4f8c98cbcaa79"
+    },
+    "src/server/auth/auth.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "b511748370d9e206974055b3caf10279656cd10a07d241aed6cdb12c40f01b60"
+    },
+    "src/server/orders/request-hash.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "e023b49431840c6ffda6c7fd3a6e3aeb979ad9ba152ac56f1e761202c0761142"
+    },
+    "src/server/orders/quote-delivery.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "8cd0ee701891158a586747aab99b79eb6d96c88db3ef696c414804fd5345b8a4"
+    },
+    "src/server/orders/admin-list-orders.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "1cdb89832ee0a491985501312c13db89d1031c7a7539e3482fa6a43e9077339b"
+    },
+    "src/server/orders/update-order.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "8516ca03a8c4b825e09294fbb6b3c5d23a027e10eaa1f444257712ad458738d4"
+    },
+    "src/server/orders/repository.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "f864afe47a032de2606b94641e294fe6c1cb2177787ce73f5031994acc00e02b"
+    },
+    "src/server/orders/errors.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "dcfb6125c2a1f9c9c79701e95bc162e9166428ee840292f692ba27c2d4d05315"
+    },
+    "src/server/orders/admin-get-order.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "9c8275a85a912cd02531ed8e3e3cb9444fac4205b4ba7d1297ed002efa245439"
+    },
+    "src/server/orders/create-order.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "ae7abb414cdd9f15c89ed631250fa18951533fe8c04c9db8261b583cf6151693"
+    },
+    "src/server/orders/review-pricing.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "070fbec37ed35161ac85fa04274e5e7a387c0446cba56c1e3766c19941233324"
+    },
+    "src/server/orders/checkout-credential.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "9effc50892070cd09d968452686422c2d61149915801e45587296aebcec20b5a"
+    },
+    "src/server/orders/types.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "3e4e0623947d065effd8c7d600ef386d16990b4bcbac49a7224d55bc158ee063"
+    },
+    "src/server/orders/assign-payment-method.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "e1bb402f1505f31fba790f2bdbc67227f09b3ddbf9aa9d6d920595e97a4021bd"
+    },
+    "src/server/orders/identifiers.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "c4b31fcfa357ea4539d16b43dce09f23b0bd2e35ccc0b5328385ef5cadef207b"
+    },
+    "src/server/orders/get-receipt.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "b275f596227e9fe547033639c570afb4a28c5d371f3af0f563d29e6ebdec6f72"
+    },
+    "src/server/products/admin-media.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "31aebebc48f1fa9c72e12d7cec2cf9c10ca8ef2b4b7b53dbeef80089f0f97d66"
+    },
+    "src/server/products/admin-http.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "6848decab1564b50e18d9aef513962936c9be0b2c919c9ac745b12d13498c137"
+    },
+    "src/server/products/admin-contracts.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "d324b8855eb0c77772b361ceeb17ae956b95c785c62021342af0c6fda17e2fbe"
+    },
+    "src/server/products/repository.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "ad5f66ddc406d3cc9e1c84b751feaa7b15804e6fe8105bb67c152b7da75181b0"
+    },
+    "src/server/products/seed-data.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "6fde1b6f4af1b43c3555275581c3f73ee3fdd505d2a4a3fefb5e8cc87a873588"
+    },
+    "src/server/products/promotion-http.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "4771bb373c80d57836725610fa48d7a19dea7553621916edf41ce15c0ec7b1ce"
+    },
+    "src/server/products/catalog-mutation-lock.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "8fdd80d57a10dcf41f4b308b4e159f3876b346911bfdfd0a07f55bea0952a656"
+    },
+    "src/server/products/types.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "3081532e17453a2126017679b803a977d875f6fd1119b07a703863803bc27f95"
+    },
+    "src/server/products/promotion-contract.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "88021e72b613ab9c3d5bac6ae66bc11a6851c61bddfd6984d2f3da6403fa438e"
+    },
+    "src/server/products/add-product-image.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "276feb4ab5cf691492297e1a5e924091cc04cdaf4276983ee0ed8f255e647c22"
+    },
+    "src/server/products/list-public-products.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "250943b6319d3bd61dd9a23da0fb7ff6438be298936f7b97ed6e2f9c01cb2784"
+    },
+    "src/server/products/admin-promotions.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "a4bcce09b5be731c25705682fdb7003c8b4d57dfb999658c3ed1a0156de80bc4"
+    },
+    "src/server/products/admin-categories.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "f334f1687749b1bfc8b82a80f7c02ee87cdeeccc446d718a4b2325794c0a58e7"
+    },
+    "src/server/products/admin-products.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "46d105ff23515523d500869333f2fa7e8efe8cf2035ca44f989e94de472ef906"
+    },
+    "src/server/products/promotions.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "981c4a309b0cde1ea4edb9f3f2f5161f4f1d955281404ad4e540f90b0e73669c"
+    },
+    "src/components/admin/MfaChallenge.tsx": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "25d27b6e8dec2e371ae22ddfb8ae0196ac5577f60bfe96bec372f3579ae93cef"
+    },
+    "src/components/admin/AdminPagination.tsx": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "9e6e723046c3de0d8c618129bf8e3a918581944cc63e6e1d19fd558289393b7c"
+    },
+    "src/components/admin/LoginForm.tsx": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "d818a146d2d5b35f9dcedfb3ad0376de65cd88311940de116f31497f460bdd54"
+    },
+    "src/components/admin/AdminNav.tsx": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "dcf7a7d9f60830306ba9ed2898ccd9ccd918f751974e2a6caffe13bcbee9e69b"
+    },
+    "src/components/admin/AnalyticsPanel.tsx": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "ce5a7f3d46f84b9cd68c168ba0da0684f182d70d4f2491eadcb1db5dc67ae585"
+    },
+    "src/components/admin/PromotionForm.tsx": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "7e17e406b6109b5bee6914e07d1173e27172aa03971facde18f9f0de61ce6305"
+    },
+    "src/components/admin/AdminDrawer.tsx": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "36c79319d5a88ec6199b08568262210f1f85ad22722f053dd45d2f25a5fb7312"
+    },
+    "src/components/admin/OrderStatusForm.tsx": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "4cc2249ac2a3267c0854f823312a9a7afd04f9a424a284f5f2fca6df6d58125d"
+    },
+    "src/components/admin/SessionActions.tsx": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "a441d01c7898745b4aef70c064bf441a7948ff70b11b26934f1de5c8ad6c8cce"
+    },
+    "src/components/admin/DeliveryQuoteForm.tsx": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "8cc19a68fcd4aed42cb66e688f33e20f022df88b5bbe0e8d1f15dfeb8d06abde"
+    },
+    "src/components/admin/ProductForm.tsx": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "9756fba76bb1739cc88ff40321d9f97daf63340e47287f59c33db82d58ec0495"
+    },
+    "src/components/admin/DashboardRefresh.tsx": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "7e6e579bff707a828687d6d86461ed292fa81eb63d3be8002b3daf4f43801f9a"
+    },
+    "src/components/admin/MfaEnrollment.tsx": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "bab97d3678f20afefd350e4b71c06a289755c72d086cc66b1387ca6786081bcd"
+    },
+    "src/components/admin/CategoryForm.tsx": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "6aa0a6d3402256013f615dd10fd2fcb0e391d04b2d9bf87c5e489513197e7d69"
+    },
+    "src/components/admin/AdminUserForm.tsx": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "18c0c002942d5667b3f15ab529c77136d5f1e620580e76f4145f30c6869d4431"
+    },
+    "src/components/admin/AdminDonut.tsx": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "7428b7986e0f743f756a2d79ba3ddeaced7ea8d443415c2c8b5780a977c0aa62"
+    },
+    "src/components/admin/PaymentMethodForm.tsx": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "14a95c8e2194c8b65a72eb017d6f7992772735f5c3a19bb269d09466e592fb08"
+    },
+    "src/components/admin/PromotionsTable.tsx": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "133457f0fd538089a54ada5d7f6736c5c70dc65f3b7b518bb10b53d7c3219aaf"
+    },
+    "src/components/admin/auth-client.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "6cbbca89a0eeadd07bd603647a016f369f5696d93dc77fc784e12798191ef14c"
+    },
+    "src/components/admin/PasswordChangeForm.tsx": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "2cad3ad34e40df2fc13ccf03feeeb23812b33a4d3f6fda95f84cec7960f0cbc9"
+    },
+    "src/content/business.ts": {
+      "baseline": "082959d Git object; not a test-start hash",
+      "match": true,
+      "actual": "2ea5e90fb78ed5b7d7017d3950d13c0201bc5379d78afc7ef894854233bc2277"
+    }
+  },
+  "mismatches": [],
+  "prior_dirty_files_preserved": {
+    ".scratch/oracle-remaining/issues/03-cuota-hostname.md": true,
+    "docs/operations/oracle/arquitectura-costos.md": true,
+    "docs/operations/oracle/guia-oracle.md": true
+  },
+  "reused_visuals": {
+    "artifacts/oracle-preparation/demo-cart-390.png": {
+      "sha256": "94b35c60276c06b77a8447c2cf457b0349f5581e9f8d2dc3157091b321e8d7d7",
+      "matches_existing_manifest": true
+    },
+    "artifacts/oracle-preparation/demo-cart-1440.png": {
+      "sha256": "3bfc38bd716512150da675cbf624aec0d4c55b70169191553ec35be71e0ff9a9",
+      "matches_existing_manifest": true
+    },
+    "artifacts/admin-ux-2/integration/dashboard-1440.png": {
+      "sha256": "ba7e44df98b62726fcdbde05213f508183f88d05c2744e7789d01a26cedf9519",
+      "matches_existing_manifest": true
+    },
+    "artifacts/admin-ux-2/integration/dashboard-390.png": {
+      "sha256": "c785c45576ba52b339e6055a705ba0f02651f777a000e78b278b78dbe34279f8",
+      "matches_existing_manifest": true
+    },
+    "artifacts/admin-ux-2/after/products-1440.png": {
+      "sha256": "ea36279a0e6fdcf259524466f3c7311a7790b3217b433c7e34e9a1525bbddd9f",
+      "matches_existing_manifest": true
+    },
+    "artifacts/admin-ux-2/after/product-edit-390.png": {
+      "sha256": "fa0f1395b044bf5040500d07a94352115267f417ee592c3c5acbc71cdb5c52e2",
+      "matches_existing_manifest": true
+    },
+    "artifacts/admin-ux-2/after/promotions-edit-390.png": {
+      "sha256": "baf86fb2e699a36c7758d1b7c1c078333e254c78d6d5948422897b25eac616ea",
+      "matches_existing_manifest": true
+    },
+    "artifacts/admin-ux-2/after/users-390.png": {
+      "sha256": "177ed50f6840c7578d6ac4cd96c6a1ed2ca96539a3992e025a7941b9e116fe05",
+      "matches_existing_manifest": true
+    }
+  },
+  "practice": {
+    "manifest_path": "/private/tmp/guteli-oracle-validation.WyjKLo/practice-manifest.json",
+    "sha256": "3f25588faf75f805477ad33179c97b3a21c033047c9a0a759db4b7e2686b959e",
+    "createdAt": "2026-10-18T15:28:58.262Z",
+    "records": [
+      {
+        "reference": "PRUEBA-1-e1f48d6a",
+        "state_at_creation": "RECEIVED",
+        "quantity": 1
+      },
+      {
+        "reference": "PRUEBA-2-5ff3deb1",
+        "state_at_creation": "CONFIRMED",
+        "quantity": 2
+      },
+      {
+        "reference": "PRUEBA-3-4b07c7bd",
+        "state_at_creation": "PREPARING",
+        "quantity": 3
+      },
+      {
+        "reference": "PRUEBA-4-e84991ce",
+        "state_at_creation": "READY",
+        "quantity": 4
+      },
+      {
+        "reference": "PRUEBA-5-1d178766",
+        "state_at_creation": "COMPLETED",
+        "quantity": 5
+      }
+    ],
+    "live_db_verified": false,
+    "pg_version_exists": false
+  },
+  "catalog": {
+    "source": "src/server/products/seed-data.ts",
+    "sha256": "6fde1b6f4af1b43c3555275581c3f73ee3fdd505d2a4a3fefb5e8cc87a873588",
+    "image_files": {
+      "pretzel-original.webp": "88daa79f2a034e39028c2e11ca351d59021d8194bd4034a2243813177c56c7c8",
+      "pretzel-jalapeno.webp": "c88a5abdfbaf85def4aa0cceb5b0eb7d3520521aa33326d6a7bec880075bbf59",
+      "pretzel-pepperoni.webp": "a4377322db80614fe86cb2d5426998d857adc9b2ac846f626ca79940264580d7",
+      "pretzel-tomate-albahaca.webp": "d978b6c95b4097985d1b7d829924913063cd212afb729336f230b4f2c3f7c1fe",
+      "bagel-original.webp": "05cafee2b15e8e24d86f522f4054e1fa40fb0c47d6e01eea205f9c34a6758bd9",
+      "bagel-jalapeno.webp": "29e0afec199c2b59846602e28dc368b7c4423ef9580352d4487c88f95683ad32",
+      "bagel-pepperoni.webp": "230b250a5cd06dea1f56ae66bbff1cccd67f83ebeac45489965d7808cc7abad0",
+      "bagel-tomate-albahaca.webp": "e2789d968035913620abaafb605e68515f312089c56ba4cc16e28c15776d36f5",
+      "pan-hamburguesa.webp": "a3163b7635012c7fff394034d74371fd9ab3a756f818c3dd56e66facdff7c357"
+    },
+    "missing_sale_units": 4,
+    "missing_image": "Nuditos",
+    "commercial_approval": false
+  },
+  "changed_code_hashes": {
+    "src/app/api/admin/orders/[id]/delivery-quote/route.ts": "940378ddc69ffeaafad143d75925525a527b86348abbaa93b119693297289d59",
+    "src/app/api/admin/orders/[id]/payment-method/route.ts": "12938c9d1a94db06436f019c71f9bad57c55fad663330f25784e38065b61b3e3",
+    "src/app/api/admin/orders/[id]/route.ts": "ce47914c72868082d6df35f948ca65c17281f843abbf0a103fe417c3d444c01b",
+    "src/app/api/admin/orders/[id]/status/route.ts": "a8b2a3f190c60840c1a32d58e239cdb479cf2f00342c210babc9ba41c65d1106",
+    "src/server/orders/admin-list-orders.ts": "356dbdfeba2405f2978dbee5fc7fe232f46b6e1ba02c5a9a83c07c71ef289028",
+    "src/server/orders/admin-order-reference.ts": "cedd6546e4458b7448222534aee7c8df18e9d0ca52a8ad8ec7ff95cf17369a46",
+    "tests/unit/admin-practice-orders.test.ts": "a1506ecb7bd2ec94f748ba524eac59b6e56f5719f83e93f5de8f4f661dd1bde3"
+  },
+  "checks": {
+    "new_unit_tests": "RED 6 failed / 4 passed; final GREEN 10 passed",
+    "eslint_targeted": "exit 0",
+    "tsc_noEmit_incremental_false": "initial fixture type error fixed; final exit 0",
+    "full_suites": "not run",
+    "docker_build_audit": "not run"
+  }
+}
