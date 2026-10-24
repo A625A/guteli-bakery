@@ -1,0 +1,264 @@
+{
+  "date": "2026-10-24",
+  "timezone": "America/Guatemala",
+  "base_commit": "d374b111610ff2a2643d76d2b3a370ecc6b69fe6",
+  "branch": "infra/oracle-always-free-preparation",
+  "first_push_verified_sha": "d374b111610ff2a2643d76d2b3a370ecc6b69fe6",
+  "historical_2026_10_22": {
+    "full": {
+      "moderate": 6,
+      "high": 14,
+      "critical": 3,
+      "total": 23
+    },
+    "omit_dev": {
+      "moderate": 6,
+      "high": 3,
+      "critical": 3,
+      "total": 12
+    },
+    "excluded_by_filter": 11
+  },
+  "final_audit": {
+    "full": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0
+    },
+    "production": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0
+    }
+  },
+  "advisory_changes": {
+    "withdrawn": "GHSA-vfj7-8cjw-p6xm on 2026-10-23",
+    "new_fixed": "GHSA-mrhx-c7xc-m3w5; zod 4.6.6"
+  },
+  "versions": {
+    "next": "16.4.2",
+    "sharp": "0.35.5",
+    "zod": "4.6.6",
+    "vitest": "4.1.12",
+    "vite": "6.4.5",
+    "eslint-config-next": "16.4.2",
+    "typescript-eslint": "8.56.0",
+    "baseline-browser-mapping": "2.11.32",
+    "source-map-js": "1.2.2",
+    "brace-expansion": "1.1.21",
+    "browserslist": "4.29.4",
+    "fast-uri": "3.1.9",
+    "js-yaml": "4.3.2",
+    "compression": "1.8.2",
+    "esbuild": "0.25.12",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "better-auth": "1.7.2",
+    "pg": "8.23.0",
+    "drizzle-orm": "0.45.2",
+    "drizzle-kit": "0.31.10"
+  },
+  "local_checks": {
+    "typecheck": {
+      "exit": 0,
+      "seconds": 42.3,
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ]
+    },
+    "lint": {
+      "exit": 0,
+      "seconds": 37.8,
+      "command": [
+        "npm",
+        "run",
+        "lint"
+      ]
+    },
+    "unit": {
+      "exit": 0,
+      "seconds": 11.2,
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/unit/image-validation.test.ts",
+        "tests/unit/image-assets.test.ts",
+        "tests/unit/commercial-demo.test.ts",
+        "tests/unit/oracle-readiness.test.ts",
+        "tests/unit/admin-security.test.ts",
+        "tests/unit/admin-authorization-policy.test.ts",
+        "tests/unit/admin-auth-route-policy.test.ts",
+        "tests/unit/admin-page-access.test.ts",
+        "tests/unit/admin-practice-orders.test.ts",
+        "tests/unit/promotion-pricing.test.ts",
+        "tests/unit/checkout-summary.test.ts",
+        "tests/unit/whatsapp-consent.test.ts"
+      ]
+    },
+    "migrations": {
+      "exit": 0,
+      "seconds": 2.7,
+      "command": [
+        "npm",
+        "run",
+        "db:migrate"
+      ]
+    },
+    "integration": {
+      "exit": 0,
+      "seconds": 41.0,
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.integration.config.ts",
+        "tests/integration/admin-images.test.ts",
+        "tests/integration/admin-auth-lifecycle.test.ts",
+        "tests/integration/admin-authorization.test.ts",
+        "tests/integration/admin-catalog.test.ts"
+      ]
+    }
+  },
+  "unit_passed": 100,
+  "integration_passed": 40,
+  "browser": {
+    "expected": 5,
+    "unexpected": 0,
+    "skipped": 0,
+    "flaky": 0,
+    "widths": [
+      390,
+      1440
+    ],
+    "target": "production ARM64 via local Caddy internal TLS",
+    "test_files": [
+      "tests/oracle-browser/demo.spec.ts",
+      "tests/oracle-browser/photos.spec.ts"
+    ],
+    "assertions_unchanged": true
+  },
+  "overrides_verified": [
+    "@esbuild-kit/core-utils@3.3.2 -> esbuild 0.25.12: CLI config, 16 migrations, native and ARM64 PostgreSQL",
+    "serve@14.2.6 -> compression 1.8.2: loopback HTTP gzip body roundtrip"
+  ],
+  "npm_resolution": "npm 10.9.9 peer resolver crashed; npm 11.21.1 isolated resolver; stale nested entries regenerated; npm ci 10.9.9 succeeds on macOS and Linux ARM64",
+  "docker": {
+    "image": {
+      "Id": "sha256:4134b890dc4964f3f3834961fba37a721a2d91e28ffabdaa61990fc1d39df1b7",
+      "Architecture": "arm64",
+      "Os": "linux",
+      "RepoDigests": [
+        "guteli-security-runner@sha256:4134b890dc4964f3f3834961fba37a721a2d91e28ffabdaa61990fc1d39df1b7"
+      ]
+    },
+    "production_builds": 1,
+    "targets": [
+      "builder",
+      "runner (cached builder)"
+    ],
+    "runtime": [
+      {
+        "check": "fresh-PG17-migrations-seed-fixture-users",
+        "result": "PASS"
+      },
+      {
+        "check": "production-compose-local-only-demo-healthy",
+        "result": "PASS"
+      },
+      {
+        "check": "runner-inventory-and-sharp",
+        "result": {
+          "platform": "linux",
+          "arch": "arm64",
+          "node": "v22.23.4",
+          "next": "16.4.2",
+          "sharp": "0.35.5",
+          "rsvg": "2.63.2",
+          "webpBytes": 86,
+          "toolsAbsent": true
+        }
+      },
+      {
+        "check": "schema-migrations",
+        "result": "16"
+      },
+      {
+        "check": "no-orders-or-outbox",
+        "result": "0|0"
+      },
+      {
+        "check": "seed-images-persisted-in-new-volume",
+        "result": "PASS"
+      },
+      {
+        "check": "postgres-catalog-upload-persistence-after-restart",
+        "result": "PASS"
+      },
+      {
+        "check": "no-commercial-orders-or-outbox",
+        "result": "PASS"
+      },
+      {
+        "check": "stopped-containers-data-preserved",
+        "result": "PASS"
+      }
+    ],
+    "additional_absent_tools": [
+      "esbuild",
+      "compression",
+      "braces"
+    ],
+    "tls_and_privacy": {
+      "/readyz": 200,
+      "/.env": 404,
+      "/.git/config": 404,
+      "/backups/example": 404,
+      "/logs/example": 404
+    },
+    "local_vm": "Colima VZ; Linux/aarch64; Docker29.5.2",
+    "not_oracle": true
+  },
+  "package_hashes": {
+    "package.json": "66cb7d7067426d04b815928fcb424e002e8e04573c24e90e68e9c770fef3a548",
+    "package-lock.json": "acba6cb52eb8ac9d76a0297a972bbb5d51b85224f1367454178237f5b426f4f8"
+  },
+  "evidence_log_hashes": {
+    "audit-final-full.json": "998a447cbe4782906ce766ae4c3f98e02e40c43024c1384d8bbb72b32f6a6656",
+    "audit-final-production.json": "998a447cbe4782906ce766ae4c3f98e02e40c43024c1384d8bbb72b32f6a6656",
+    "unit.log": "36300f223fa852d9bf4725469b4ac7048ae6fe8c39ff879c6200cf0f6fe99876",
+    "integration.log": "81839d233b65ef83665e89f8ff0c0c4012e7b42a82214a945f50c6febe025456",
+    "lint.log": "4718a43b1fac0f443deb6e6349f1d75d789bc3cc7040f0a5220d773a31b7081f",
+    "typecheck.log": "cbd6f59f41431e9049dc733a71a0ba59fe0d92cc423d1127e64101d7056825d7",
+    "migrations.log": "f6857fceb0e139d49e94a89732506f85a404537855a576ea76773966fdb28736",
+    "browser-results.json": "dc2cef67a89569174b2f5fe79b72e79bb5fdccf08f7bffcd7fe5d9c881633db1",
+    "docker-build-builder.log": "3c114bc4cf1237098a32fb3447a980b7ec8492d26617c1b66138d7fb74aeb5d0",
+    "docker-build-runner.log": "9d8253ac1ac62979b1926871df2e55b356743444155b6f199ad0c4f72e0bd46f",
+    "arm64-results.jsonl": "eacd0913d0782850fad229fda3513866feae4ac316d709b95be748f152e1ce40",
+    "npm-ls.json": "5c4a3a2fff3f212ef982b06a21e174b9f2ec22d22bdd891d423e61d2b6ef57b5",
+    "arm64-smoke.py": "2ddea9f20d7f787b0cacbefe6ea32ef51a28eefa71b7520d0883064b798b381e",
+    "playwright.arm64.config.mjs": "1b9b02802e8108254c34bd20ccb4e4cad9dd79913a0cf541689d6c162954475d"
+  },
+  "preservation": {
+    "prior_dirty_or_untracked_files_verified_before_documentation": 109,
+    "changed_before_documentation": 0,
+    "main_untouched": true,
+    "fixtures_stopped_data_retained": true
+  },
+  "limitations": [
+    "npm snapshot only; not an OS/image-wide security audit",
+    "No Oracle, public DNS/ACME, quota/capacity validation or deployment",
+    "Owner commercial acceptance still pending",
+    "No backup/restore repetition; unchanged Ticket02 evidence retained",
+    "Raw logs, generated secrets, screenshots, databases and volumes remain local"
+  ]
+}

@@ -1,3 +1,4 @@
+import { isAdminOrderReference } from '@/server/orders/admin-order-reference';
 import { adminGetOrder } from '@/server/orders/admin-get-order';
 import { getRequestId } from '@/server/observability/request-id';
 
@@ -10,8 +11,6 @@ import {
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-const publicIdPattern = /^GUT-\d{2}-[A-Z0-9]{8}$/;
-
 export async function GET(
   request: Request,
   context: { params: Promise<{ id: string }> },
@@ -21,7 +20,7 @@ export async function GET(
     if (new URL(request.url).search)
       return adminOrderValidationError(requestId);
     const { id } = await context.params;
-    if (!publicIdPattern.test(id)) return adminOrderValidationError(requestId);
+    if (!isAdminOrderReference(id)) return adminOrderValidationError(requestId);
     const order = await adminGetOrder(id, request.headers);
     if (!order) {
       return Response.json(

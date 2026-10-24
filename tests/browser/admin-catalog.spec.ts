@@ -264,14 +264,14 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
     const url = new URL(response.url());
     return url.pathname === '/admin/products' && url.searchParams.has('_rsc');
   });
-  await page.getByRole('button', { name: 'Cargar imagen' }).click();
+  await page.getByRole('button', { name: 'Guardar producto' }).click();
   expect((await uploadResponse).status()).toBe(201);
-  await expect(page.getByRole('status')).toHaveText('Imagen actualizada.');
+  await expect(page.getByRole('status')).toHaveText('Producto actualizado.');
   const refreshedUploadedProduct = await uploadRefreshResponse;
   expect(refreshedUploadedProduct.status()).toBe(200);
   expect(await refreshedUploadedProduct.finished()).toBeNull();
   const activePreview = page.getByAltText(
-    'Vista previa de Primero navegador editado',
+    'Fotografía actual de Primero navegador editado',
   );
   await expect(activePreview).toBeVisible();
   await expect
@@ -362,7 +362,7 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
   expect(refreshedInactiveProduct.status()).toBe(200);
   expect(await refreshedInactiveProduct.finished()).toBeNull();
   const inactivePreview = page.getByAltText(
-    /Vista previa de Primero navegador editado/,
+    /Fotografía actual de Primero navegador editado/,
   );
   await expect(inactivePreview).toBeVisible();
   await expect
@@ -389,9 +389,10 @@ test('an owner creates, edits, reorders, and deactivates a product with immediat
       url.searchParams.has('_rsc')
     );
   });
-  await page.getByRole('button', { name: 'Eliminar imagen' }).click();
+  await page.getByRole('button', { name: 'Quitar fotografía actual' }).click();
+  await page.getByRole('button', { name: 'Guardar producto' }).click();
   expect((await removeImageResponse).status()).toBe(200);
-  await expect(page.getByRole('status')).toHaveText('Imagen eliminada.');
+  await expect(page.getByRole('status')).toHaveText('Producto actualizado.');
   await expect(inactivePreview).toHaveCount(0);
   const refreshedProduct = await removeRefreshResponse;
   expect(refreshedProduct.status()).toBe(200);
