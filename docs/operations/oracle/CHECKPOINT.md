@@ -1,8 +1,18 @@
 # Checkpoint — Oracle Güteli
 
-23/10/2026, America/Guatemala. **TICKET 04: PAQUETE DE ACEPTACIÓN PREPARADO SOBRE EVIDENCIA; REVISIÓN DE DUEÑOS PENDIENTE Y SESIÓN INTERACTIVA BLOQUEADA POR ENTORNO LOCAL INCOMPLETO.** Ticket 03 conserva pendientes y bloqueo npm; Ticket 02 cerrado localmente en Docker/Linux ARM64. No instalado en Oracle. Este archivo es el ledger de continuidad; leerlo antes de investigar o ejecutar pruebas.
+23/10/2026, America/Guatemala. **TICKET 05: FOTOGRAFÍAS Y PREPARACIÓN LOCAL COMPLETADAS; INSTALACIÓN ORACLE BLOQUEADA Y NO AUTORIZADA.** Pendientes 03/04 y vulnerabilidades sin remediar. Ticket 06 no iniciado. Leer la continuación vigente siguiente antes del historial.
 
-## Continuación vigente — integración del 22/10/2026
+## Continuación vigente — Ticket 05 (23/10/2026)
+
+- Exclusivamente `infra/oracle-always-free-preparation` en `guteli-oracle-always-free/Guteli Bakery`, un solo agente. **Commits locales de Ticket 05 autorizados; push/merge, Oracle/SSH/OCI, despliegue y comercio/pagos/WhatsApp no autorizados.** Esta continuación prevalece sobre permisos históricos de otras sesiones.
+- [Informe](../../../artifacts/oracle-preparation/ticket-05/RESULTADO.md) y [secuencia de instalación futura](instalacion-ticket-05.md). Botón Agregar fotografía al crear/editar, preview/descarte, reemplazo/eliminación al guardar. Reutiliza APIs y almacenamiento, una fotografía activa. Error de imagen conserva anterior y selección; datos/foto son dos operaciones y se informa resultado parcial.
+- Verificación nueva: imágenes14 + bloqueo comercial13, integración imágenes12, navegador2 (1440/390 px, OWNER/ADMIN/MFA, creación, errores, reintento, recarga y catálogo renderizado); ESLint/TypeScript/diff aprobados. No build ARM64, Docker, audit npm ni suites generales. [Evidencia y límites](../../../artifacts/oracle-preparation/ticket-05/evidence.json).
+- Base inicial `6eb72da`; otra operación avanzó la rama a `2b9db89` (Ticket 04) durante esta sesión. Se preservó. Ancestros Admin UX/Ticket12/01/02 confirmados; infra/scripts/lockfile intactos. Fotos05 versionadas localmente en `c4ef53274820e6f3205f092a651123c0493e0bd9`; documentación03 y remediación siguen pendientes. No hay release autorizado para instalación.
+- 01/02 satisfechos solo localmente. 03: cuota/uso/costo/capacidad/hostname pendientes y **23 vulnerabilidades bloquean publicación** (12 filtro producción; reporte conservado sin remediación). 04: aceptación real pendiente. Pruebas nuevas de fotos no cierran el ensayo general de dueños ni recuperan sus cinco PRUEBA.
+- Nuevo PostgreSQL ficticio loopback55445 en `/private/tmp/guteli-ticket05.PwxL7n/pgdata`: detenido, archivos conservados; Playwright terminó servidor/navegador. Cluster histórico incompleto preservado. Sin datos reales, main/otros worktrees/hackathon ni Ticket06.
+- Próximo paso requiere cerrar remediación/03/04 y autorización específica de Git/SHA, recursos gratuitos independientes, SSH/software/firewall/reboot, DB/migraciones/cuentas y hostname/DNS/HTTPS/publicación de demo. El checklist externo de05 permanece sin marcar.
+
+## Historial — integración del 22/10/2026
 
 - Rama nueva `main-integracion-oracle-admin-ux-20261022`, desde `origin/main` en `082959d`; `main` local permanece en `4845ecf` y no se modifica ni publica.
 - Admin UX `18703b1` y Ticket 12 ya eran ancestros de main remoto y Oracle. Se incorporaron sólo los tres commits Oracle hasta `6eb72da`, mediante merge `db6c7e38d760b694e36f2b97482cacb36bc875c6`, sin conflictos ni duplicación. Árbol funcional idéntico a Oracle.
@@ -11,7 +21,7 @@
 - Autorización vigente: commits y push exclusivamente a la rama nueva. Sin merge/push a main, despliegue Oracle, activación comercial/pagos/WhatsApp ni modificación del hackathon. Worktrees, products/ y evidencias previas preservados.
 - Pendiente antes de main: revisión y autorización del merge, confirmar base remota vigente. El reporte histórico de vulnerabilidades y los tickets Oracle 03–06 siguen abiertos para la aprobación de producción/despliegue.
 
-Las secciones siguientes conservan el historial y las autorizaciones de sesiones anteriores; para esta integración prevalece la continuación vigente.
+Las secciones siguientes conservan el historial; prevalece la autorización de consolidación del Ticket 05.
 
 ## Identidad y límites
 
@@ -39,7 +49,8 @@ Las secciones siguientes conservan el historial y las autorizaciones de sesiones
 - 02: **CERRADO LOCALMENTE el 21/10/2026.** Docker Linux/aarch64 virtualizado, Node22, Caddy, mounts/UUID/permisos, reinicio, respaldo y recuperación verificados. [Resultado](../../../artifacts/oracle-preparation/ticket-02/RESULTADO.md). No sustituye Oracle.
 - 03: decisiones de cuota/hostname pendientes; documentación posterior conservada localmente fuera de este commit.
 - 04: preparado sobre evidencia; ensayo interactivo bloqueado y aceptación de dueños pendiente. Ver [reporte](../../../artifacts/oracle-preparation/ticket-04/RESULTADO.md).
-- 05–06: no iniciados; requieren autorización futura.
+- 05: fotografías/preparación local versionadas; instalación bloqueada. Ver [reporte](../../../artifacts/oracle-preparation/ticket-05/RESULTADO.md).
+- 06: no iniciado.
 - No se cierra producción comercial ni Tickets 10/11/14 por haber preparado archivos.
 
 ## Entorno sintético conservado
@@ -118,3 +129,14 @@ Reproducciones específicas están en `tests/oracle/test_ops.py`, `tests/oracle/
 La instrucción posterior «mergea al main» autoriza el commit del Ticket 04 y su merge local a `main`. Se conserva el bloqueo de publicación por dependencias y la aceptación comercial pendiente. No autoriza push, deploy, comercio ni acceso Oracle. Los cambios no publicados del Ticket 03 permanecen en el worktree de preparación y no se incluyen en este commit.
 
 Se integran corrección, prueba dirigida, ficha y evidencia agregada. Logs crudos y capturas previas permanecen locales en el worktree de preparación; sus enlaces pueden no resolver en otros checkouts. Las pruebas 10/10, ESLint y TypeScript se reutilizan: los siete archivos coinciden con los hashes de la ejecución final y main no aporta diferencias funcionales ni de dependencias.
+
+## Consolidación local — 23/10/2026
+
+- Autorización actual: commits locales exclusivamente en `infra/oracle-always-free-preparation`; **push y merge pendientes de aprobación posterior**. Sin Oracle, hackathon, deploy ni activaciones. Sustituye únicamente el límite previo de commit del Ticket 05.
+- Fotografías y pruebas versionadas en `c4ef53274820e6f3205f092a651123c0493e0bd9`; documentación/evidencia en el commit que contiene esta sección. No es un release autorizado ni remedia dependencias.
+- Revisados los cinco archivos TS/TSX del ticket: hashes idénticos a la evidencia final, corroborada con logs originales de 27 unitarias, 12 integración y 2 navegador (1440/390 px). ESLint/TypeScript previos reutilizados. Sin nuevas pruebas de comportamiento ni suites completas: no cambió código después de esa validación.
+- Ajustes documentales: Guía del dueño actualizada a Agregar/Quitar/Conservar fotografía y guardado explícito; corregida afirmación sobre rutas de uploads (el listado no quedó capturado). El manifiesto original se conserva como snapshot histórico, no como hashes de los documentos editados después.
+- Fuera de commits: documentos/evidencia pendientes de Ticket 03, logs crudos, capturas PNG, resultados temporales de Playwright, bases/uploads y `products/` de main. Se preservan, no se borran. Los secretos de la configuración de prueba son constantes ficticias; no se incluyen credenciales reales.
+- Lectura remota previa mediante `git ls-remote`: preparación `6eb72daed77589049828aa3338469ebcbbcea3f6`, main `2c8fe905d1cbb5aaa71bf11ab8cd1e7cf13d1c85`; coincide con las referencias conocidas. Revalidar justo antes de cualquier push futuro.
+- Main local permanece en `061f036e9cdd0ba44bf7b90217f10746ea258363`; ya contiene Ticket 04. Esta rama parte de `2b9db89`, sin los tres commits exclusivos de main (dos merges y un informe de integración). No se incorpora ni borra ese informe: la diferencia de árboles que lo muestra ausente no es una eliminación introducida por Ticket 05.
+- Preparación local versionada; instalación/publicación y aceptación de dueños siguen bloqueadas o pendientes. 23 vulnerabilidades npm conservadas sin remediar. Ticket 06 no iniciado.

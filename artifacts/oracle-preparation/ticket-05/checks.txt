@@ -1,0 +1,42 @@
+unit
+ ✓ tests/unit/commercial-demo.test.ts (13 tests) 13ms
+ ✓ tests/unit/image-validation.test.ts (14 tests) 430ms
+ Test Files  2 passed (2)
+      Tests  27 passed (27)
+   Duration  1.45s (transform 321ms, setup 38ms, collect 1.68s, tests 443ms, environment 0ms, prepare 169ms)
+
+integration
+ ✓ tests/integration/admin-images.test.ts (12 tests) 8718ms
+   ✓ secure admin product images > stores a randomized metadata-free WebP and transactionally replaces the active image  837ms
+   ✓ secure admin product images > rejects unauthenticated, cross-origin, spoofed, and rate-limited upload attempts safely  698ms
+   ✓ secure admin product images > deletes only a newly-created object when metadata insertion or version validation fails  730ms
+   ✓ secure admin product images > preserves the existing photograph on failed replacement and removal, and permits ADMIN uploads  779ms
+   ✓ secure admin product images > durably records and retries compensation when metadata and object deletion both fail  906ms
+   ✓ secure admin product images > soft-removes metadata before cleanup and retains durable pending state when deletion fails  816ms
+   ✓ secure admin product images > serves unremoved images through the protected preview regardless of catalog activity  826ms
+   ✓ secure admin product images > never deletes an object that still has another active image reference  890ms
+   ✓ secure admin product images > never compensates an existing object when every randomized key collides  953ms
+   ✓ secure admin product images > rechecks live admin authorization after waiting for the catalog lock  854ms
+ Test Files  1 passed (1)
+      Tests  12 passed (12)
+   Duration  10.63s (transform 330ms, setup 22ms, collect 1.58s, tests 8.72s, environment 0ms, prepare 97ms)
+
+browser-final-expanded
+  ✓  1 tests/oracle-browser/photos.spec.ts:11:7 › photograph lifecycle at 1440px (14.3s)
+  ✓  2 tests/oracle-browser/photos.spec.ts:11:7 › photograph lifecycle at 390px (8.2s)
+  2 passed (30.4s)
+
+ESLint directed: exit 0
+TypeScript --noEmit --incremental false: exit 0
+git diff --check: exit 0
+PostgreSQL Ticket05: server stopped
+No ARM64 build, Oracle, Git writes or dependency updates by this agent.
+
+Consolidación 23/10/2026 (sin reejecución de suites):
+PASS: diez hashes de la evidencia original coincidían antes de editar documentación.
+PASS: los cinco archivos funcionales/pruebas siguen idénticos a la evidencia validada.
+PASS: logs originales confirman unit27 / integration12 / browser2.
+PASS: infra/oracle, scripts/oracle, package.json y lockfile sin delta desde 6eb72da.
+PASS: revisión del diff y patrones sensibles limitada a archivos propuestos; sin secretos reales encontrados.
+PASS: referencias remotas comprobadas por ls-remote; sin push/merge.
+Limitación: admin-catalog largo adaptado, no reejecutado; cobertura funcional en photos.spec.ts.
