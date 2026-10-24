@@ -1,5 +1,20 @@
 # Checkpoint — Oracle Güteli
 
+## Continuación vigente — GitHub y seguridad (24/10/2026)
+
+**DEPENDENCIAS PREPARADAS TÉCNICAMENTE: audit completo0 / producción0; validación local y ARM64 aprobada. PUBLICACIÓN/DESPLIEGUE NO AUTORIZADOS.** Este estado y la autorización siguiente sustituyen los límites de las sesiones históricas.
+
+- Única rama/worktree: `infra/oracle-always-free-preparation`, `guteli-oracle-always-free/Guteli Bakery`. Autorizados commits y push solo a su rama origin; sin merge/push main, Oracle/hackathon ni activaciones. Un agente, ningún ticket nuevo.
+- Primer push realizado y verificado por SHA: `2b9db89` + `c4ef532` + `d374b111610ff2a2643d76d2b3a370ecc6b69fe6`. Fast-forward desde `6eb72da`. Tickets04/05 y fotografías preservados; aceptación comercial04 todavía pendiente.
+- Segundo grupo de trabajo: package/lock y cierre de remediación, en el commit que contiene esta sección. [Informe vigente](plan-remediacion-ticket-03.md), [reporte histórico actualizado](dependencias-ticket-03.md) y [evidencia](../../../artifacts/oracle-preparation/ticket-03/remediation-evidence.json). Next16.4.2, sharp0.35.5, Zod4.6.6, Vitest4.1.12, Vite6.4.5; overrides puntuales comprobados. React/Auth/PG/Drizzle conservados.
+- Resultado: npm ci/grafo, TypeScript, ESLint,100 unitarias,40 integración y5 navegador aprobados;16 migraciones y un nuevo build de producción ARM64. Runner verificado con librsvg2.63.2; PG/Caddy/HTTPS interno, privacidad, rechazo403, carrito/fotos/MFA/roles y persistencia tras reinicio. Sin órdenes ni outbox. No repetir estas pruebas si hashes/dependencias pertinentes no cambian.
+- Histórico23 entradas totales/12 filtro producción → candidato0/0. Incluye cambio de metadatos: braces retirado upstream y parche nuevo de Zod. **Se levanta solo el bloqueo npm del candidato**; no certifica OS/Oracle ni disponibilidad futura de advisories.
+- Persisten cuota/uso/costo/capacidad y hostname/DNS/HTTPS público03, revisión/aprobación real de dueños04 e instalación/operación Oracle no autorizadas. Tickets05 externo y06 no ejecutados. Comercio, cobros y WhatsApp siguen apagados.
+- Entornos nuevos detenidos y conservados: nativo `/private/tmp/guteli-security-vwdel3i6/pgdata` (loopback55447), VM `/tmp/guteli-security-vwdel3i6`, imagen local y evidencia privada. Colima detenido como al inicio. No se modificaron bases/respaldos/volúmenes anteriores; logs/capturas/secretos no se versionan.
+- Cambios locales de cuota/hostname03 y evidencias anteriores permanecen separados. Main local conserva `061f036`; no se importó ni eliminó su informe exclusivo de integración. El árbol de esta rama sigue sin incluir ese archivo histórico de main.
+
+## Historial de sesiones anteriores
+
 23/10/2026, America/Guatemala. **TICKET 05: FOTOGRAFÍAS Y PREPARACIÓN LOCAL COMPLETADAS; INSTALACIÓN ORACLE BLOQUEADA Y NO AUTORIZADA.** Pendientes 03/04 y vulnerabilidades sin remediar. Ticket 06 no iniciado. Leer la continuación vigente siguiente antes del historial.
 
 ## Continuación vigente — Ticket 05 (23/10/2026)
