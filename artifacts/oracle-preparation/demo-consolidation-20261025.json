@@ -1,0 +1,71 @@
+{
+  "date": "2026-10-25",
+  "timezone": "America/Guatemala",
+  "base_main": "81f920185a2642b3c242354092f169f59e7fb585",
+  "demo_commit": "5dbcdb2fb187c58f51bdca2460c164cdcbfa552a",
+  "scope": "technical consolidation only; no Oracle or public deployment",
+  "checks": {
+    "unit": {
+      "command": "/usr/local/bin/node node_modules/vitest/vitest.mjs run tests/unit/commercial-demo.test.ts tests/unit/oracle-infrastructure.test.ts tests/unit/oracle-readiness.test.ts tests/unit/admin-security.test.ts",
+      "passed": 27,
+      "files": 4,
+      "exit": 0
+    },
+    "eslint_demo": {
+      "files": [
+        "scripts/local-demo/seed-accounts.ts",
+        "playwright.local-demo.config.ts",
+        "tests/local-demo/smoke.spec.ts"
+      ],
+      "max_warnings": 0,
+      "exit": 0
+    },
+    "typescript": {
+      "command": "/usr/local/bin/node node_modules/typescript/bin/tsc --noEmit",
+      "exit": 0
+    },
+    "python": "ast.parse on scripts/local-demo/demo.py; passed",
+    "privacy": "19 candidate files checked against 6 generated runtime secrets without displaying them; no match; no private key headers",
+    "docker_context": "Missing .local-demo/ exclusion reproduced before edit; explicit exclusion and Git ignore verified after edit",
+    "diff_check": "git diff --check; exit 0",
+    "npm_audit": {
+      "command": "npm audit --json",
+      "exit": 0,
+      "vulnerabilities": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 0,
+        "critical": 0,
+        "total": 0
+      }
+    }
+  },
+  "reuse": {
+    "arm64": "ticket-03/remediation-evidence.json, 2026-10-24; production src/infra/drizzle/package/lock/next config unchanged from 986850c",
+    "local_demo": "docs/operations/demo-local-resultado.md; previous 4/4 Playwright retained, not rerun",
+    "backup_restore": "Ticket 02 local evidence retained; not rerun; not Oracle"
+  },
+  "file_sha256": {
+    ".dockerignore": "9425e02b4861f82fe3d79a0cc3aff60ad9c32cd94945d515ad4a2ca88012cc7b",
+    "scripts/local-demo/demo.py": "b7a3ddc48a03d18268d50d299f76fd91dcbd27cff43dc4f689091750e5e1e91b",
+    "scripts/local-demo/seed-accounts.ts": "f3dd4d4529d9b1f279c2fd9600b4562c01fdd8a49626374875595a716911d4b3",
+    "playwright.local-demo.config.ts": "7545953d3830f004ae53c75c3381fcf1dc7f787590d88bc9cea6282cb56f1598",
+    "tests/local-demo/smoke.spec.ts": "f2fc5304bf2b3022637b94fd8631cdf71ef80dff5e000f86e90d0f4bdac3ffc0",
+    "package.json": "66cb7d7067426d04b815928fcb424e002e8e04573c24e90e68e9c770fef3a548",
+    "package-lock.json": "acba6cb52eb8ac9d76a0297a972bbb5d51b85224f1367454178237f5b426f4f8"
+  },
+  "human_confirmation": {
+    "friend_account": "not confirmed",
+    "owner_content_approval": "pending"
+  },
+  "external": {
+    "oracle_access": false,
+    "resources_created": false,
+    "q0_confirmed": false,
+    "public_url": null,
+    "server_tests": "not executed",
+    "backups_restore_alerts_on_oracle": "pending"
+  },
+  "review": "single-agent diff review per requested cost constraint; no production source/dependency change; other worktrees and untracked owner-review/products retained"
+}

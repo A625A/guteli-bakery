@@ -1,5 +1,7 @@
 # 03: Confirmar recursos gratuitos y hostname
 
+**Estado vigente 25/10/2026:** Cuenta independiente del amigo sin confirmar; usuario autorizado, región, cuota, costos, capacidad y hostname pendientes. Ver [checkpoint](../../../docs/operations/oracle/CHECKPOINT.md). Las restricciones Git y bloqueos npm de los apartados inferiores son históricos; prevalece la autorización de consolidación actual. Ningún criterio externo se marca completado.
+
 **What to build / Qué entrega:** El propietario puede decidir si cabe una VM independiente gratuita y cuál hostname usar, con evidencia no sensible.
 
 **Blocked by / Bloqueado por:** Autorización para inspección manual de cuenta por el propietario; ninguna dependencia técnica local.

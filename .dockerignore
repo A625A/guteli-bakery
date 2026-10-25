@@ -2,6 +2,7 @@
 .github
 .next
 .superpowers
+.local-demo/
 .env
 .env.*
 !.env.example
