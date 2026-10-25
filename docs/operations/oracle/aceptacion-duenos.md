@@ -6,7 +6,7 @@ Este documento reúne la lista de revisión, las decisiones pendientes y los eje
 
 ## Cómo hacer la revisión
 
-Revisen juntos el catálogo y las pantallas en computadora y teléfono. Por ahora pueden usar las capturas enlazadas: el entorno anterior de práctica necesita recuperación antes de una nueva sesión interactiva. Las capturas contienen datos ficticios y no prueban ventas ni disponibilidad actual.
+Revisen juntos el catálogo y las pantallas en computadora y teléfono. Usar la [demo local aislada del 24/10](../demo-local.md) o las capturas enlazadas; no intentar recuperar ni reutilizar el cluster histórico para esta revisión. Las capturas contienen datos ficticios y no prueban ventas ni disponibilidad actual.
 
 Para cada punto anoten uno de estos resultados:
 
@@ -128,6 +128,6 @@ Estos registros pueden aparecer en pedidos abiertos, completados y estadísticas
 - Administrador integrado: [resumen en computadora](../../../artifacts/admin-ux-2/integration/dashboard-1440.png) y [resumen en teléfono](../../../artifacts/admin-ux-2/integration/dashboard-390.png).
 - Formularios: [productos](../../../artifacts/admin-ux-2/after/products-1440.png), [editar en teléfono](../../../artifacts/admin-ux-2/after/product-edit-390.png), [promociones](../../../artifacts/admin-ux-2/after/promotions-edit-390.png) y [usuarios](../../../artifacts/admin-ux-2/after/users-390.png).
 
-Son capturas reutilizadas; ninguna fue tomada como evidencia de aprobación de los dueños. La publicación continúa bloqueada por los problemas de dependencias del Ticket 03, aunque esta ficha llegue a aprobarse.
+Son capturas reutilizadas; ninguna fue tomada como evidencia de aprobación de los dueños. Las dependencias fueron remediadas el 24/10 (audit completo del 25/10: 0). La publicación sigue bloqueada por cuenta/recursos Oracle y aprobación del contenido. El usuario confirmó el 25/10 que esta aprobación sigue pendiente. Los apartados de práctica anteriores describen evidencia histórica local, nunca pedidos autorizados para la base pública.
 
 Las capturas demo y algunos registros históricos se conservan solo en el worktree de preparación. Si un enlace no abre desde main, usar ese worktree para la reunión; no implica que exista una tienda publicada.

@@ -1,6 +1,6 @@
 # Güteli en Oracle: preparación local
 
-Fecha: 17 de octubre de 2026, America/Guatemala. **No instalado ni publicado.**
+Estado vigente al 25/10/2026: **no instalado ni publicado**. Leer primero el [checkpoint](CHECKPOINT.md) y la [secuencia de instalación actualizada](instalacion-ticket-05.md). Git técnico autorizado mediante PR; cuenta independiente y contenido sin aprobación. Las referencias de procedencia siguientes son históricas.
 
 Esta entrega prepara una demostración de la futura tienda oficial. Catálogo y carrito funcionan; el servidor rechaza pedidos/checkout públicos por defecto. No cobra, no envía WhatsApp automático y no recolecta datos de checkout. Catálogo, cuentas, OWNER/ADMIN y MFA conservan sus controles existentes. GTQ y horario de Guatemala permanecen.
 
@@ -37,4 +37,4 @@ Tickets 10/11 tienen preparación adicional; **no quedan certificados para opera
 - `scripts/oracle/practice-orders.ts`: cinco fixtures explícitos, sin endpoint web ni borrado.
 - `infra/oracle/*.service`, `*.timer`: plantillas **no instaladas ni habilitadas**.
 
-Los archivos `.example` contienen marcadores deliberadamente inválidos. No existe configuración de cuenta Oracle ni secretos reales en esta entrega. Los scripts rechazan plantillas incompletas y releases sucias. Por tanto, **este worktree sin commit no puede instalarse mediante el script**; primero hace falta revisión y autorización separada de publicación/versionado.
+Los archivos `.example` contienen marcadores deliberadamente inválidos. No existe configuración de cuenta Oracle ni secretos reales en esta entrega. Los scripts rechazan plantillas incompletas y releases sucias. Instalar únicamente desde un checkout limpio del SHA integrado y autorizado; nunca copiar el runtime local. La autorización de Git no sustituye las puertas externas de instalación.

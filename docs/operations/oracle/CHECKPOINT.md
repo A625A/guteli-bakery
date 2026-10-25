@@ -1,5 +1,27 @@
 # Checkpoint — Oracle Güteli
 
+## Consolidación para demo pública — 25/10/2026 (vigente)
+
+- Autorización actual: consolidar mediante PR, ejecutar comprobaciones pertinentes y hacer commit/merge/push técnico a `main` respetando protecciones. Sustituye las restricciones Git históricas de las secciones inferiores. Un agente; sin nuevos planes ni reconstrucción ARM64 innecesaria.
+- Base remota comprobada con fetch: `81f920185a2642b3c242354092f169f59e7fb585`. Demo: `5dbcdb2`. Rama de integración: `main-demo-publica-consolidacion-20261025`. Main local divergente `061f036` y otros worktrees conservados, sin reset/force.
+- La demo aporta nueve archivos de scripts, verificación y guías, sin cambios funcionales de aplicación. Se añade exclusión `.local-demo/` al contexto Docker (ya estaba ignorada en Git), se completa la ficha de cuota/hostname faltante y se corrige documentación obsoleta de instalación. No se incluyen `products/`, `artifacts/owner-review/`, runtimes, bases, secretos ni capturas privadas.
+- SHA256 de package/lock coincide con la evidencia ARM64 del 24/10. `src/`, infra de runtime, migraciones y dependencias idénticos a `986850c`. Se reutilizan 4/4 recorridos de demo y el ensayo ARM64/restore histórico; no se atribuyen a Oracle. La exclusión de metadata Docker no modifica binarios ni runtime.
+- Verificación nueva: 27/27 unitarias dirigidas (demo servidor, seguridad admin, Compose y readiness), ESLint de los tres TS de demo y TypeScript aprobados. `npm audit --json` del 25/10: **0 vulnerabilidades reportadas en el grafo completo**, sin actualizar dependencias. Esto no certifica el sistema operativo ni futuros avisos.
+- [Evidencia agregada de esta consolidación](../../../artifacts/oracle-preparation/demo-consolidation-20261025.json): sintaxis Python, exclusiones Git/Docker, privacidad frente a seis secretos generados y diff aprobados. Revisión del diff realizada por el mismo agente, según la restricción de costos; sin reauditoría general ni nuevos agentes.
+- **Confirmación explícita del usuario en esta sesión:** la cuenta independiente del amigo todavía no está confirmada y la aceptación de los dueños sigue pendiente. No acceso OCI/SSH, creación de recursos, DNS ni publicación. Q0/capacidad/hostname desconocidos. La cuenta y VM existentes del hackathon quedan completamente fuera de alcance.
+- Reanudación: completar [ficha de cuenta/recursos](cuota-hostname.md), presentar configuración/costos/permisos exactos y obtener autorización antes de crear. Recibir aceptación de [contenido](aceptacion-duenos.md); después seguir [instalación](instalacion-ticket-05.md) y [operación/recuperación](operacion.md). Base pública nueva, sin seeds ni pedidos PRUEBA; cuentas individuales y MFA privado. Mantener comercio/pagos/WhatsApp apagados y `noindex`.
+- Ticket 06 sigue sin ejecutar en Oracle: backup cifrado y restore local histórico disponibles; en servidor faltan copia/restore aislado/reboot, TLS/renovación, monitor y alertas. El chequeo interno no envía avisos: falta aprobar un servicio/cuenta/destinatario y demostrar fallos de backup aun con web disponible. No declarar demo publicada hasta completar estos controles.
+- Para los dueños: aprobar productos/precios/fotos y derechos; definir presentaciones de tres Bagels (Originales, Queso y jalapeño, Queso y pepperoni) y Burger buns, aportar foto de Nuditos; disponibilidad/promociones, horarios/contacto/entregas/políticas y personas OWNER/ADMIN. El PDF existente es una ficha pendiente, no aprobación.
+
+
+## Demo local para dueños — 24/10/2026
+
+- Cierre posterior autorizado: commit y push exclusivamente a `origin/main-demo-duenos-20261024`, sin merge/push a main ni despliegue. Esta autorización sustituye solo la restricción Git de la preparación inicial. Se conservan fuera de Git runtime, credenciales, bases, uploads y evidencia privada; `products/` y `artifacts/owner-review/` siguen ajenos al cierre.
+- Rama `main-demo-duenos-20261024`, creada desde el main remoto vigente `81f920185a2642b3c242354092f169f59e7fb585`. Incluye fotografías05, Admin UX2.0, Ticket12 y remediación `986850c`. Main local `061f036` se conserva; sin merge ni push a main ni cambios a otros worktrees.
+- [Operación local](../demo-local.md), [guía de una página](../demo-local-duenos.md) y [resultados/evidencia](../demo-local-resultado.md). Runtime ficticio nuevo: su ruta privada está en `.local-demo/location.txt`; no reutiliza los clusters de tickets anteriores.
+- Se reutilizan hashes exactos package/lock y código de la remediación del24/10; sin audit, build ARM64 ni suites completas. Solo comprobación breve de recorridos y arranque/parada del nuevo entorno.
+- Las autorizaciones de Git/Oracle citadas debajo son históricas: este cierre permite publicar solo la rama indicada, no la demo ni main. Sin Oracle, comercio, pagos ni WhatsApp. Aceptación de dueños pendiente.
+
 ## Continuación vigente — GitHub y seguridad (24/10/2026)
 
 **DEPENDENCIAS PREPARADAS TÉCNICAMENTE: audit completo0 / producción0; validación local y ARM64 aprobada. PUBLICACIÓN/DESPLIEGUE NO AUTORIZADOS.** Este estado y la autorización siguiente sustituyen los límites de las sesiones históricas.

@@ -1,5 +1,7 @@
 # 05: Instalar el candidato independiente
 
+**Estado vigente 25/10/2026:** Consolidación técnica Git mediante PR/merge autorizada. Instalación bloqueada por cuenta/recursos y contenido pendientes; sin operaciones Oracle. Ver [checkpoint](../../../docs/operations/oracle/CHECKPOINT.md). Las restricciones Git y bloqueos npm de los apartados inferiores son históricos; prevalece la autorización de consolidación actual. Ningún criterio externo se marca completado.
+
 **What to build / Qué entrega:** Güteli funciona como demo HTTPS en su propia VM sin afectar el hackathon ni habilitar operaciones comerciales.
 
 **Blocked by / Bloqueado por:** 01 — discrepancias de release cerradas o excepción expresa;02 — ciclo Linux ARM64;03 — recursos;04 — contenido; autorización de instalación/publicación/versionado.
