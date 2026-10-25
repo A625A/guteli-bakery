@@ -1,5 +1,13 @@
 # Checkpoint — Oracle Güteli
 
+## Demo local para dueños — 24/10/2026
+
+- Cierre posterior autorizado: commit y push exclusivamente a `origin/main-demo-duenos-20261024`, sin merge/push a main ni despliegue. Esta autorización sustituye solo la restricción Git de la preparación inicial. Se conservan fuera de Git runtime, credenciales, bases, uploads y evidencia privada; `products/` y `artifacts/owner-review/` siguen ajenos al cierre.
+- Rama `main-demo-duenos-20261024`, creada desde el main remoto vigente `81f920185a2642b3c242354092f169f59e7fb585`. Incluye fotografías05, Admin UX2.0, Ticket12 y remediación `986850c`. Main local `061f036` se conserva; sin merge ni push a main ni cambios a otros worktrees.
+- [Operación local](../demo-local.md), [guía de una página](../demo-local-duenos.md) y [resultados/evidencia](../demo-local-resultado.md). Runtime ficticio nuevo: su ruta privada está en `.local-demo/location.txt`; no reutiliza los clusters de tickets anteriores.
+- Se reutilizan hashes exactos package/lock y código de la remediación del24/10; sin audit, build ARM64 ni suites completas. Solo comprobación breve de recorridos y arranque/parada del nuevo entorno.
+- Las autorizaciones de Git/Oracle citadas debajo son históricas: este cierre permite publicar solo la rama indicada, no la demo ni main. Sin Oracle, comercio, pagos ni WhatsApp. Aceptación de dueños pendiente.
+
 ## Continuación vigente — GitHub y seguridad (24/10/2026)
 
 **DEPENDENCIAS PREPARADAS TÉCNICAMENTE: audit completo0 / producción0; validación local y ARM64 aprobada. PUBLICACIÓN/DESPLIEGUE NO AUTORIZADOS.** Este estado y la autorización siguiente sustituyen los límites de las sesiones históricas.
