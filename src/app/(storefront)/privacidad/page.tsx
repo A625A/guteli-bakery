@@ -17,6 +17,25 @@ export default function PrivacyPage() {
         </p>
       </section>
       <section className="contact-guidance">
+        <h2>Ubicación y mapa opcional</h2>
+        <p>
+          Cuando el mapa esté habilitado y elijas usarlo, la dirección buscada y
+          el área visible del mapa se consultarán con Geoapify a través de
+          nuestro servidor. No se solicita la ubicación GPS del dispositivo.
+          Puedes continuar con la dirección escrita y pedir cotización manual.
+          Si confirmas un punto y envías el pedido, guardamos sus coordenadas
+          para que el personal autorizado coordine la entrega; no aparecen en el
+          recibo público ni se guardan en el carrito del navegador.
+        </p>
+        <p>
+          Consulta la{' '}
+          <a href="https://www.geoapify.com/privacy-policy/" rel="noreferrer">
+            política de privacidad de Geoapify
+          </a>{' '}
+          antes de usar el mapa.
+        </p>
+      </section>
+      <section className="contact-guidance">
         <h2>Quién puede consultar tu pedido</h2>
         <p>
           El personal autorizado de Güteli puede consultar los datos necesarios

@@ -271,6 +271,7 @@ describe('public order error contract', () => {
   it('exposes only the stable public order codes', () => {
     expect(publicOrderErrorCodes).toEqual([
       'VALIDATION_ERROR',
+      'DELIVERY_QUOTE_STALE',
       'IDEMPOTENCY_CONFLICT',
       'RATE_LIMITED',
       'PRODUCT_UNAVAILABLE',

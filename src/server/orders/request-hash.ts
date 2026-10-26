@@ -12,6 +12,16 @@ function compareProductIds(left: string, right: string) {
 export function canonicalizeCreateOrderRequest(request: CreateOrderRequest) {
   return JSON.stringify({
     ...(request.whatsappOptIn ? { whatsappOptIn: true } : {}),
+    ...(request.deliveryPoint
+      ? {
+          deliveryPoint: {
+            lng: request.deliveryPoint.lng,
+            lat: request.deliveryPoint.lat,
+          },
+          deliveryConfirmed: request.deliveryConfirmed,
+        }
+      : {}),
+    ...(request.deliveryQuote ? { deliveryQuote: request.deliveryQuote } : {}),
     customerName: normalizeOrderText(request.customerName),
     phone: normalizeOrderText(request.phone),
     fulfillment: request.fulfillment,

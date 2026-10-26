@@ -1,5 +1,6 @@
 export const publicOrderErrorCodes = [
   'VALIDATION_ERROR',
+  'DELIVERY_QUOTE_STALE',
   'IDEMPOTENCY_CONFLICT',
   'RATE_LIMITED',
   'PRODUCT_UNAVAILABLE',

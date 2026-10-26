@@ -48,3 +48,20 @@ La prueba de integración aplica la propuesta solo a fixtures de `guteli_test`, 
 5. Antes de modificar datos reales, preparar el conjunto concreto, comprobar respaldos/restauración y obtener aprobación específica. No marcar una eliminación completa mientras queden copias accesibles o una retención legal activa.
 
 El aviso local `/privacidad/` describe los datos utilizados, cookies/carrito, enlace privado, WhatsApp y contacto. No promete plazos ya implementados ni certificaciones legales. La dueña debe aprobar identidad comercial, canal de atención y texto final antes de publicarlo.
+
+## Coordenadas opcionales de entrega (preparación local, 26/10/2026)
+
+La migración `0016_delivery_location` agrega el punto confirmado y procedencia de
+la cotización. Son datos restringidos al pedido y su vista administrativa; no se
+incluyen en recibos públicos, auditoría/outbox ni almacenamiento del navegador.
+La búsqueda se envía al proveedor solo con consentimiento expreso y las dos
+habilitaciones de servidor. El proveedor recibe la dirección consultada y las
+celdas del mapa, con IP del servidor; no recibe nombre, teléfono ni contenido del
+pedido. Las claves permanecen en el servidor. No registrar URLs de solicitudes
+salientes, parámetros de búsquedas ni rutas de tiles en proxy, APM o logs.
+
+No se activa eliminación. Cualquier futura anonimización autorizada debe quitar
+latitud, longitud, área y versión de cobertura junto con la dirección, incluyendo
+copias y respaldos según la política aprobada. La base rechaza marcar una fila
+como anonimizada conservando sus coordenadas. Los plazos continúan pendientes de
+aprobación. Ver [preparación de cobertura](delivery-coverage.md).

@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import { DeliveryLocation } from './DeliveryLocation';
+import type { DeliverySelection } from '@/domain/delivery';
 import { WHATSAPP_CONSENT_TEXT } from '@/domain/whatsapp-consent';
 import { useRouter } from 'next/navigation';
 import {
@@ -45,8 +47,12 @@ const fieldLabels: Record<keyof OrderFormValues, string> = {
 
 export function OrderRequest({ embedded = false }: { embedded?: boolean }) {
   const router = useRouter();
-  const { clearCart, hydrated, lines, items, pricingAvailable } = useCart();
+  const { clearCart, hydrated, lines, items, pricingAvailable, subtotal } =
+    useCart();
   const [values, setValues] = useState<OrderFormValues>(initialValues);
+  const [deliverySelection, setDeliverySelection] =
+    useState<DeliverySelection | null>(null);
+  const [deliveryPending, setDeliveryPending] = useState(false);
   const [errors, setErrors] = useState<OrderErrors>({});
   const [checkoutState, setCheckoutState] = useState<CheckoutState>({
     kind: 'EDITING',
@@ -87,12 +93,15 @@ export function OrderRequest({ embedded = false }: { embedded?: boolean }) {
     field: Key,
     value: OrderFormValues[Key],
   ) {
+    if (field === 'location') setDeliverySelection(null);
     setValues((currentValues) => ({ ...currentValues, [field]: value }));
     resetError();
   }
 
   function changeFulfillment(fulfillment: OrderFormValues['fulfillment']) {
     const nextValues = { ...values, fulfillment };
+    setDeliverySelection(null);
+    setDeliveryPending(false);
 
     setValues(nextValues);
     resetError();
@@ -105,7 +114,24 @@ export function OrderRequest({ embedded = false }: { embedded?: boolean }) {
 
   async function sendOrder(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (inFlightRef.current || acceptedRef.current || !pricingAvailable) return;
+    if (
+      inFlightRef.current ||
+      acceptedRef.current ||
+      !pricingAvailable ||
+      deliveryPending
+    )
+      return;
+    if (
+      deliverySelection?.expiresAt &&
+      Date.parse(deliverySelection.expiresAt) <= Date.now()
+    ) {
+      setCheckoutState({
+        kind: 'ERROR',
+        message:
+          'La cotización venció. Confirma nuevamente tu ubicación o elige cotización manual.',
+      });
+      return;
+    }
 
     const currentMinimumDate = getMinimumOrderDate(
       new Date(),
@@ -121,7 +147,18 @@ export function OrderRequest({ embedded = false }: { embedded?: boolean }) {
       return;
     }
 
-    const request = buildCreateOrderRequest(values, lines);
+    const baseRequest = buildCreateOrderRequest(values, lines);
+    const request =
+      values.fulfillment === 'delivery' && deliverySelection
+        ? {
+            ...baseRequest,
+            deliveryPoint: deliverySelection.point,
+            deliveryConfirmed: true as const,
+            ...(deliverySelection.token
+              ? { deliveryQuote: deliverySelection.token }
+              : {}),
+          }
+        : baseRequest;
     inFlightRef.current = true;
     setErrors({});
     setCheckoutState({ kind: 'SUBMITTING' });
@@ -355,6 +392,15 @@ export function OrderRequest({ embedded = false }: { embedded?: boolean }) {
                   ) : null}
                 </div>
               ) : null}
+              {values.fulfillment === 'delivery' ? (
+                <DeliveryLocation
+                  key={values.location}
+                  address={values.location}
+                  subtotal={subtotal}
+                  onChange={setDeliverySelection}
+                  onPendingChange={setDeliveryPending}
+                />
+              ) : null}
               <div className="form-field">
                 <label htmlFor="order-requestedDate">Fecha solicitada</label>
                 <input
@@ -428,6 +474,7 @@ export function OrderRequest({ embedded = false }: { embedded?: boolean }) {
               type="submit"
               disabled={
                 submitting ||
+                deliveryPending ||
                 !pricingAvailable ||
                 checkoutState.kind === 'SUCCESS'
               }

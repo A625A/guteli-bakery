@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { deliveryPointSchema } from './delivery';
 import { whatsappDestination } from './whatsapp-consent';
 
 import { addCalendarDays, getMinimumOrderDate } from '@/lib/date';
@@ -98,10 +99,34 @@ export const createOrderRequestSchema = z
     requestedDate: isoLocalDateSchema,
     deliveryLocation: deliveryLocationSchema.optional(),
     notes: notesSchema.optional(),
+    deliveryPoint: deliveryPointSchema.optional(),
+    deliveryConfirmed: z.literal(true).optional(),
+    deliveryQuote: z
+      .string()
+      .min(64)
+      .max(2048)
+      .regex(/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/)
+      .optional(),
     items: z.array(orderItemSchema).min(1).max(30),
   })
   .strict()
   .superRefine((request, context) => {
+    const hasDeliveryData =
+      request.deliveryPoint !== undefined ||
+      request.deliveryConfirmed !== undefined ||
+      request.deliveryQuote !== undefined;
+    if (
+      hasDeliveryData &&
+      (request.fulfillment !== 'delivery' ||
+        !request.deliveryPoint ||
+        request.deliveryConfirmed !== true)
+    ) {
+      context.addIssue({
+        code: 'custom',
+        path: ['deliveryPoint'],
+        message: 'A confirmed delivery point is required.',
+      });
+    }
     if (request.whatsappOptIn && !whatsappDestination(request.phone)) {
       context.addIssue({
         code: 'custom',

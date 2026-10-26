@@ -12,6 +12,7 @@ export function isPrivatePath(path: string): boolean {
     '/order',
     '/cart',
     '/api/orders',
+    '/api/delivery',
     '/api/order-status',
     '/api/checkout-session',
     '/api/checkout-review',

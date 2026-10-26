@@ -811,6 +811,16 @@ describe('protected admin order operations', () => {
   it('quotes only nonterminal delivery orders with exact checked math and one version increment', async () => {
     const actor = await enrolledActor();
     const delivery = await orderFixture({ subtotalMinor: 2_147_483_000 });
+    await db
+      .update(orders)
+      .set({
+        deliveryLatitude: 1,
+        deliveryLongitude: 1,
+        deliveryAreaId: 'synthetic',
+        deliveryCoverageVersion: 'test-v1',
+        deliveryPricingSource: 'AUTOMATIC',
+      })
+      .where(eq(orders.id, delivery.id));
     // Current catalog pricing must match this overflow boundary fixture.
     await db.update(products).set({ priceMinor: 1_073_741_500 });
     const quoted = await mutationRequest(
@@ -820,6 +830,15 @@ describe('protected admin order operations', () => {
       { shippingMinor: 647, expectedVersion: 1 },
     );
     expect(quoted.status).toBe(200);
+    expect(
+      (await db.select().from(orders).where(eq(orders.id, delivery.id)))[0],
+    ).toMatchObject({
+      deliveryPricingSource: 'MANUAL',
+      deliveryAreaId: null,
+      deliveryCoverageVersion: null,
+      deliveryLatitude: 1,
+      deliveryLongitude: 1,
+    });
     expect(await quoted.json()).toMatchObject({
       order: {
         shippingMinor: 647,

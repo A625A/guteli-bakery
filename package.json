@@ -37,6 +37,7 @@
   "dependencies": {
     "better-auth": "^1.7.2",
     "drizzle-orm": "^0.45.2",
+    "leaflet": "1.9.4",
     "next": "16.4.2",
     "pg": "^8.23.0",
     "react": "19.2.7",
@@ -47,6 +48,7 @@
   },
   "devDependencies": {
     "@playwright/test": "1.61.1",
+    "@types/leaflet": "1.9.21",
     "@types/node": "^24.0.0",
     "@types/pg": "^8.23.1",
     "@types/react": "19.2.17",
