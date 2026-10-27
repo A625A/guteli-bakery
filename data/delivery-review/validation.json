@@ -5,7 +5,7 @@
     "catalogueVertices": 4096,
     "ringVertices": 512
   },
-  "totalVertices": 5536,
+  "totalVertices": 5704,
   "combinedClassifierCompatible": false,
   "areas": [
     {
@@ -189,6 +189,21 @@
       "commercialResult": "PENDING_OWNER_APPROVAL"
     },
     {
+      "id": "fraijanes-north",
+      "name": "Fraijanes · mitad norte",
+      "vertices": 168,
+      "maxRingVertices": 168,
+      "classifierCompatible": true,
+      "referencePoint": {
+        "lng": -90.44099185,
+        "lat": 14.499360525,
+        "source": "https://www.openstreetmap.org/relation/9624941",
+        "kind": "computed-bounds-center"
+      },
+      "structuralReferenceResult": "automatic",
+      "commercialResult": "PENDING_OWNER_APPROVAL"
+    },
+    {
       "id": "gb-79465075B29005595464714",
       "name": "San José Pinula",
       "vertices": 185,
@@ -227,7 +242,9 @@
         14.4621012
       ],
       "source": "https://www.openstreetmap.org/node/2505212605",
-      "compatibleGeometryMatches": [],
+      "compatibleGeometryMatches": [
+        "Fraijanes · mitad norte"
+      ],
       "notEvaluated": [
         "osm-9266318",
         "osm-9286045",
@@ -302,7 +319,9 @@
         14.5186999
       ],
       "source": "https://www.openstreetmap.org/node/12019686246",
-      "compatibleGeometryMatches": [],
+      "compatibleGeometryMatches": [
+        "Fraijanes · mitad norte"
+      ],
       "notEvaluated": [
         "osm-9266318",
         "osm-9286045",
@@ -317,7 +336,9 @@
         14.5215434
       ],
       "source": "https://www.openstreetmap.org/way/383796078",
-      "compatibleGeometryMatches": [],
+      "compatibleGeometryMatches": [
+        "Fraijanes · mitad norte"
+      ],
       "notEvaluated": [
         "osm-9266318",
         "osm-9286045",
@@ -453,6 +474,19 @@
         "lat": 14.6075797
       },
       "source": "https://www.openstreetmap.org/relation/13733479",
+      "result": {
+        "kind": "manual",
+        "shippingMinor": null,
+        "reason": "boundary"
+      }
+    },
+    {
+      "name": "Fraijanes · mitad norte",
+      "point": {
+        "lng": -90.41506788725873,
+        "lat": 14.454157250000002
+      },
+      "source": "https://www.openstreetmap.org/relation/9624941",
       "result": {
         "kind": "manual",
         "shippingMinor": null,

@@ -1,6 +1,6 @@
 # Cartografía para revisión local — no es cobertura comercial
 
-Todos los polígonos empiezan como **propuesta**. Fraijanes norte, CAES, Sausalito y Pavón quedan
+Todos los polígonos empiezan como **propuesta**. CAES, Sausalito y Pavón quedan
 pendientes de delimitación. No importar estos archivos al catálogo de producción.
 
 ## Fuentes y licencias
@@ -39,15 +39,15 @@ asume que la publicación de un servicio de mapas conceda derechos comerciales.
 
 `prepare.py` une vías exteriores por extremos exactamente iguales, comprueba
 cierres y orienta anillos según RFC7946. Rechaza roles no soportados y anillos
-abiertos. No redondea, simplifica, crea buffers, interpola, recorta carreteras por
+abiertos. No redondea, simplifica, crea buffers ni recorta carreteras por
 kilometraje ni inventa límites. Los nodos de etiqueta OSM posicionan nombres;
 no son centroides calculados ni direcciones de clientes. La referencia de
 Sausalito es el primer vértice real de una vía identificada, no un centro de
 población asumido. Las carreteras son una selección incompleta de CA-1 Oriente y
 vías de Sausalito; no constituyen corredor de entrega ni ruta calculada.
 
-Los 14 polígonos propuestos suman 5536 vértices, excediendo 4096. Anillos que
-exceden 512: zona 7 (789), zona 16 (685), zona 17 (723). Los otros once pasan
+Los 15 polígonos propuestos suman 5704 vértices, excediendo 4096. Anillos que
+exceden 512: zona 7 (789), zona 16 (685), zona 17 (723). Los otros doce pasan
 individualmente el clasificador actual. No se afirma validación topológica
 completa de los tres rechazados ni admisión conjunta. El visor comprueba tipo,
 coordenadas WGS84 y cierre; la evaluación productiva sigue bloqueada.
@@ -80,5 +80,11 @@ los datos en `http://127.0.0.1:3140/`. Consulta la [guía para revisar con Peter
 San José Pinula y Santa Catarina Pinula son propuestas Q10, con geometría
 municipal geoBoundaries 2021 intacta. Sus etiquetas usan el centro de la caja
 envolvente, calculado solo para mostrar el nombre; no son localidades observadas.
-Fraijanes completo se conserva como contexto sin tarifa. La mitad norte queda
-pendiente de acordar el corte, sin asumir que significa mitad del área ni una carretera concreta.
+Fraijanes completo se conserva como contexto sin tarifa. Por instrucción explícita
+del usuario, se recorta al norte de la latitud media 14.45415725° N. El derivado
+conserva vértices originales y añade únicamente las dos intersecciones interpoladas
+con la línea de corte; 168 vértices contando cierre. No equivale a mitad de área
+ni a un límite administrativo. Se identifica en propiedades y exportaciones como
+propuesta visual derivada de OSM; su línea punteada se incluye en roads.geojson
+con role=review-cut, sin presentarla como carretera. El recorte rechaza geometrías
+con huecos o más de dos cruces, que requieren tratamiento GIS específico.

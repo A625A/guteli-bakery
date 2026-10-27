@@ -23,7 +23,7 @@ it('review contains exactly the requested real proposals, all unapproved, with c
   const proposals = read('areas.geojson').features.filter(
     (f: { properties: { role: string } }) => f.properties.role === 'proposal',
   );
-  expect(proposals).toHaveLength(14);
+  expect(proposals).toHaveLength(15);
   expect(
     proposals
       .filter(
@@ -43,7 +43,6 @@ it('review contains exactly the requested real proposals, all unapproved, with c
     );
   }
   expect(manifest.pending.map((a: { id: string }) => a.id)).toEqual([
-    'fraijanes-north',
     'caes-corridor',
     'sausalito',
     'pavon',
@@ -51,7 +50,7 @@ it('review contains exactly the requested real proposals, all unapproved, with c
 });
 it('original real geometries honestly report classifier limits without silently simplifying them', () => {
   const report = read('validation.json');
-  expect(report.totalVertices).toBe(5536);
+  expect(report.totalVertices).toBe(5704);
   expect(report.combinedClassifierCompatible).toBe(false);
   const proposals = read('areas.geojson').features.filter(
     (f: { properties: { role: string } }) => f.properties.role === 'proposal',
@@ -95,7 +94,7 @@ it('review cannot be imported as a production coverage catalogue', () => {
 
 it('real boundary probes stay manual and no reference is represented as commercial approval', () => {
   const report = read('validation.json');
-  expect(report.boundaryCases).toHaveLength(11);
+  expect(report.boundaryCases).toHaveLength(12);
   for (const row of report.boundaryCases)
     expect(row.result).toMatchObject({
       kind: 'manual',
@@ -140,8 +139,84 @@ it('Pinula proposals preserve source boundaries and whole Fraijanes is no longer
     ).properties,
   ).toMatchObject({ role: 'context', tariff: null });
   expect(
-    read('manifest.json').pending.find(
-      (a: { id: string }) => a.id === 'fraijanes-north',
-    ),
-  ).toMatchObject({ tariff: 'CAES', status: 'pending' });
+    areas.find(
+      (a: { properties: { id: string } }) =>
+        a.properties.id === 'fraijanes-north',
+    ).properties,
+  ).toMatchObject({ tariff: 'CAES', status: 'proposed' });
+});
+
+it('Fraijanes north clips the original at mid-latitude without including the south', () => {
+  const features = read('areas.geojson').features;
+  const original = features.find(
+    (f: { properties: { id: string } }) => f.properties.id === 'osm-9624941',
+  );
+  const north = features.find(
+    (f: { properties: { id: string } }) =>
+      f.properties.id === 'fraijanes-north',
+  );
+  const ring: number[][] = original.geometry.coordinates[0];
+  const minLat = Math.min(...ring.map((p) => p[1]));
+  const maxLat = Math.max(...ring.map((p) => p[1]));
+  const minLng = Math.min(...ring.map((p) => p[0]));
+  const maxLng = Math.max(...ring.map((p) => p[0]));
+  const cut = (minLat + maxLat) / 2;
+  expect(north.properties.derivation.latitude).toBe(cut);
+  const clipped: number[][] = north.geometry.coordinates[0];
+  expect(clipped.every((p) => p[1] >= cut)).toBe(true);
+  const intersections = clipped.slice(0, -1).filter((p) => p[1] === cut);
+  expect(intersections).toHaveLength(2);
+  for (const point of clipped.filter((p) => p[1] !== cut))
+    expect(ring).toContainEqual(point);
+  const compile = (geometry: unknown) =>
+    compileCoverage({
+      type: 'FeatureCollection',
+      version: 'test-cut',
+      features: [
+        {
+          type: 'Feature',
+          geometry,
+          properties: {
+            id: 'fraijanes',
+            label: 'Test',
+            tariff: 'CAES',
+            source: original.properties.source,
+            license: 'ODbL-1.0',
+            approval: 'test only',
+            boundary: 'manual',
+          },
+        },
+      ],
+    });
+  const source = compile(original.geometry),
+    derived = compile(north.geometry);
+  expect(source.valid && derived.valid).toBe(true);
+  let inside = 0,
+    excluded = 0;
+  for (let x = 1; x < 20; x++)
+    for (let y = 1; y < 20; y++) {
+      const point = {
+        lng: minLng + ((maxLng - minLng) * x) / 20,
+        lat: minLat + ((maxLat - minLat) * y) / 20,
+      };
+      if (Math.abs(point.lat - cut) < 1e-9) continue;
+      const wasInside = source.classify(point).kind === 'automatic';
+      expect(derived.classify(point).kind === 'automatic').toBe(
+        wasInside && point.lat > cut,
+      );
+      if (wasInside) {
+        if (point.lat > cut) inside++;
+        else excluded++;
+      }
+    }
+  expect(inside).toBeGreaterThan(0);
+  expect(excluded).toBeGreaterThan(0);
+  const middle = {
+    lng: (intersections[0][0] + intersections[1][0]) / 2,
+    lat: cut,
+  };
+  expect(derived.classify(middle)).toMatchObject({
+    kind: 'manual',
+    reason: 'boundary',
+  });
 });

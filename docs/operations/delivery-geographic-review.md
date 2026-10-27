@@ -33,10 +33,10 @@ reutiliza la misma biblioteca Leaflet y deja intacto ese flujo comercial.
 | Capa           | Contenido                                                                | Estado inicial                                  |
 | -------------- | ------------------------------------------------------------------------ | ----------------------------------------------- |
 | Azul, Q35      | Zonas 1, 5, 7, 9, 10, 11, 12, 13, 14, 15, 16 y 17 de Ciudad de Guatemala | 12 polígonos administrativos OSM propuestos     |
-| Naranja, Q10   | San José Pinula y Santa Catarina Pinula, geoBoundaries 2021              | Propuesta; Peter debe decidir alcance comercial |
+| Naranja, Q10   | San José Pinula, Santa Catarina Pinula y Fraijanes norte                 | Propuesta; Peter debe decidir alcance comercial |
 | Puntos dorados | Hitos km35/km36, Pavón, referencia vial de Sausalito, cabecera Fraijanes | Referencias, no polígonos de cobertura          |
 | Gris           | Contexto municipal geoBoundaries y vías OSM                              | Contexto, sin tarifa implícita                  |
-| Sin polígono   | Fraijanes norte, corredor CAES hasta km35, Sausalito, Pavón              | Pendiente de delimitar                          |
+| Sin polígono   | Corredor CAES hasta km35, Sausalito, Pavón                               | Pendiente de delimitar                          |
 
 Recogida sigue siendo Q0. No existe otra zona gratuita. La tarifa de las áreas
 es la intención documentada, no un precio autorizado por seleccionar el mapa.
@@ -80,7 +80,7 @@ un homónimo en Villa Nueva y los bordes comprobados. El informe reproducible
 [validation.json](../../data/delivery-review/validation.json) distingue pruebas
 estructurales de aprobación comercial.
 
-Las 14 propuestas actuales suman 5536 vértices originales. Tres anillos superan 512 y el catálogo
+Las 15 propuestas actuales suman 5704 vértices, incluyendo las intersecciones del recorte. Tres anillos superan 512 y el catálogo
 supera 4096. No se amplió el clasificador ni se simplificó silenciosamente.
 Las propuestas aún requieren revisión GIS, tratamiento de fronteras compartidas,
 simplificación medida si procede y nueva versión aprobada. La aprobación visual
@@ -146,9 +146,11 @@ presentan como recién ejecutadas ni se repiten sin cambios que lo justifiquen.
 
 Por indicación del usuario, San José Pinula y Santa Catarina Pinula figuran como
 Q10 · Carretera usando sus polígonos reales ya descargados. Fraijanes completo
-ya no se propone como Q10: su mitad norte espera una definición explícita de la
-línea de corte. No se recortó la geometría ni se aprobó automáticamente ningún sector.
-La versión de revisión cambia a v2; las exportaciones v1 son evidencia histórica.
+permanece como contexto; su parte norte se recorta por la latitud media entre
+extremos: **14.45415725° N**. El corte punteado es una propuesta visual solicitada,
+no un límite oficial ni la mitad de la superficie. Ningún sector se aprueba automáticamente.
+La versión de revisión es v3; las exportaciones v1/v2 son evidencia histórica.
+El JSON exportado incluye el método y la latitud del recorte para identificarlo.
 
-Validación del ajuste: 5 pruebas unitarias de cartografía y 2 de navegador
-aprobadas; ESLint dirigido, TypeScript y `git diff --check` sin errores.
+Validación del ajuste v3: 6 pruebas unitarias de cartografía y 2 de navegador;
+se comprueba inclusión al norte, exclusión al sur y tratamiento manual del corte.

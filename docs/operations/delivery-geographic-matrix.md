@@ -24,41 +24,41 @@ exclusivamente, sin cargar un catálogo productivo.
 
 ## Corredor, sectores y homónimos
 
-La coincidencia siguiente solo se comprobó contra los once polígonos que admite
+La coincidencia siguiente solo se comprobó contra los doce polígonos que admite
 el clasificador. Zonas 7/16/17 no se evaluaron por su tamaño; no se presenta una
 comprobación exhaustiva de toda la geometría real.
 
 | Referencia                                              | Latitud, longitud       | Fuente                                                 | Coincidencia en polígonos evaluables | Decisión comercial pendiente                                                        |
 | ------------------------------------------------------- | ----------------------- | ------------------------------------------------------ | ------------------------------------ | ----------------------------------------------------------------------------------- |
-| Fraijanes                                               | 14.4621012, -90.4388234 | [OSM](https://www.openstreetmap.org/node/2505212605)   | Ninguna                              | Definir límite comercial; referencia no autoriza cobertura                          |
+| Fraijanes                                               | 14.4621012, -90.4388234 | [OSM](https://www.openstreetmap.org/node/2505212605)   | Fraijanes norte                      | Definir límite comercial; referencia no autoriza cobertura                          |
 | KM. 36                                                  | 14.3910611, -90.4685986 | [OSM](https://www.openstreetmap.org/node/9146903759)   | Ninguna                              | Posterior al corte del corredor; confirmar exclusiones y otras áreas independientes |
 | KM. 36                                                  | 14.3910767, -90.4685018 | [OSM](https://www.openstreetmap.org/node/9146903760)   | Ninguna                              | Posterior al corte del corredor; confirmar exclusiones y otras áreas independientes |
 | KM. 35                                                  | 14.3996638, -90.4694955 | [OSM](https://www.openstreetmap.org/node/9146903761)   | Ninguna                              | Validar hito y delimitar corredor; km35 inclusive                                   |
 | KM. 35                                                  | 14.3996233, -90.4695979 | [OSM](https://www.openstreetmap.org/node/9146903762)   | Ninguna                              | Validar hito y delimitar corredor; km35 inclusive                                   |
-| Pavón                                                   | 14.5186999, -90.4411697 | [OSM](https://www.openstreetmap.org/node/12019686246)  | Ninguna                              | Definir límite comercial; referencia no autoriza cobertura                          |
-| Vía hacia El Sausalito · punto de referencia, no límite | 14.5215434, -90.4576895 | [OSM](https://www.openstreetmap.org/way/383796078)     | Ninguna                              | Definir límite comercial; referencia no autoriza cobertura                          |
+| Pavón                                                   | 14.5186999, -90.4411697 | [OSM](https://www.openstreetmap.org/node/12019686246)  | Fraijanes norte                      | Definir límite comercial; referencia no autoriza cobertura                          |
+| Vía hacia El Sausalito · punto de referencia, no límite | 14.5215434, -90.4576895 | [OSM](https://www.openstreetmap.org/way/383796078)     | Fraijanes norte                      | Definir límite comercial; referencia no autoriza cobertura                          |
 | Zona 10 de Villa Nueva (homónimo excluido)              | 14.501518, -90.6148157  | [OSM](https://www.openstreetmap.org/relation/10414515) | Ninguna                              | No confundir con zona 10 de Ciudad de Guatemala                                     |
 
 ## Bordes, ambigüedad y pruebas sintéticas
 
-| Caso                              | Evidencia / método                                                                                            | Resultado y límite                                                      |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| Bordes reales                     | Primer vértice original de cada uno de los once polígonos compatibles, coordenadas y URL en `validation.json` | Los once retornan manual/boundary; no se supone inclusión               |
-| Zonas 7, 16, 17                   | 789, 685 y 723 vértices por anillo                                                                            | Rechazadas por límite 512; revisión GIS pendiente                       |
-| Catálogo real conjunto            | 5536 vértices                                                                                                 | Rechazado por máximo 4096; no cobertura validada                        |
-| Fronteras compartidas reales      | Revisar con Peter/GIS todos los contactos y diferencias entre fuentes                                         | No se certifican continuidad, ausencia de huecos o solapes del conjunto |
-| Q10/Q35 y recogida Q0             | Geometrías sintéticas de `tests/support/delivery/coverage.ts`                                                 | Pruebas de importes del servidor; no evidencia de geografía real        |
-| Solapes y límites ambiguos        | Polígonos sintéticos con tarifas distintas y casos de borde                                                   | Manual/rechazo; no se trasladan al mapa real                            |
-| Hito inclusivo                    | Prueba sintética `boundary: include`; no radio ni distancia recta                                             | La inclusión de km35 real exige geometría y aprobación pendientes       |
-| Nombres iguales en otro municipio | Punto público de Zona 10 de Villa Nueva + prueba sintética de nombres                                         | El nombre no selecciona tarifa; continúa envío por confirmar            |
-| Fuera de cobertura                | Puntos sintéticos exteriores y referencias públicas km36/Villa Nueva                                          | No se inventa tarifa ni se presume envío gratis                         |
+| Caso                              | Evidencia / método                                                                                   | Resultado y límite                                                      |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Bordes reales                     | Primer vértice de cada uno de los doce polígonos compatibles, coordenadas y URL en `validation.json` | Los doce retornan manual/boundary; no se supone inclusión               |
+| Zonas 7, 16, 17                   | 789, 685 y 723 vértices por anillo                                                                   | Rechazadas por límite 512; revisión GIS pendiente                       |
+| Catálogo real conjunto            | 5704 vértices                                                                                        | Rechazado por máximo 4096; no cobertura validada                        |
+| Fronteras compartidas reales      | Revisar con Peter/GIS todos los contactos y diferencias entre fuentes                                | No se certifican continuidad, ausencia de huecos o solapes del conjunto |
+| Q10/Q35 y recogida Q0             | Geometrías sintéticas de `tests/support/delivery/coverage.ts`                                        | Pruebas de importes del servidor; no evidencia de geografía real        |
+| Solapes y límites ambiguos        | Polígonos sintéticos con tarifas distintas y casos de borde                                          | Manual/rechazo; no se trasladan al mapa real                            |
+| Hito inclusivo                    | Prueba sintética `boundary: include`; no radio ni distancia recta                                    | La inclusión de km35 real exige geometría y aprobación pendientes       |
+| Nombres iguales en otro municipio | Punto público de Zona 10 de Villa Nueva + prueba sintética de nombres                                | El nombre no selecciona tarifa; continúa envío por confirmar            |
+| Fuera de cobertura                | Puntos sintéticos exteriores y referencias públicas km36/Villa Nueva                                 | No se inventa tarifa ni se presume envío gratis                         |
 
 No se midieron tolerancias de simplificación: no se simplificó. Las propuestas
 siguen sin aprobación y el catálogo productivo sigue vacío. Ver las
 [fuentes y precisión](../../data/delivery-review/README.md) y la
 [guía de revisión](delivery-geographic-review.md).
 
-## Pinula y Fraijanes norte (revisión v2)
+## Pinula y Fraijanes norte (revisión v3)
 
 Los polígonos municipales originales de San José Pinula (185 vértices) y Santa
 Catarina Pinula (114) se añaden como Q10. Ambos pasan individualmente el clasificador.
@@ -67,7 +67,13 @@ observadas: respectivamente (lat, lon) 14.549374245000052, -90.33614285549996 y
 14.567031847500061, -90.46573343449995. Ambos resultan interiores; sus primeros
 vértices devuelven manual/boundary. Fuente geoBoundaries 9469f09, CC BY 3.0 IGO.
 
-Fraijanes completo se retira de las propuestas. Su mitad norte queda pendiente
-de definir un corte; no se valida inclusión de Pavón, Sausalito ni la cabecera
-hasta tener geometría. Las comprobaciones actuales de esos puntos no coinciden
-con ninguno de los once polígonos evaluables. No se evalúa cobertura comercial.
+Fraijanes completo queda como contexto. Su parte norte se deriva con el corte
+solicitado por latitud media **14.45415725° N** (168 vértices). Cabecera de Fraijanes,
+Pavón y referencia vial de Sausalito coinciden estructuralmente con el derivado;
+esto no resuelve los límites propios de los sectores ni aprueba cobertura comercial.
+
+Una cuadrícula de puntos contrasta el polígono derivado con el original: conserva
+su interior al norte y excluye el sur. El punto medio del segmento de corte
+retorna manual/boundary. Los vértices conservados provienen del original y solo
+se añaden dos intersecciones sobre sus aristas. No se confunde este corte visual
+con un límite oficial o con mitad de superficie.

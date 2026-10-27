@@ -28,9 +28,13 @@ test('offline real layers, guarded human review, local export and reopening', as
     .getByRole('button', { name: /Fraijanes · mitad norte Q10/ })
     .click();
   await expect(page.locator('#area-status')).toHaveText(
-    'Pendiente de delimitación',
+    'Propuesta · por revisar',
+  );
+  await expect(page.locator('#area-description')).toContainText(
+    'latitud media',
   );
   await expect(page.locator('#approve')).toBeDisabled();
+  await expect(page.locator('path[stroke-dasharray="8 6"]')).toHaveCount(1);
   await page
     .getByRole('button', { name: /Zona 10 · Ciudad de Guatemala/ })
     .click();
@@ -57,6 +61,13 @@ test('offline real layers, guarded human review, local export and reopening', as
   const download = await downloadPromise;
   const exported = JSON.parse(await readFile((await download.path())!, 'utf8'));
   expect(exported.productionEnabled).toBe(false);
+  expect(
+    exported.areas.find((a: { id: string }) => a.id === 'fraijanes-north')
+      .derivation,
+  ).toMatchObject({
+    method: 'clip-north-at-mid-latitude',
+    status: 'visual-proposal-only',
+  });
   expect(
     exported.areas.filter((a: { status: string }) => a.status === 'approved'),
   ).toHaveLength(1);

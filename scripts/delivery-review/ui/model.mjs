@@ -84,6 +84,7 @@ export function exportReview(
         notes: r.notes,
         source: a.source ?? null,
         sourceVersion: a.version ?? null,
+        derivation: a.derivation ?? null,
       };
     }),
     annotations,

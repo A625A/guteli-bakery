@@ -78,12 +78,17 @@ try {
       ),
   }).addTo(map);
   L.geoJSON(roadsData, {
-    style: { color: '#68716c', weight: 1.5, opacity: 0.65 },
+    style: (f) =>
+      f.properties.role === 'review-cut'
+        ? { color: '#b65a20', weight: 4, dashArray: '8 6', opacity: 1 }
+        : { color: '#68716c', weight: 1.5, opacity: 0.65 },
     onEachFeature: (f, l) =>
       l.bindTooltip(
         text(
           (f.properties.name ?? 'Vía') +
-            ' · referencia OSM; no área de cobertura',
+            (f.properties.role === 'review-cut'
+              ? ' · división visual propuesta; no límite oficial'
+              : ' · referencia OSM; no área de cobertura'),
         ),
       ),
   }).addTo(map);
