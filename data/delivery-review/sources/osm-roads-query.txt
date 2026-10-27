@@ -1,0 +1,1 @@
+[out:json][timeout:25];way["highway"]["ref"~"CA.?1"](14.4,-90.53,14.62,-90.34);out meta geom;

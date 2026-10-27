@@ -1,0 +1,13 @@
+{
+  "retrievedLocalDate": "2026-10-26",
+  "osmEndpoint": "https://overpass-api.de/api/interpreter",
+  "originalResponseSha256": {
+    "osm-selected.json": "04f31d30a370a7a31cbf880f90d3be7579debbee99c21933ab3efab025d5cca6",
+    "osm-roads.json": "b581202c9875e75ccf8236e880839b27c6cc022ee2173d455637a2cfb8c0af72",
+    "adm2-resolved.geojson": "df9b3fe7cbf6a767d7d26d638bd3c438f538bc5d6ea8c96f5e391eed2516b3a0"
+  },
+  "municipalZonesExcluded": {
+    "itemId": "0b5c8c8aaf9b4854b9b8a2ac9dcbf2c3",
+    "reason": "licenseInfo and accessInformation null; geometry not downloaded or bundled"
+  }
+}

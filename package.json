@@ -32,7 +32,8 @@
     "start": "next start",
     "production:check": "node --conditions=react-server --import tsx scripts/check-production-runtime.ts",
     "whatsapp:worker": "node --conditions=react-server --import tsx scripts/whatsapp-worker.ts",
-    "privacy:check": "node --conditions=react-server --import tsx scripts/privacy-check.ts"
+    "privacy:check": "node --conditions=react-server --import tsx scripts/privacy-check.ts",
+    "delivery:review": "python3 scripts/delivery-review/serve.py"
   },
   "dependencies": {
     "better-auth": "^1.7.2",
