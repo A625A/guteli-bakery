@@ -135,13 +135,13 @@ def main():
             'labelPoint':label, 'labelKind':'computed-bounds-center',
             'reason':'Propuesta Q10 · Carretera, solicitada por el usuario. Límite municipal geoBoundaries (2021), sin modificar; revisar alcance comercial y posibles diferencias con OSM.'}
         if name == 'San José Pinula':
-            longitude = min(p[0] for p in ring) + .75*(max(p[0] for p in ring)-min(p[0] for p in ring))
-            for side, greater, tariff, portion in [('west',False,'CAES',75),('east',True,'CAPITAL',25)]:
+            longitude = min(p[0] for p in ring) + .60*(max(p[0] for p in ring)-min(p[0] for p in ring))
+            for side, greater, tariff, portion in [('west',False,'CAES',60),('east',True,'CAPITAL',40)]:
                 geometry, intersections = clip_ring(f['geometry'],0,longitude,greater)
                 clipped_ring = geometry['coordinates'][0]
                 side_name = 'oeste' if side == 'west' else 'este'
                 split = {'method':'clip-at-longitude-width-ratio','longitude':longitude,
-                         'westWidthRatio':.75,'side':side,'baseId':properties['id'],
+                         'westWidthRatio':.60,'side':side,'baseId':properties['id'],
                          'status':'visual-proposal-only'}
                 areas.append(feature(geometry,{**properties,'id':properties['id']+'-'+side,
                     'name':f'San José Pinula · {portion}% {side_name}', 'tariff':tariff,
@@ -151,7 +151,7 @@ def main():
             roads.append(feature({'type':'LineString','coordinates':intersections},{
                 'source':properties['source'],'license':properties['license'],'version':properties['version'],
                 'id':'san-jose-pinula-cut','role':'review-cut','derivation':{**split,'side':'both'},
-                'name':f'Corte propuesto de San José Pinula · 75% oeste Q10 / 25% este Q35 · {longitude:.8f}°'}))
+                'name':f'Corte propuesto de San José Pinula · 60% oeste Q10 / 40% este Q35 · {longitude:.8f}°'}))
         else:
             areas.append(feature(f['geometry'],properties))
     access = by_id[383796078]
@@ -166,6 +166,6 @@ def main():
       {'id':'sausalito','name':'Sausalito','tariff':'CAES','status':'pending','referenceId':'sausalito-access','reason':'Solo referencia vial; confirmar lugar exacto y trazar su límite comercial.'},
       {'id':'pavon','name':'Pavón','tariff':'CAES','status':'pending','referenceId':'node-12019686246','reason':'Nodo de barrio OSM; falta límite del sector. No se asume que sea el recinto penal.'},
     ]
-    save('manifest.json',{'version':'review-2026-10-26-v4','purpose':'local-review-only','productionEnabled':False,'osmSnapshot':original['osm3s']['timestamp_osm_base'],'pending':pending,'layers':{name:hashlib.sha256((DATA/name).read_bytes()).hexdigest() for name in ['areas.geojson','references.geojson','roads.geojson','sources/municipal-context.geojson']},'sources':{p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(SOURCES.iterdir()) if p.is_file()},'transformation':'Keep Santa Catarina Pinula unchanged at Q10; split San Jose Pinula at 75 percent of west-to-east longitude span into west Q10 and east Q35; split original OSM Fraijanes at mid-latitude into north Q10 and south Q35 as user-requested visual proposals, interpolating only two edge intersections; retain original as context. Join OSM outer ways by identical endpoints; orient rings counterclockwise; no simplification, rounding or buffers. Road segments are an incomplete reference, not a corridor or kilometre cut.'})
+    save('manifest.json',{'version':'review-2026-10-26-v5','purpose':'local-review-only','productionEnabled':False,'osmSnapshot':original['osm3s']['timestamp_osm_base'],'pending':pending,'layers':{name:hashlib.sha256((DATA/name).read_bytes()).hexdigest() for name in ['areas.geojson','references.geojson','roads.geojson','sources/municipal-context.geojson']},'sources':{p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(SOURCES.iterdir()) if p.is_file()},'transformation':'Keep Santa Catarina Pinula unchanged at Q10; split San Jose Pinula at 60 percent of west-to-east longitude span into west Q10 and east Q35; split original OSM Fraijanes at mid-latitude into north Q10 and south Q35 as user-requested visual proposals, interpolating only two edge intersections; retain original as context. Join OSM outer ways by identical endpoints; orient rings counterclockwise; no simplification, rounding or buffers. Road segments are an incomplete reference, not a corridor or kilometre cut.'})
 
 if __name__ == '__main__': main()

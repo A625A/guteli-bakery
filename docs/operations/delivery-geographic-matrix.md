@@ -58,14 +58,14 @@ siguen sin aprobación y el catálogo productivo sigue vacío. Ver las
 [fuentes y precisión](../../data/delivery-review/README.md) y la
 [guía de revisión](delivery-geographic-review.md).
 
-## Divisiones visuales (revisión v4)
+## Divisiones visuales (revisión v5)
 
 | Sector                    | Vértices | Tarifa propuesta | Corte               |
 | ------------------------- | -------- | ---------------- | ------------------- |
 | Fraijanes norte           | 168      | Q10              | 14.45415725° N      |
 | Fraijanes sur             | 256      | Q35              | Mismo corte         |
-| San José Pinula oeste 75% | 124      | Q10              | -90.28645692324996° |
-| San José Pinula este 25%  | 66       | Q35              | Mismo corte         |
+| San José Pinula oeste 60% | 99       | Q10              | -90.31626848259995° |
+| San José Pinula este 40%  | 91       | Q35              | Mismo corte         |
 | Santa Catarina Pinula     | 114      | Q10              | Sin recorte         |
 
 Los cinco sectores pasan individualmente el clasificador. Una cuadrícula compara

@@ -32,8 +32,8 @@ reutiliza la misma biblioteca Leaflet y deja intacto ese flujo comercial.
 
 | Capa           | Contenido                                                                                  | Estado inicial                                  |
 | -------------- | ------------------------------------------------------------------------------------------ | ----------------------------------------------- |
-| Azul, Q35      | Zonas 1, 5, 7, 9, 10, 11, 12, 13, 14, 15, 16 y 17; Fraijanes sur; San José Pinula este 25% | 12 zonas OSM y 2 sectores derivados propuestos  |
-| Naranja, Q10   | San José Pinula oeste 75%, Santa Catarina Pinula y Fraijanes norte                         | Propuesta; Peter debe decidir alcance comercial |
+| Azul, Q35      | Zonas 1, 5, 7, 9, 10, 11, 12, 13, 14, 15, 16 y 17; Fraijanes sur; San José Pinula este 40% | 12 zonas OSM y 2 sectores derivados propuestos  |
+| Naranja, Q10   | San José Pinula oeste 60%, Santa Catarina Pinula y Fraijanes norte                         | Propuesta; Peter debe decidir alcance comercial |
 | Puntos dorados | Hitos km35/km36, Pavón, referencia vial de Sausalito, cabecera Fraijanes                   | Referencias, no polígonos de cobertura          |
 | Gris           | Contexto municipal geoBoundaries y vías OSM                                                | Contexto, sin tarifa implícita                  |
 | Sin polígono   | Corredor CAES hasta km35, Sausalito, Pavón                                                 | Pendiente de delimitar                          |
@@ -142,22 +142,22 @@ Para repetir: `npx playwright test --config playwright.delivery-review.config.ts
 Las pruebas del checkout anterior siguen documentadas en su entrega; no se
 presentan como recién ejecutadas ni se repiten sin cambios que lo justifiquen.
 
-## Divisiones visuales actuales (v4)
+## Divisiones visuales actuales (v5)
 
 | Municipio             | Q10 naranja         | Q35 azul           | Corte visual                 |
 | --------------------- | ------------------- | ------------------ | ---------------------------- |
 | Fraijanes             | Norte               | Sur                | Latitud media 14.45415725° N |
-| San José Pinula       | 75% oeste del ancho | 25% este del ancho | Longitud -90.28645692324996° |
+| San José Pinula       | 60% oeste del ancho | 40% este del ancho | Longitud -90.31626848259995° |
 | Santa Catarina Pinula | Completo            | —                  | Sin recorte                  |
 
 Son instrucciones del usuario para propuestas visuales, no aprobación comercial.
-Las proporciones son del rango de coordenadas; no significan mitad o 75% de superficie.
+Las proporciones son del rango de coordenadas; no significan mitad o 60% de superficie.
 Cada línea punteada se mantiene manual en el clasificador. El JSON exporta las
 coordenadas y el método para distinguir estas propuestas de las versiones anteriores.
 «Ver ciudad» sigue encuadrando solo las zonas capitalinas; el filtro Q35 incluye
-también los nuevos sectores. Las exportaciones v1/v2/v3 son evidencia histórica.
+también los nuevos sectores. Las exportaciones v1/v2/v3/v4 son evidencia histórica.
 
-Validación v4: 7 pruebas unitarias de cartografía y 2 de navegador. Se contrastan
+Validación v5: 7 pruebas unitarias de cartografía y 2 de navegador. Se contrastan
 los dos lados con el municipio original sobre una cuadrícula, tarifas Q10/Q35,
 exclusiones exteriores y tratamiento manual de fronteras; también selección,
 colores, exportación y ausencia de aprobación automática.

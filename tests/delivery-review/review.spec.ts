@@ -16,7 +16,7 @@ test('offline real layers, guarded human review, local export and reopening', as
   await expect(page.locator('.area-button')).toHaveCount(20);
   await expect(page.locator('#count')).toContainText('0 / 20');
   await expect(page.locator('.leaflet-overlay-pane path')).not.toHaveCount(0);
-  for (const name of ['San José Pinula · 75% oeste', 'Santa Catarina Pinula']) {
+  for (const name of ['San José Pinula · 60% oeste', 'Santa Catarina Pinula']) {
     await page.getByRole('button', { name: new RegExp(name + ' Q10') }).click();
     await expect(page.locator('#metadata')).toContainText('Q10 · Carretera');
     await expect(page.locator('#metadata a')).toHaveAttribute(
@@ -41,7 +41,7 @@ test('offline real layers, guarded human review, local export and reopening', as
     'Propuesta · por revisar',
   );
   await page
-    .getByRole('button', { name: /San José Pinula · 25% este Q35/ })
+    .getByRole('button', { name: /San José Pinula · 40% este Q35/ })
     .click();
   await expect(page.locator('#metadata')).toContainText('Q35');
   await expect(page.locator('#area-description')).toContainText(
@@ -79,7 +79,7 @@ test('offline real layers, guarded human review, local export and reopening', as
     ),
   ).toMatchObject({
     intendedTariff: 'CAES',
-    derivation: { westWidthRatio: 0.75, side: 'west' },
+    derivation: { westWidthRatio: 0.6, side: 'west' },
   });
   expect(
     exported.areas.find(

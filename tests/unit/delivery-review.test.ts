@@ -158,7 +158,7 @@ it.each([
   {
     name: 'San José Pinula',
     axis: 0,
-    ratio: 0.75,
+    ratio: 0.6,
     aboveId: 'gb-79465075B29005595464714-east',
     belowId: 'gb-79465075B29005595464714-west',
     aboveTariff: 'CAPITAL',

@@ -75,12 +75,12 @@ Los dos primeros comandos regeneran derivados de las instantáneas locales, sin
 consultar servicios. No actualizan fuentes ni aprueban áreas. El visor muestra
 los datos en `http://127.0.0.1:3140/`. Consulta la [guía para revisar con Peter](../../docs/operations/delivery-geographic-review.md).
 
-## Divisiones visuales solicitadas (v4)
+## Divisiones visuales solicitadas (v5)
 
 - Fraijanes: norte Q10 (168 vértices) y sur Q35 (256), corte en latitud
   **14.45415725° N**, media entre extremos. Fuente OSM conservada como contexto.
-- San José Pinula: **75% oeste Q10** (124 vértices), **25% este Q35** (66),
-  corte en longitud **-90.28645692324996°**, al 75% del rango oeste–este.
+- San José Pinula: **60% oeste Q10** (99 vértices), **40% este Q35** (91),
+  corte en longitud **-90.31626848259995°**, al 60% del rango oeste–este.
   Fuente geoBoundaries original conservada en sources/municipal-context.geojson.
 - Santa Catarina Pinula: polígono original completo Q10, sin cambios.
 

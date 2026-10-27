@@ -220,12 +220,12 @@
     },
     {
       "id": "gb-79465075B29005595464714-west",
-      "name": "San José Pinula · 75% oeste",
-      "vertices": 124,
-      "maxRingVertices": 124,
+      "name": "San José Pinula · 60% oeste",
+      "vertices": 99,
+      "maxRingVertices": 99,
       "classifierCompatible": true,
       "referencePoint": {
-        "lng": -90.35757653156529,
+        "lng": -90.37248231124029,
         "lat": 14.549374245000052,
         "source": "https://www.geoboundaries.org/api/current/gbOpen/GTM/ADM2/",
         "kind": "computed-interior-scanline"
@@ -235,13 +235,13 @@
     },
     {
       "id": "gb-79465075B29005595464714-east",
-      "name": "San José Pinula · 25% este",
-      "vertices": 66,
-      "maxRingVertices": 66,
+      "name": "San José Pinula · 40% este",
+      "vertices": 91,
+      "maxRingVertices": 91,
       "classifierCompatible": true,
       "referencePoint": {
-        "lng": -90.28038997372198,
-        "lat": 14.56422089108071,
+        "lng": -90.29386999242857,
+        "lat": 14.551696721763427,
         "source": "https://www.geoboundaries.org/api/current/gbOpen/GTM/ADM2/",
         "kind": "computed-interior-scanline"
       },
@@ -537,7 +537,7 @@
       }
     },
     {
-      "name": "San José Pinula · 75% oeste",
+      "name": "San José Pinula · 60% oeste",
       "point": {
         "lng": -90.37861339299997,
         "lat": 14.482252738000057
@@ -550,10 +550,10 @@
       }
     },
     {
-      "name": "San José Pinula · 25% este",
+      "name": "San José Pinula · 40% este",
       "point": {
-        "lng": -90.28645692324996,
-        "lat": 14.518259263161386
+        "lng": -90.31626848259995,
+        "lat": 14.493210924526819
       },
       "source": "https://www.geoboundaries.org/api/current/gbOpen/GTM/ADM2/",
       "result": {
