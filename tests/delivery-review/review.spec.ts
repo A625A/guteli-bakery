@@ -13,10 +13,10 @@ test('offline real layers, guarded human review, local export and reopening', as
     page.getByRole('heading', { name: 'Hasta dónde entregamos' }),
   ).toBeVisible();
   await expect(page.locator('#error')).toBeHidden();
-  await expect(page.locator('.area-button')).toHaveCount(18);
-  await expect(page.locator('#count')).toContainText('0 / 18');
+  await expect(page.locator('.area-button')).toHaveCount(20);
+  await expect(page.locator('#count')).toContainText('0 / 20');
   await expect(page.locator('.leaflet-overlay-pane path')).not.toHaveCount(0);
-  for (const name of ['San José Pinula', 'Santa Catarina Pinula']) {
+  for (const name of ['San José Pinula · 75% oeste', 'Santa Catarina Pinula']) {
     await page.getByRole('button', { name: new RegExp(name + ' Q10') }).click();
     await expect(page.locator('#metadata')).toContainText('Q10 · Carretera');
     await expect(page.locator('#metadata a')).toHaveAttribute(
@@ -34,7 +34,19 @@ test('offline real layers, guarded human review, local export and reopening', as
     'latitud media',
   );
   await expect(page.locator('#approve')).toBeDisabled();
-  await expect(page.locator('path[stroke-dasharray="8 6"]')).toHaveCount(1);
+  await expect(page.locator('path[stroke-dasharray="8 6"]')).toHaveCount(2);
+  await page.getByRole('button', { name: /Fraijanes · mitad sur Q35/ }).click();
+  await expect(page.locator('#metadata')).toContainText('Q35');
+  await expect(page.locator('#area-status')).toHaveText(
+    'Propuesta · por revisar',
+  );
+  await page
+    .getByRole('button', { name: /San José Pinula · 25% este Q35/ })
+    .click();
+  await expect(page.locator('#metadata')).toContainText('Q35');
+  await expect(page.locator('#area-description')).toContainText(
+    'ancho este–oeste',
+  );
   await page
     .getByRole('button', { name: /Zona 10 · Ciudad de Guatemala/ })
     .click();
@@ -61,6 +73,19 @@ test('offline real layers, guarded human review, local export and reopening', as
   const download = await downloadPromise;
   const exported = JSON.parse(await readFile((await download.path())!, 'utf8'));
   expect(exported.productionEnabled).toBe(false);
+  expect(
+    exported.areas.find(
+      (a: { id: string }) => a.id === 'gb-79465075B29005595464714-west',
+    ),
+  ).toMatchObject({
+    intendedTariff: 'CAES',
+    derivation: { westWidthRatio: 0.75, side: 'west' },
+  });
+  expect(
+    exported.areas.find(
+      (a: { id: string }) => a.id === 'gb-79465075B29005595464714-east',
+    ).intendedTariff,
+  ).toBe('CAPITAL');
   expect(
     exported.areas.find((a: { id: string }) => a.id === 'fraijanes-north')
       .derivation,
@@ -100,7 +125,7 @@ test('offline real layers, guarded human review, local export and reopening', as
   });
   expect(external).toEqual([]);
   await page.reload();
-  await expect(page.locator('#count')).toContainText('0 / 18');
+  await expect(page.locator('#count')).toContainText('0 / 20');
 });
 test('bad geometry, missing data and unsafe file requests fail closed', async ({
   page,

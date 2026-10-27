@@ -301,7 +301,7 @@ try {
     map.fitBounds(allBounds, { animate: false, padding: [25, 25] });
   $('capital').onclick = () => {
     const bounds = L.latLngBounds([]);
-    for (const a of areas.filter((a) => a.tariff === 'CAPITAL'))
+    for (const a of areas.filter((a) => a.zone != null))
       bounds.extend(layers[a.id].getBounds());
     map.fitBounds(bounds, { animate: false, padding: [25, 25] });
   };

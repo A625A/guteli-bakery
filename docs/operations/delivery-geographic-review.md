@@ -30,13 +30,13 @@ reutiliza la misma biblioteca Leaflet y deja intacto ese flujo comercial.
 
 ## Qué se muestra
 
-| Capa           | Contenido                                                                | Estado inicial                                  |
-| -------------- | ------------------------------------------------------------------------ | ----------------------------------------------- |
-| Azul, Q35      | Zonas 1, 5, 7, 9, 10, 11, 12, 13, 14, 15, 16 y 17 de Ciudad de Guatemala | 12 polígonos administrativos OSM propuestos     |
-| Naranja, Q10   | San José Pinula, Santa Catarina Pinula y Fraijanes norte                 | Propuesta; Peter debe decidir alcance comercial |
-| Puntos dorados | Hitos km35/km36, Pavón, referencia vial de Sausalito, cabecera Fraijanes | Referencias, no polígonos de cobertura          |
-| Gris           | Contexto municipal geoBoundaries y vías OSM                              | Contexto, sin tarifa implícita                  |
-| Sin polígono   | Corredor CAES hasta km35, Sausalito, Pavón                               | Pendiente de delimitar                          |
+| Capa           | Contenido                                                                                  | Estado inicial                                  |
+| -------------- | ------------------------------------------------------------------------------------------ | ----------------------------------------------- |
+| Azul, Q35      | Zonas 1, 5, 7, 9, 10, 11, 12, 13, 14, 15, 16 y 17; Fraijanes sur; San José Pinula este 25% | 12 zonas OSM y 2 sectores derivados propuestos  |
+| Naranja, Q10   | San José Pinula oeste 75%, Santa Catarina Pinula y Fraijanes norte                         | Propuesta; Peter debe decidir alcance comercial |
+| Puntos dorados | Hitos km35/km36, Pavón, referencia vial de Sausalito, cabecera Fraijanes                   | Referencias, no polígonos de cobertura          |
+| Gris           | Contexto municipal geoBoundaries y vías OSM                                                | Contexto, sin tarifa implícita                  |
+| Sin polígono   | Corredor CAES hasta km35, Sausalito, Pavón                                                 | Pendiente de delimitar                          |
 
 Recogida sigue siendo Q0. No existe otra zona gratuita. La tarifa de las áreas
 es la intención documentada, no un precio autorizado por seleccionar el mapa.
@@ -80,7 +80,7 @@ un homónimo en Villa Nueva y los bordes comprobados. El informe reproducible
 [validation.json](../../data/delivery-review/validation.json) distingue pruebas
 estructurales de aprobación comercial.
 
-Las 15 propuestas actuales suman 5704 vértices, incluyendo las intersecciones del recorte. Tres anillos superan 512 y el catálogo
+Las 17 propuestas actuales suman 5965 vértices, incluyendo las intersecciones del recorte. Tres anillos superan 512 y el catálogo
 supera 4096. No se amplió el clasificador ni se simplificó silenciosamente.
 Las propuestas aún requieren revisión GIS, tratamiento de fronteras compartidas,
 simplificación medida si procede y nueva versión aprobada. La aprobación visual
@@ -142,15 +142,22 @@ Para repetir: `npx playwright test --config playwright.delivery-review.config.ts
 Las pruebas del checkout anterior siguen documentadas en su entrega; no se
 presentan como recién ejecutadas ni se repiten sin cambios que lo justifiquen.
 
-## Ajuste posterior: Pinula y norte de Fraijanes
+## Divisiones visuales actuales (v4)
 
-Por indicación del usuario, San José Pinula y Santa Catarina Pinula figuran como
-Q10 · Carretera usando sus polígonos reales ya descargados. Fraijanes completo
-permanece como contexto; su parte norte se recorta por la latitud media entre
-extremos: **14.45415725° N**. El corte punteado es una propuesta visual solicitada,
-no un límite oficial ni la mitad de la superficie. Ningún sector se aprueba automáticamente.
-La versión de revisión es v3; las exportaciones v1/v2 son evidencia histórica.
-El JSON exportado incluye el método y la latitud del recorte para identificarlo.
+| Municipio             | Q10 naranja         | Q35 azul           | Corte visual                 |
+| --------------------- | ------------------- | ------------------ | ---------------------------- |
+| Fraijanes             | Norte               | Sur                | Latitud media 14.45415725° N |
+| San José Pinula       | 75% oeste del ancho | 25% este del ancho | Longitud -90.28645692324996° |
+| Santa Catarina Pinula | Completo            | —                  | Sin recorte                  |
 
-Validación del ajuste v3: 6 pruebas unitarias de cartografía y 2 de navegador;
-se comprueba inclusión al norte, exclusión al sur y tratamiento manual del corte.
+Son instrucciones del usuario para propuestas visuales, no aprobación comercial.
+Las proporciones son del rango de coordenadas; no significan mitad o 75% de superficie.
+Cada línea punteada se mantiene manual en el clasificador. El JSON exporta las
+coordenadas y el método para distinguir estas propuestas de las versiones anteriores.
+«Ver ciudad» sigue encuadrando solo las zonas capitalinas; el filtro Q35 incluye
+también los nuevos sectores. Las exportaciones v1/v2/v3 son evidencia histórica.
+
+Validación v4: 7 pruebas unitarias de cartografía y 2 de navegador. Se contrastan
+los dos lados con el municipio original sobre una cuadrícula, tarifas Q10/Q35,
+exclusiones exteriores y tratamiento manual de fronteras; también selección,
+colores, exportación y ausencia de aprobación automática.

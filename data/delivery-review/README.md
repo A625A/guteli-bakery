@@ -17,8 +17,8 @@ pendientes de delimitación. No importar estos archivos al catálogo de producci
   fuente original CONRED / OCHA FISS, año representado 2021, versión estática
   `9469f09`, boundaryID `GTM-ADM2-79465075`. Licencia original declarada
   [CC BY 3.0 IGO](https://creativecommons.org/licenses/by/3.0/igo/); atribuir a
-  CONRED/OCHA FISS y geoBoundaries e indicar la selección. Los polígonos de San José Pinula y Santa Catarina Pinula también se copian
-  sin modificar a `areas.geojson` como propuestas Q10, bajo esta misma licencia.
+  CONRED/OCHA FISS y geoBoundaries e indicar la selección. Santa Catarina Pinula se copia sin modificar a `areas.geojson` como propuesta Q10;
+  San José Pinula se divide en dos propuestas derivadas, bajo esta misma licencia.
   Los otros cinco municipios son contexto; ningún polígono certifica cobertura comercial.
 - Leaflet 1.9.4 ya instalado: BSD-2-Clause; se sirve desde `node_modules` y se
   conservan sus avisos. No se añade CDN ni dependencia.
@@ -46,8 +46,8 @@ Sausalito es el primer vértice real de una vía identificada, no un centro de
 población asumido. Las carreteras son una selección incompleta de CA-1 Oriente y
 vías de Sausalito; no constituyen corredor de entrega ni ruta calculada.
 
-Los 15 polígonos propuestos suman 5704 vértices, excediendo 4096. Anillos que
-exceden 512: zona 7 (789), zona 16 (685), zona 17 (723). Los otros doce pasan
+Los 17 polígonos propuestos suman 5965 vértices, excediendo 4096. Anillos que
+exceden 512: zona 7 (789), zona 16 (685), zona 17 (723). Los otros catorce pasan
 individualmente el clasificador actual. No se afirma validación topológica
 completa de los tres rechazados ni admisión conjunta. El visor comprueba tipo,
 coordenadas WGS84 y cierre; la evaluación productiva sigue bloqueada.
@@ -75,16 +75,22 @@ Los dos primeros comandos regeneran derivados de las instantáneas locales, sin
 consultar servicios. No actualizan fuentes ni aprueban áreas. El visor muestra
 los datos en `http://127.0.0.1:3140/`. Consulta la [guía para revisar con Peter](../../docs/operations/delivery-geographic-review.md).
 
-## Cambio solicitado: Carretera Q10
+## Divisiones visuales solicitadas (v4)
 
-San José Pinula y Santa Catarina Pinula son propuestas Q10, con geometría
-municipal geoBoundaries 2021 intacta. Sus etiquetas usan el centro de la caja
-envolvente, calculado solo para mostrar el nombre; no son localidades observadas.
-Fraijanes completo se conserva como contexto sin tarifa. Por instrucción explícita
-del usuario, se recorta al norte de la latitud media 14.45415725° N. El derivado
-conserva vértices originales y añade únicamente las dos intersecciones interpoladas
-con la línea de corte; 168 vértices contando cierre. No equivale a mitad de área
-ni a un límite administrativo. Se identifica en propiedades y exportaciones como
-propuesta visual derivada de OSM; su línea punteada se incluye en roads.geojson
-con role=review-cut, sin presentarla como carretera. El recorte rechaza geometrías
-con huecos o más de dos cruces, que requieren tratamiento GIS específico.
+- Fraijanes: norte Q10 (168 vértices) y sur Q35 (256), corte en latitud
+  **14.45415725° N**, media entre extremos. Fuente OSM conservada como contexto.
+- San José Pinula: **75% oeste Q10** (124 vértices), **25% este Q35** (66),
+  corte en longitud **-90.28645692324996°**, al 75% del rango oeste–este.
+  Fuente geoBoundaries original conservada en sources/municipal-context.geojson.
+- Santa Catarina Pinula: polígono original completo Q10, sin cambios.
+
+Las proporciones corresponden a rangos de coordenadas, no a superficie.
+Los recortes conservan vértices originales y añaden dos intersecciones por línea.
+El generador rechaza huecos, varios anillos o más de dos cruces; no conecta
+componentes separados artificialmente. Los cortes se muestran punteados y se
+identifican como role=review-cut, sin presentarlos como carreteras o límites oficiales.
+Las exportaciones incluyen método, coordenada, lado y proporción cuando aplica.
+Las etiquetas son calculadas para visualización: en San José Pinula se ubican
+sobre un intervalo interior de la línea horizontal media del sector; no son
+localidades observadas. Las demás etiquetas calculadas usan caja envolvente.
+Ninguna de estas propuestas activa tarifas ni tiene aprobación automática.

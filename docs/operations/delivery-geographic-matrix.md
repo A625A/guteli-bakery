@@ -24,7 +24,7 @@ exclusivamente, sin cargar un catálogo productivo.
 
 ## Corredor, sectores y homónimos
 
-La coincidencia siguiente solo se comprobó contra los doce polígonos que admite
+La coincidencia siguiente solo se comprobó contra los catorce polígonos que admite
 el clasificador. Zonas 7/16/17 no se evaluaron por su tamaño; no se presenta una
 comprobación exhaustiva de toda la geometría real.
 
@@ -41,39 +41,41 @@ comprobación exhaustiva de toda la geometría real.
 
 ## Bordes, ambigüedad y pruebas sintéticas
 
-| Caso                              | Evidencia / método                                                                                   | Resultado y límite                                                      |
-| --------------------------------- | ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| Bordes reales                     | Primer vértice de cada uno de los doce polígonos compatibles, coordenadas y URL en `validation.json` | Los doce retornan manual/boundary; no se supone inclusión               |
-| Zonas 7, 16, 17                   | 789, 685 y 723 vértices por anillo                                                                   | Rechazadas por límite 512; revisión GIS pendiente                       |
-| Catálogo real conjunto            | 5704 vértices                                                                                        | Rechazado por máximo 4096; no cobertura validada                        |
-| Fronteras compartidas reales      | Revisar con Peter/GIS todos los contactos y diferencias entre fuentes                                | No se certifican continuidad, ausencia de huecos o solapes del conjunto |
-| Q10/Q35 y recogida Q0             | Geometrías sintéticas de `tests/support/delivery/coverage.ts`                                        | Pruebas de importes del servidor; no evidencia de geografía real        |
-| Solapes y límites ambiguos        | Polígonos sintéticos con tarifas distintas y casos de borde                                          | Manual/rechazo; no se trasladan al mapa real                            |
-| Hito inclusivo                    | Prueba sintética `boundary: include`; no radio ni distancia recta                                    | La inclusión de km35 real exige geometría y aprobación pendientes       |
-| Nombres iguales en otro municipio | Punto público de Zona 10 de Villa Nueva + prueba sintética de nombres                                | El nombre no selecciona tarifa; continúa envío por confirmar            |
-| Fuera de cobertura                | Puntos sintéticos exteriores y referencias públicas km36/Villa Nueva                                 | No se inventa tarifa ni se presume envío gratis                         |
+| Caso                              | Evidencia / método                                                                                      | Resultado y límite                                                      |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Bordes reales                     | Primer vértice de cada uno de los catorce polígonos compatibles, coordenadas y URL en `validation.json` | Los catorce retornan manual/boundary; no se supone inclusión            |
+| Zonas 7, 16, 17                   | 789, 685 y 723 vértices por anillo                                                                      | Rechazadas por límite 512; revisión GIS pendiente                       |
+| Catálogo real conjunto            | 5965 vértices                                                                                           | Rechazado por máximo 4096; no cobertura validada                        |
+| Fronteras compartidas reales      | Revisar con Peter/GIS todos los contactos y diferencias entre fuentes                                   | No se certifican continuidad, ausencia de huecos o solapes del conjunto |
+| Q10/Q35 y recogida Q0             | Geometrías sintéticas de `tests/support/delivery/coverage.ts`                                           | Pruebas de importes del servidor; no evidencia de geografía real        |
+| Solapes y límites ambiguos        | Polígonos sintéticos con tarifas distintas y casos de borde                                             | Manual/rechazo; no se trasladan al mapa real                            |
+| Hito inclusivo                    | Prueba sintética `boundary: include`; no radio ni distancia recta                                       | La inclusión de km35 real exige geometría y aprobación pendientes       |
+| Nombres iguales en otro municipio | Punto público de Zona 10 de Villa Nueva + prueba sintética de nombres                                   | El nombre no selecciona tarifa; continúa envío por confirmar            |
+| Fuera de cobertura                | Puntos sintéticos exteriores y referencias públicas km36/Villa Nueva                                    | No se inventa tarifa ni se presume envío gratis                         |
 
 No se midieron tolerancias de simplificación: no se simplificó. Las propuestas
 siguen sin aprobación y el catálogo productivo sigue vacío. Ver las
 [fuentes y precisión](../../data/delivery-review/README.md) y la
 [guía de revisión](delivery-geographic-review.md).
 
-## Pinula y Fraijanes norte (revisión v3)
+## Divisiones visuales (revisión v4)
 
-Los polígonos municipales originales de San José Pinula (185 vértices) y Santa
-Catarina Pinula (114) se añaden como Q10. Ambos pasan individualmente el clasificador.
-Sus puntos de etiqueta son centros calculados de caja envolvente, no ubicaciones
-observadas: respectivamente (lat, lon) 14.549374245000052, -90.33614285549996 y
-14.567031847500061, -90.46573343449995. Ambos resultan interiores; sus primeros
-vértices devuelven manual/boundary. Fuente geoBoundaries 9469f09, CC BY 3.0 IGO.
+| Sector                    | Vértices | Tarifa propuesta | Corte               |
+| ------------------------- | -------- | ---------------- | ------------------- |
+| Fraijanes norte           | 168      | Q10              | 14.45415725° N      |
+| Fraijanes sur             | 256      | Q35              | Mismo corte         |
+| San José Pinula oeste 75% | 124      | Q10              | -90.28645692324996° |
+| San José Pinula este 25%  | 66       | Q35              | Mismo corte         |
+| Santa Catarina Pinula     | 114      | Q10              | Sin recorte         |
 
-Fraijanes completo queda como contexto. Su parte norte se deriva con el corte
-solicitado por latitud media **14.45415725° N** (168 vértices). Cabecera de Fraijanes,
-Pavón y referencia vial de Sausalito coinciden estructuralmente con el derivado;
-esto no resuelve los límites propios de los sectores ni aprueba cobertura comercial.
+Los cinco sectores pasan individualmente el clasificador. Una cuadrícula compara
+ambos lados de cada división con el original: no añade exterior y conserva el
+interior con la tarifa solicitada. Los puntos medios de ambos cortes devuelven
+manual/boundary en los dos polígonos colindantes. Solo se interpolan dos cruces
+por línea; los demás vértices derivan de la fuente original.
 
-Una cuadrícula de puntos contrasta el polígono derivado con el original: conserva
-su interior al norte y excluye el sur. El punto medio del segmento de corte
-retorna manual/boundary. Los vértices conservados provienen del original y solo
-se añaden dos intersecciones sobre sus aristas. No se confunde este corte visual
-con un límite oficial o con mitad de superficie.
+Los porcentajes describen el rango este–oeste, no superficie municipal. Las
+etiquetas son posiciones calculadas para visualización; no domicilios ni localidades
+observadas. Cabecera de Fraijanes, Pavón y referencia vial de Sausalito coinciden
+estructuralmente con Fraijanes norte, sin aprobar automáticamente sus coberturas.
+Fuentes: Fraijanes OSM/ODbL; Pinula geoBoundaries 9469f09/CC BY 3.0 IGO.

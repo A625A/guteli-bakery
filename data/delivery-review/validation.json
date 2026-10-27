@@ -5,7 +5,7 @@
     "catalogueVertices": 4096,
     "ringVertices": 512
   },
-  "totalVertices": 5704,
+  "totalVertices": 5965,
   "combinedClassifierCompatible": false,
   "areas": [
     {
@@ -204,16 +204,46 @@
       "commercialResult": "PENDING_OWNER_APPROVAL"
     },
     {
-      "id": "gb-79465075B29005595464714",
-      "name": "San José Pinula",
-      "vertices": 185,
-      "maxRingVertices": 185,
+      "id": "fraijanes-south",
+      "name": "Fraijanes · mitad sur",
+      "vertices": 256,
+      "maxRingVertices": 256,
       "classifierCompatible": true,
       "referencePoint": {
-        "lng": -90.33614285549996,
+        "lng": -90.44761055000001,
+        "lat": 14.408953975000001,
+        "source": "https://www.openstreetmap.org/relation/9624941",
+        "kind": "computed-bounds-center"
+      },
+      "structuralReferenceResult": "automatic",
+      "commercialResult": "PENDING_OWNER_APPROVAL"
+    },
+    {
+      "id": "gb-79465075B29005595464714-west",
+      "name": "San José Pinula · 75% oeste",
+      "vertices": 124,
+      "maxRingVertices": 124,
+      "classifierCompatible": true,
+      "referencePoint": {
+        "lng": -90.35757653156529,
         "lat": 14.549374245000052,
         "source": "https://www.geoboundaries.org/api/current/gbOpen/GTM/ADM2/",
-        "kind": "computed-bounds-center"
+        "kind": "computed-interior-scanline"
+      },
+      "structuralReferenceResult": "automatic",
+      "commercialResult": "PENDING_OWNER_APPROVAL"
+    },
+    {
+      "id": "gb-79465075B29005595464714-east",
+      "name": "San José Pinula · 25% este",
+      "vertices": 66,
+      "maxRingVertices": 66,
+      "classifierCompatible": true,
+      "referencePoint": {
+        "lng": -90.28038997372198,
+        "lat": 14.56422089108071,
+        "source": "https://www.geoboundaries.org/api/current/gbOpen/GTM/ADM2/",
+        "kind": "computed-interior-scanline"
       },
       "structuralReferenceResult": "automatic",
       "commercialResult": "PENDING_OWNER_APPROVAL"
@@ -494,10 +524,36 @@
       }
     },
     {
-      "name": "San José Pinula",
+      "name": "Fraijanes · mitad sur",
       "point": {
-        "lng": -90.38090711999996,
-        "lat": 14.48020629900003
+        "lng": -90.4801906,
+        "lat": 14.4213084
+      },
+      "source": "https://www.openstreetmap.org/relation/9624941",
+      "result": {
+        "kind": "manual",
+        "shippingMinor": null,
+        "reason": "boundary"
+      }
+    },
+    {
+      "name": "San José Pinula · 75% oeste",
+      "point": {
+        "lng": -90.37861339299997,
+        "lat": 14.482252738000057
+      },
+      "source": "https://www.geoboundaries.org/api/current/gbOpen/GTM/ADM2/",
+      "result": {
+        "kind": "manual",
+        "shippingMinor": null,
+        "reason": "boundary"
+      }
+    },
+    {
+      "name": "San José Pinula · 25% este",
+      "point": {
+        "lng": -90.28645692324996,
+        "lat": 14.518259263161386
       },
       "source": "https://www.geoboundaries.org/api/current/gbOpen/GTM/ADM2/",
       "result": {
