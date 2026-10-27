@@ -23,7 +23,7 @@ it('review contains exactly the requested real proposals, all unapproved, with c
   const proposals = read('areas.geojson').features.filter(
     (f: { properties: { role: string } }) => f.properties.role === 'proposal',
   );
-  expect(proposals).toHaveLength(13);
+  expect(proposals).toHaveLength(14);
   expect(
     proposals
       .filter(
@@ -35,12 +35,15 @@ it('review contains exactly the requested real proposals, all unapproved, with c
   ).toEqual([1, 5, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17]);
   for (const f of proposals) {
     expect(f.properties.status).toBe('proposed');
-    expect(f.properties.license).toBe('ODbL-1.0');
+    expect(f.properties.license).toBe(
+      f.properties.id.startsWith('gb-') ? 'CC-BY-3.0-IGO' : 'ODbL-1.0',
+    );
     expect(f.properties.source).toMatch(
-      /^https:\/\/www.openstreetmap.org\/relation\/\d+$/,
+      /^https:\/\/(www.openstreetmap.org\/relation\/\d+|www.geoboundaries.org\/api\/current\/gbOpen\/GTM\/ADM2\/)$/,
     );
   }
   expect(manifest.pending.map((a: { id: string }) => a.id)).toEqual([
+    'fraijanes-north',
     'caes-corridor',
     'sausalito',
     'pavon',
@@ -48,7 +51,7 @@ it('review contains exactly the requested real proposals, all unapproved, with c
 });
 it('original real geometries honestly report classifier limits without silently simplifying them', () => {
   const report = read('validation.json');
-  expect(report.totalVertices).toBe(5656);
+  expect(report.totalVertices).toBe(5536);
   expect(report.combinedClassifierCompatible).toBe(false);
   const proposals = read('areas.geojson').features.filter(
     (f: { properties: { role: string } }) => f.properties.role === 'proposal',
@@ -92,7 +95,7 @@ it('review cannot be imported as a production coverage catalogue', () => {
 
 it('real boundary probes stay manual and no reference is represented as commercial approval', () => {
   const report = read('validation.json');
-  expect(report.boundaryCases).toHaveLength(10);
+  expect(report.boundaryCases).toHaveLength(11);
   for (const row of report.boundaryCases)
     expect(row.result).toMatchObject({
       kind: 'manual',
@@ -108,4 +111,37 @@ it('real boundary probes stay manual and no reference is represented as commerci
       r.name.includes('Villa Nueva'),
     ).compatibleGeometryMatches,
   ).toEqual([]);
+});
+
+it('Pinula proposals preserve source boundaries and whole Fraijanes is no longer Q10', () => {
+  const areas = read('areas.geojson').features;
+  const context = read('sources/municipal-context.geojson').features;
+  for (const name of ['San José Pinula', 'Santa Catarina Pinula']) {
+    const proposal = areas.find(
+      (f: { properties: Record<string, string>; geometry: unknown }) =>
+        f.properties.name === name,
+    );
+    expect(proposal.properties).toMatchObject({
+      tariff: 'CAES',
+      status: 'proposed',
+      role: 'proposal',
+    });
+    expect(proposal.geometry).toEqual(
+      context.find(
+        (f: { properties: Record<string, string>; geometry: unknown }) =>
+          f.properties.shapeName === name,
+      ).geometry,
+    );
+  }
+  expect(
+    areas.find(
+      (f: { properties: Record<string, string>; geometry: unknown }) =>
+        f.properties.id === 'osm-9624941',
+    ).properties,
+  ).toMatchObject({ role: 'context', tariff: null });
+  expect(
+    read('manifest.json').pending.find(
+      (a: { id: string }) => a.id === 'fraijanes-north',
+    ),
+  ).toMatchObject({ tariff: 'CAES', status: 'pending' });
 });

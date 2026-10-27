@@ -1,15 +1,15 @@
 # Cartografía para revisión local — no es cobertura comercial
 
-Todos los polígonos empiezan como **propuesta**. CAES, Sausalito y Pavón quedan
+Todos los polígonos empiezan como **propuesta**. Fraijanes norte, CAES, Sausalito y Pavón quedan
 pendientes de delimitación. No importar estos archivos al catálogo de producción.
 
 ## Fuentes y licencias
 
-- `areas.geojson`, `references.geojson`, `roads.geojson` y las instantáneas
+- Los objetos de origen OSM en `areas.geojson`, `references.geojson`, `roads.geojson` y las instantáneas
   `sources/osm-*.json`: © OpenStreetMap contributors, [ODbL 1.0](https://opendatacommons.org/licenses/odbl/1-0/).
   [Atribución y condiciones](https://www.openstreetmap.org/copyright).
   Cada objeto incluye URL, versión y fecha de edición. La base derivada OSM se
-  distribuye bajo ODbL; conservar atribución y obligaciones de compartir la base
+  distribuye bajo ODbL para los objetos de origen OSM; conservar atribución y obligaciones de compartir la base
   derivada cuando corresponda. No aplicar esta licencia automáticamente al código
   de la aplicación ni a la capa separada de geoBoundaries.
 - `sources/municipal-context.geojson`: selección sin desplazamiento de siete
@@ -17,8 +17,9 @@ pendientes de delimitación. No importar estos archivos al catálogo de producci
   fuente original CONRED / OCHA FISS, año representado 2021, versión estática
   `9469f09`, boundaryID `GTM-ADM2-79465075`. Licencia original declarada
   [CC BY 3.0 IGO](https://creativecommons.org/licenses/by/3.0/igo/); atribuir a
-  CONRED/OCHA FISS y geoBoundaries e indicar la selección. Esta capa es solo
-  contexto fechado, no certificación catastral ni definición comercial.
+  CONRED/OCHA FISS y geoBoundaries e indicar la selección. Los polígonos de San José Pinula y Santa Catarina Pinula también se copian
+  sin modificar a `areas.geojson` como propuestas Q10, bajo esta misma licencia.
+  Los otros cinco municipios son contexto; ningún polígono certifica cobertura comercial.
 - Leaflet 1.9.4 ya instalado: BSD-2-Clause; se sirve desde `node_modules` y se
   conservan sus avisos. No se añade CDN ni dependencia.
 
@@ -45,8 +46,8 @@ Sausalito es el primer vértice real de una vía identificada, no un centro de
 población asumido. Las carreteras son una selección incompleta de CA-1 Oriente y
 vías de Sausalito; no constituyen corredor de entrega ni ruta calculada.
 
-Los 13 polígonos propuestos suman 5656 vértices, excediendo 4096. Anillos que
-exceden 512: zona 7 (789), zona 16 (685), zona 17 (723). Los otros diez pasan
+Los 14 polígonos propuestos suman 5536 vértices, excediendo 4096. Anillos que
+exceden 512: zona 7 (789), zona 16 (685), zona 17 (723). Los otros once pasan
 individualmente el clasificador actual. No se afirma validación topológica
 completa de los tres rechazados ni admisión conjunta. El visor comprueba tipo,
 coordenadas WGS84 y cierre; la evaluación productiva sigue bloqueada.
@@ -73,3 +74,11 @@ npm run delivery:review
 Los dos primeros comandos regeneran derivados de las instantáneas locales, sin
 consultar servicios. No actualizan fuentes ni aprueban áreas. El visor muestra
 los datos en `http://127.0.0.1:3140/`. Consulta la [guía para revisar con Peter](../../docs/operations/delivery-geographic-review.md).
+
+## Cambio solicitado: Carretera Q10
+
+San José Pinula y Santa Catarina Pinula son propuestas Q10, con geometría
+municipal geoBoundaries 2021 intacta. Sus etiquetas usan el centro de la caja
+envolvente, calculado solo para mostrar el nombre; no son localidades observadas.
+Fraijanes completo se conserva como contexto sin tarifa. La mitad norte queda
+pendiente de acordar el corte, sin asumir que significa mitad del área ni una carretera concreta.

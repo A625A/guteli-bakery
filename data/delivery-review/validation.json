@@ -5,7 +5,7 @@
     "catalogueVertices": 4096,
     "ringVertices": 512
   },
-  "totalVertices": 5656,
+  "totalVertices": 5536,
   "combinedClassifierCompatible": false,
   "areas": [
     {
@@ -17,7 +17,8 @@
       "referencePoint": {
         "lng": -90.4653976,
         "lat": 14.6453355,
-        "source": "https://www.openstreetmap.org/node/1073096954"
+        "source": "https://www.openstreetmap.org/node/1073096954",
+        "kind": "public-osm-node"
       },
       "structuralReferenceResult": "manual",
       "commercialResult": "PENDING_OWNER_APPROVAL"
@@ -31,7 +32,8 @@
       "referencePoint": {
         "lng": -90.510237,
         "lat": 14.6368919,
-        "source": "https://www.openstreetmap.org/node/6478263720"
+        "source": "https://www.openstreetmap.org/node/6478263720",
+        "kind": "public-osm-node"
       },
       "structuralReferenceResult": "automatic",
       "commercialResult": "PENDING_OWNER_APPROVAL"
@@ -45,23 +47,10 @@
       "referencePoint": {
         "lng": -90.5482471,
         "lat": 14.6287744,
-        "source": "https://www.openstreetmap.org/node/2691207052"
+        "source": "https://www.openstreetmap.org/node/2691207052",
+        "kind": "public-osm-node"
       },
       "structuralReferenceResult": "manual",
-      "commercialResult": "PENDING_OWNER_APPROVAL"
-    },
-    {
-      "id": "osm-9624941",
-      "name": "Fraijanes",
-      "vertices": 419,
-      "maxRingVertices": 419,
-      "classifierCompatible": true,
-      "referencePoint": {
-        "lng": -90.4388234,
-        "lat": 14.4621012,
-        "source": "https://www.openstreetmap.org/node/2505212605"
-      },
-      "structuralReferenceResult": "automatic",
       "commercialResult": "PENDING_OWNER_APPROVAL"
     },
     {
@@ -73,7 +62,8 @@
       "referencePoint": {
         "lng": -90.5511114,
         "lat": 14.6100568,
-        "source": "https://www.openstreetmap.org/node/6478263722"
+        "source": "https://www.openstreetmap.org/node/6478263722",
+        "kind": "public-osm-node"
       },
       "structuralReferenceResult": "automatic",
       "commercialResult": "PENDING_OWNER_APPROVAL"
@@ -87,7 +77,8 @@
       "referencePoint": {
         "lng": -90.5504301,
         "lat": 14.5779451,
-        "source": "https://www.openstreetmap.org/node/1806862355"
+        "source": "https://www.openstreetmap.org/node/1806862355",
+        "kind": "public-osm-node"
       },
       "structuralReferenceResult": "automatic",
       "commercialResult": "PENDING_OWNER_APPROVAL"
@@ -101,7 +92,8 @@
       "referencePoint": {
         "lng": -90.5296127,
         "lat": 14.5713278,
-        "source": "https://www.openstreetmap.org/node/6478263726"
+        "source": "https://www.openstreetmap.org/node/6478263726",
+        "kind": "public-osm-node"
       },
       "structuralReferenceResult": "automatic",
       "commercialResult": "PENDING_OWNER_APPROVAL"
@@ -115,7 +107,8 @@
       "referencePoint": {
         "lng": -90.5208672,
         "lat": 14.6071168,
-        "source": "https://www.openstreetmap.org/node/6478263725"
+        "source": "https://www.openstreetmap.org/node/6478263725",
+        "kind": "public-osm-node"
       },
       "structuralReferenceResult": "automatic",
       "commercialResult": "PENDING_OWNER_APPROVAL"
@@ -129,7 +122,8 @@
       "referencePoint": {
         "lng": -90.4992645,
         "lat": 14.6255201,
-        "source": "https://www.openstreetmap.org/node/472113935"
+        "source": "https://www.openstreetmap.org/node/472113935",
+        "kind": "public-osm-node"
       },
       "structuralReferenceResult": "automatic",
       "commercialResult": "PENDING_OWNER_APPROVAL"
@@ -143,7 +137,8 @@
       "referencePoint": {
         "lng": -90.4720005,
         "lat": 14.6105332,
-        "source": "https://www.openstreetmap.org/node/472113925"
+        "source": "https://www.openstreetmap.org/node/472113925",
+        "kind": "public-osm-node"
       },
       "structuralReferenceResult": "manual",
       "commercialResult": "PENDING_OWNER_APPROVAL"
@@ -157,7 +152,8 @@
       "referencePoint": {
         "lng": -90.5107544,
         "lat": 14.602933,
-        "source": "https://www.openstreetmap.org/node/5627038115"
+        "source": "https://www.openstreetmap.org/node/5627038115",
+        "kind": "public-osm-node"
       },
       "structuralReferenceResult": "automatic",
       "commercialResult": "PENDING_OWNER_APPROVAL"
@@ -171,7 +167,8 @@
       "referencePoint": {
         "lng": -90.5137158,
         "lat": 14.5835631,
-        "source": "https://www.openstreetmap.org/node/6478263727"
+        "source": "https://www.openstreetmap.org/node/6478263727",
+        "kind": "public-osm-node"
       },
       "structuralReferenceResult": "automatic",
       "commercialResult": "PENDING_OWNER_APPROVAL"
@@ -185,7 +182,38 @@
       "referencePoint": {
         "lng": -90.4922264,
         "lat": 14.5916081,
-        "source": "https://www.openstreetmap.org/node/1073129091"
+        "source": "https://www.openstreetmap.org/node/1073129091",
+        "kind": "public-osm-node"
+      },
+      "structuralReferenceResult": "automatic",
+      "commercialResult": "PENDING_OWNER_APPROVAL"
+    },
+    {
+      "id": "gb-79465075B29005595464714",
+      "name": "San José Pinula",
+      "vertices": 185,
+      "maxRingVertices": 185,
+      "classifierCompatible": true,
+      "referencePoint": {
+        "lng": -90.33614285549996,
+        "lat": 14.549374245000052,
+        "source": "https://www.geoboundaries.org/api/current/gbOpen/GTM/ADM2/",
+        "kind": "computed-bounds-center"
+      },
+      "structuralReferenceResult": "automatic",
+      "commercialResult": "PENDING_OWNER_APPROVAL"
+    },
+    {
+      "id": "gb-79465075B31337947825966",
+      "name": "Santa Catarina Pinula",
+      "vertices": 114,
+      "maxRingVertices": 114,
+      "classifierCompatible": true,
+      "referencePoint": {
+        "lng": -90.46573343449995,
+        "lat": 14.567031847500061,
+        "source": "https://www.geoboundaries.org/api/current/gbOpen/GTM/ADM2/",
+        "kind": "computed-bounds-center"
       },
       "structuralReferenceResult": "automatic",
       "commercialResult": "PENDING_OWNER_APPROVAL"
@@ -199,9 +227,7 @@
         14.4621012
       ],
       "source": "https://www.openstreetmap.org/node/2505212605",
-      "compatibleGeometryMatches": [
-        "Fraijanes"
-      ],
+      "compatibleGeometryMatches": [],
       "notEvaluated": [
         "osm-9266318",
         "osm-9286045",
@@ -276,9 +302,7 @@
         14.5186999
       ],
       "source": "https://www.openstreetmap.org/node/12019686246",
-      "compatibleGeometryMatches": [
-        "Fraijanes"
-      ],
+      "compatibleGeometryMatches": [],
       "notEvaluated": [
         "osm-9266318",
         "osm-9286045",
@@ -293,9 +317,7 @@
         14.5215434
       ],
       "source": "https://www.openstreetmap.org/way/383796078",
-      "compatibleGeometryMatches": [
-        "Fraijanes"
-      ],
+      "compatibleGeometryMatches": [],
       "notEvaluated": [
         "osm-9266318",
         "osm-9286045",
@@ -327,19 +349,6 @@
         "lat": 14.6493244
       },
       "source": "https://www.openstreetmap.org/relation/9283360",
-      "result": {
-        "kind": "manual",
-        "shippingMinor": null,
-        "reason": "boundary"
-      }
-    },
-    {
-      "name": "Fraijanes",
-      "point": {
-        "lng": -90.4801041,
-        "lat": 14.4219198
-      },
-      "source": "https://www.openstreetmap.org/relation/9624941",
       "result": {
         "kind": "manual",
         "shippingMinor": null,
@@ -444,6 +453,32 @@
         "lat": 14.6075797
       },
       "source": "https://www.openstreetmap.org/relation/13733479",
+      "result": {
+        "kind": "manual",
+        "shippingMinor": null,
+        "reason": "boundary"
+      }
+    },
+    {
+      "name": "San José Pinula",
+      "point": {
+        "lng": -90.38090711999996,
+        "lat": 14.48020629900003
+      },
+      "source": "https://www.geoboundaries.org/api/current/gbOpen/GTM/ADM2/",
+      "result": {
+        "kind": "manual",
+        "shippingMinor": null,
+        "reason": "boundary"
+      }
+    },
+    {
+      "name": "Santa Catarina Pinula",
+      "point": {
+        "lng": -90.42938952699996,
+        "lat": 14.547039212000072
+      },
+      "source": "https://www.geoboundaries.org/api/current/gbOpen/GTM/ADM2/",
       "result": {
         "kind": "manual",
         "shippingMinor": null,

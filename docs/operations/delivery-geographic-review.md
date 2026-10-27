@@ -33,10 +33,10 @@ reutiliza la misma biblioteca Leaflet y deja intacto ese flujo comercial.
 | Capa           | Contenido                                                                | Estado inicial                                  |
 | -------------- | ------------------------------------------------------------------------ | ----------------------------------------------- |
 | Azul, Q35      | Zonas 1, 5, 7, 9, 10, 11, 12, 13, 14, 15, 16 y 17 de Ciudad de Guatemala | 12 polígonos administrativos OSM propuestos     |
-| Naranja, Q10   | Municipio de Fraijanes, relación OSM 9624941                             | Propuesta; Peter debe decidir alcance comercial |
+| Naranja, Q10   | San José Pinula y Santa Catarina Pinula, geoBoundaries 2021              | Propuesta; Peter debe decidir alcance comercial |
 | Puntos dorados | Hitos km35/km36, Pavón, referencia vial de Sausalito, cabecera Fraijanes | Referencias, no polígonos de cobertura          |
-| Gris           | Siete municipios geoBoundaries y vías OSM                                | Contexto, sin tarifa implícita                  |
-| Sin polígono   | Corredor CAES hasta km35, Sausalito, Pavón                               | Pendiente de delimitar                          |
+| Gris           | Contexto municipal geoBoundaries y vías OSM                              | Contexto, sin tarifa implícita                  |
+| Sin polígono   | Fraijanes norte, corredor CAES hasta km35, Sausalito, Pavón              | Pendiente de delimitar                          |
 
 Recogida sigue siendo Q0. No existe otra zona gratuita. La tarifa de las áreas
 es la intención documentada, no un precio autorizado por seleccionar el mapa.
@@ -80,7 +80,7 @@ un homónimo en Villa Nueva y los bordes comprobados. El informe reproducible
 [validation.json](../../data/delivery-review/validation.json) distingue pruebas
 estructurales de aprobación comercial.
 
-Se conservan los 5656 vértices originales. Tres anillos superan 512 y el catálogo
+Las 14 propuestas actuales suman 5536 vértices originales. Tres anillos superan 512 y el catálogo
 supera 4096. No se amplió el clasificador ni se simplificó silenciosamente.
 Las propuestas aún requieren revisión GIS, tratamiento de fronteras compartidas,
 simplificación medida si procede y nueva versión aprobada. La aprobación visual
@@ -126,9 +126,9 @@ investigación y descarga acotada de cartografía pública.
 
 ## Validación de este cambio
 
-- **36 pruebas unitarias aprobadas** en seis archivos: cartografía, límites del
+- **36 pruebas unitarias aprobadas en la entrega inicial** en seis archivos: cartografía, límites del
   clasificador, firma/tarifas, HTTP, permisos de proveedor/tiles y DEMO.
-- **2 pruebas de navegador aprobadas**: mapa sin red externa, selección, bloqueo de aprobación inicial,
+- **2 pruebas de navegador aprobadas en la entrega inicial**: mapa sin red externa, selección, bloqueo de aprobación inicial,
   aprobación ficticia explícita, revocación, puntos, exportación, recarga y errores.
 - Servidor de revisión: lista fija, rechazo de `.env`, path traversal, POST y
   origen externo; datos de cliente inexistentes.
@@ -141,3 +141,14 @@ investigación y descarga acotada de cartografía pública.
 Para repetir: `npx playwright test --config playwright.delivery-review.config.ts`.
 Las pruebas del checkout anterior siguen documentadas en su entrega; no se
 presentan como recién ejecutadas ni se repiten sin cambios que lo justifiquen.
+
+## Ajuste posterior: Pinula y norte de Fraijanes
+
+Por indicación del usuario, San José Pinula y Santa Catarina Pinula figuran como
+Q10 · Carretera usando sus polígonos reales ya descargados. Fraijanes completo
+ya no se propone como Q10: su mitad norte espera una definición explícita de la
+línea de corte. No se recortó la geometría ni se aprobó automáticamente ningún sector.
+La versión de revisión cambia a v2; las exportaciones v1 son evidencia histórica.
+
+Validación del ajuste: 5 pruebas unitarias de cartografía y 2 de navegador
+aprobadas; ESLint dirigido, TypeScript y `git diff --check` sin errores.

@@ -105,7 +105,7 @@ try {
       icon: L.divIcon({ className: '', html: '', iconSize: [0, 0] }),
       interactive: false,
     })
-      .bindTooltip(text(a.zone ? 'Z' + a.zone : 'Fraijanes'), {
+      .bindTooltip(text(a.zone ? 'Z' + a.zone : a.name), {
         permanent: true,
         direction: 'center',
         className: 'zone-label',
@@ -186,7 +186,10 @@ try {
       'Límite administrativo real propuesto como referencia. Peter debe decidir si la cobertura coincide con todo este polígono o requiere ajustes.';
     $('metadata').replaceChildren();
     for (const [label, value] of [
-      ['Tarifa prevista', current.tariff === 'CAES' ? 'Q10' : 'Q35'],
+      [
+        'Tarifa prevista',
+        current.tariff === 'CAES' ? 'Q10 · Carretera' : 'Q35',
+      ],
       [
         'Fuente',
         current.source ??
@@ -194,7 +197,7 @@ try {
             ?.properties.source,
       ],
       [
-        'Versión OSM',
+        'Versión de fuente',
         current.version ? String(current.version) : 'Ver referencia',
       ],
       [
@@ -207,7 +210,8 @@ try {
       const dd = document.createElement('dd');
       if (
         label === 'Fuente' &&
-        value?.startsWith('https://www.openstreetmap.org/')
+        (value?.startsWith('https://www.openstreetmap.org/') ||
+          value?.startsWith('https://www.geoboundaries.org/'))
       ) {
         const a = document.createElement('a');
         a.href = value;

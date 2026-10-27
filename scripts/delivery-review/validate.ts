@@ -47,7 +47,10 @@ const areas = proposals.map((f) => {
     referencePoint: {
       lng,
       lat,
-      source: `https://www.openstreetmap.org/node/${f.properties!.labelNode}`,
+      source: f.properties!.labelNode
+        ? `https://www.openstreetmap.org/node/${f.properties!.labelNode}`
+        : f.properties!.source,
+      kind: f.properties!.labelKind ?? 'public-osm-node',
     },
     structuralReferenceResult: check.classify({ lng, lat }).kind,
     commercialResult: 'PENDING_OWNER_APPROVAL',

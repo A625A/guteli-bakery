@@ -13,9 +13,24 @@ test('offline real layers, guarded human review, local export and reopening', as
     page.getByRole('heading', { name: 'Hasta dónde entregamos' }),
   ).toBeVisible();
   await expect(page.locator('#error')).toBeHidden();
-  await expect(page.locator('.area-button')).toHaveCount(16);
-  await expect(page.locator('#count')).toContainText('0 / 16');
+  await expect(page.locator('.area-button')).toHaveCount(18);
+  await expect(page.locator('#count')).toContainText('0 / 18');
   await expect(page.locator('.leaflet-overlay-pane path')).not.toHaveCount(0);
+  for (const name of ['San José Pinula', 'Santa Catarina Pinula']) {
+    await page.getByRole('button', { name: new RegExp(name + ' Q10') }).click();
+    await expect(page.locator('#metadata')).toContainText('Q10 · Carretera');
+    await expect(page.locator('#metadata a')).toHaveAttribute(
+      'href',
+      'https://www.geoboundaries.org/api/current/gbOpen/GTM/ADM2/',
+    );
+  }
+  await page
+    .getByRole('button', { name: /Fraijanes · mitad norte Q10/ })
+    .click();
+  await expect(page.locator('#area-status')).toHaveText(
+    'Pendiente de delimitación',
+  );
+  await expect(page.locator('#approve')).toBeDisabled();
   await page
     .getByRole('button', { name: /Zona 10 · Ciudad de Guatemala/ })
     .click();
@@ -74,7 +89,7 @@ test('offline real layers, guarded human review, local export and reopening', as
   });
   expect(external).toEqual([]);
   await page.reload();
-  await expect(page.locator('#count')).toContainText('0 / 16');
+  await expect(page.locator('#count')).toContainText('0 / 18');
 });
 test('bad geometry, missing data and unsafe file requests fail closed', async ({
   page,
