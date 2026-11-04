@@ -1,5 +1,8 @@
 # Revisión geográfica con Peter — 26/10/2026
 
+Referencia conservada: [captura del mapa acordado el 04/11/2026 y pasos para
+modificarlo](evidence/2026-11-04-delivery-map/README.md).
+
 Preparación local posterior a `84ac080`, en la misma rama
 `main-delivery-coverage-20261025`. Reutiliza Leaflet 1.9.4 y el clasificador
 existente. El historial del sistema está en [delivery-coverage.md](delivery-coverage.md);
