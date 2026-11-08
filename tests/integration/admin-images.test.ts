@@ -418,6 +418,58 @@ describe('secure admin product images', () => {
     expect(await readdir(uploadsRoot)).toEqual([]);
   });
 
+  it('preserves the existing photograph on failed replacement and removal, and permits ADMIN uploads', async () => {
+    const jar = await enrolledOwner();
+    const product = await productFixture();
+    const bytes = await pngFixture();
+    const first = await POST_UPLOAD(uploadRequest(jar, product.id, 1, bytes));
+    const { product: saved } = await first.json();
+    const old = saved.images[0];
+    const storage = new LocalObjectStorage(uploadsRoot);
+    const originalBytes = await storage.read(old.storageKey);
+    await pool.query(`
+      CREATE FUNCTION reject_photo_change() RETURNS trigger AS $$
+      BEGIN
+        IF NEW.action IN ('PRODUCT_IMAGE_ADDED', 'PRODUCT_IMAGE_REMOVED') THEN RAISE EXCEPTION 'forced photo failure'; END IF;
+        RETURN NEW;
+      END;
+      $$ LANGUAGE plpgsql;
+      CREATE TRIGGER reject_photo_change BEFORE INSERT ON audit_logs
+      FOR EACH ROW EXECUTE FUNCTION reject_photo_change();
+    `);
+    try {
+      expect(
+        (
+          await POST_UPLOAD(
+            uploadRequest(jar, product.id, saved.version, bytes),
+          )
+        ).status,
+      ).toBe(500);
+      expect(
+        (await removeRequest(jar, product.id, old.id, saved.version)).status,
+      ).toBe(500);
+      const [row] = await db
+        .select()
+        .from(productImages)
+        .where(eq(productImages.id, old.id));
+      expect(row.removedAt).toBeNull();
+      expect(await storage.read(old.storageKey)).toEqual(originalBytes);
+      const [unchanged] = await db
+        .select()
+        .from(products)
+        .where(eq(products.id, product.id));
+      expect(unchanged.version).toBe(saved.version);
+    } finally {
+      await pool.query('DROP TRIGGER reject_photo_change ON audit_logs');
+      await pool.query('DROP FUNCTION reject_photo_change()');
+    }
+    await db.update(user).set({ role: 'ADMIN' });
+    expect(
+      (await POST_UPLOAD(uploadRequest(jar, product.id, saved.version, bytes)))
+        .status,
+    ).toBe(201);
+  });
+
   it('durably records and retries compensation when metadata and object deletion both fail', async () => {
     const jar = await enrolledOwner();
     const product = await productFixture();

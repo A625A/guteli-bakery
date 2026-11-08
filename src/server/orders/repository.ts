@@ -45,6 +45,11 @@ export type NewOrderValues = Readonly<{
   fulfillment: 'PICKUP' | 'DELIVERY';
   requestedDate: string;
   deliveryLocation: string | null;
+  deliveryLatitude?: number | null;
+  deliveryLongitude?: number | null;
+  deliveryAreaId?: string | null;
+  deliveryCoverageVersion?: string | null;
+  deliveryPricingSource?: string | null;
   notes: string | null;
   subtotalMinor: number;
   shippingMinor: number | null;
@@ -314,6 +319,9 @@ export async function persistAdminDeliveryQuote(
     .update(orders)
     .set({
       shippingMinor,
+      deliveryPricingSource: 'MANUAL',
+      deliveryAreaId: null,
+      deliveryCoverageVersion: null,
       totalMinor,
       updatedAt: now,
       version: sql`${orders.version} + 1`,

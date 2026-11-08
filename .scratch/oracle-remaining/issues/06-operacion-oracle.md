@@ -1,5 +1,7 @@
 # 06: Demostrar recuperación y alertas en Oracle
 
+**Estado vigente 25/10/2026:** Operación y recuperación previstas después de instalar; todavía sin servidor. Cuenta/servicio/destinatario de monitor externo requieren autorización. Ver [checkpoint](../../../docs/operations/oracle/CHECKPOINT.md). Las restricciones Git y bloqueos npm de los apartados inferiores son históricos; prevalece la autorización de consolidación actual. Ningún criterio externo se marca completado.
+
 **What to build / Qué entrega:** El operador puede identificar fallos y recuperar la demo con evidencia de datos e imágenes, no sólo servicios encendidos.
 
 **Blocked by / Bloqueado por:** 05 — instalación; autorización de timers, ventanas, correos y pruebas de incidente.

@@ -1,0 +1,579 @@
+{
+  "purpose": "Structural validation of real administrative proposals, not commercial validation",
+  "productionEnabled": false,
+  "limits": {
+    "catalogueVertices": 4096,
+    "ringVertices": 512
+  },
+  "totalVertices": 5965,
+  "combinedClassifierCompatible": false,
+  "areas": [
+    {
+      "id": "osm-9266318",
+      "name": "Zona 17 · Ciudad de Guatemala",
+      "vertices": 723,
+      "maxRingVertices": 723,
+      "classifierCompatible": false,
+      "referencePoint": {
+        "lng": -90.4653976,
+        "lat": 14.6453355,
+        "source": "https://www.openstreetmap.org/node/1073096954",
+        "kind": "public-osm-node"
+      },
+      "structuralReferenceResult": "manual",
+      "commercialResult": "PENDING_OWNER_APPROVAL"
+    },
+    {
+      "id": "osm-9283360",
+      "name": "Zona 1 · Ciudad de Guatemala",
+      "vertices": 389,
+      "maxRingVertices": 389,
+      "classifierCompatible": true,
+      "referencePoint": {
+        "lng": -90.510237,
+        "lat": 14.6368919,
+        "source": "https://www.openstreetmap.org/node/6478263720",
+        "kind": "public-osm-node"
+      },
+      "structuralReferenceResult": "automatic",
+      "commercialResult": "PENDING_OWNER_APPROVAL"
+    },
+    {
+      "id": "osm-9286045",
+      "name": "Zona 7 · Ciudad de Guatemala",
+      "vertices": 789,
+      "maxRingVertices": 789,
+      "classifierCompatible": false,
+      "referencePoint": {
+        "lng": -90.5482471,
+        "lat": 14.6287744,
+        "source": "https://www.openstreetmap.org/node/2691207052",
+        "kind": "public-osm-node"
+      },
+      "structuralReferenceResult": "manual",
+      "commercialResult": "PENDING_OWNER_APPROVAL"
+    },
+    {
+      "id": "osm-13519873",
+      "name": "Zona 11 · Ciudad de Guatemala",
+      "vertices": 479,
+      "maxRingVertices": 479,
+      "classifierCompatible": true,
+      "referencePoint": {
+        "lng": -90.5511114,
+        "lat": 14.6100568,
+        "source": "https://www.openstreetmap.org/node/6478263722",
+        "kind": "public-osm-node"
+      },
+      "structuralReferenceResult": "automatic",
+      "commercialResult": "PENDING_OWNER_APPROVAL"
+    },
+    {
+      "id": "osm-13523302",
+      "name": "Zona 12 · Ciudad de Guatemala",
+      "vertices": 506,
+      "maxRingVertices": 506,
+      "classifierCompatible": true,
+      "referencePoint": {
+        "lng": -90.5504301,
+        "lat": 14.5779451,
+        "source": "https://www.openstreetmap.org/node/1806862355",
+        "kind": "public-osm-node"
+      },
+      "structuralReferenceResult": "automatic",
+      "commercialResult": "PENDING_OWNER_APPROVAL"
+    },
+    {
+      "id": "osm-13680538",
+      "name": "Zona 13 · Ciudad de Guatemala",
+      "vertices": 270,
+      "maxRingVertices": 270,
+      "classifierCompatible": true,
+      "referencePoint": {
+        "lng": -90.5296127,
+        "lat": 14.5713278,
+        "source": "https://www.openstreetmap.org/node/6478263726",
+        "kind": "public-osm-node"
+      },
+      "structuralReferenceResult": "automatic",
+      "commercialResult": "PENDING_OWNER_APPROVAL"
+    },
+    {
+      "id": "osm-13680910",
+      "name": "Zona 9 · Ciudad de Guatemala",
+      "vertices": 72,
+      "maxRingVertices": 72,
+      "classifierCompatible": true,
+      "referencePoint": {
+        "lng": -90.5208672,
+        "lat": 14.6071168,
+        "source": "https://www.openstreetmap.org/node/6478263725",
+        "kind": "public-osm-node"
+      },
+      "structuralReferenceResult": "automatic",
+      "commercialResult": "PENDING_OWNER_APPROVAL"
+    },
+    {
+      "id": "osm-13730388",
+      "name": "Zona 5 · Ciudad de Guatemala",
+      "vertices": 454,
+      "maxRingVertices": 454,
+      "classifierCompatible": true,
+      "referencePoint": {
+        "lng": -90.4992645,
+        "lat": 14.6255201,
+        "source": "https://www.openstreetmap.org/node/472113935",
+        "kind": "public-osm-node"
+      },
+      "structuralReferenceResult": "automatic",
+      "commercialResult": "PENDING_OWNER_APPROVAL"
+    },
+    {
+      "id": "osm-13733411",
+      "name": "Zona 16 · Ciudad de Guatemala",
+      "vertices": 685,
+      "maxRingVertices": 685,
+      "classifierCompatible": false,
+      "referencePoint": {
+        "lng": -90.4720005,
+        "lat": 14.6105332,
+        "source": "https://www.openstreetmap.org/node/472113925",
+        "kind": "public-osm-node"
+      },
+      "structuralReferenceResult": "manual",
+      "commercialResult": "PENDING_OWNER_APPROVAL"
+    },
+    {
+      "id": "osm-13733477",
+      "name": "Zona 10 · Ciudad de Guatemala",
+      "vertices": 220,
+      "maxRingVertices": 220,
+      "classifierCompatible": true,
+      "referencePoint": {
+        "lng": -90.5107544,
+        "lat": 14.602933,
+        "source": "https://www.openstreetmap.org/node/5627038115",
+        "kind": "public-osm-node"
+      },
+      "structuralReferenceResult": "automatic",
+      "commercialResult": "PENDING_OWNER_APPROVAL"
+    },
+    {
+      "id": "osm-13733478",
+      "name": "Zona 14 · Ciudad de Guatemala",
+      "vertices": 280,
+      "maxRingVertices": 280,
+      "classifierCompatible": true,
+      "referencePoint": {
+        "lng": -90.5137158,
+        "lat": 14.5835631,
+        "source": "https://www.openstreetmap.org/node/6478263727",
+        "kind": "public-osm-node"
+      },
+      "structuralReferenceResult": "automatic",
+      "commercialResult": "PENDING_OWNER_APPROVAL"
+    },
+    {
+      "id": "osm-13733479",
+      "name": "Zona 15 · Ciudad de Guatemala",
+      "vertices": 370,
+      "maxRingVertices": 370,
+      "classifierCompatible": true,
+      "referencePoint": {
+        "lng": -90.4922264,
+        "lat": 14.5916081,
+        "source": "https://www.openstreetmap.org/node/1073129091",
+        "kind": "public-osm-node"
+      },
+      "structuralReferenceResult": "automatic",
+      "commercialResult": "PENDING_OWNER_APPROVAL"
+    },
+    {
+      "id": "fraijanes-north",
+      "name": "Fraijanes · mitad norte",
+      "vertices": 168,
+      "maxRingVertices": 168,
+      "classifierCompatible": true,
+      "referencePoint": {
+        "lng": -90.44099185,
+        "lat": 14.499360525,
+        "source": "https://www.openstreetmap.org/relation/9624941",
+        "kind": "computed-bounds-center"
+      },
+      "structuralReferenceResult": "automatic",
+      "commercialResult": "PENDING_OWNER_APPROVAL"
+    },
+    {
+      "id": "fraijanes-south",
+      "name": "Fraijanes · mitad sur",
+      "vertices": 256,
+      "maxRingVertices": 256,
+      "classifierCompatible": true,
+      "referencePoint": {
+        "lng": -90.44761055000001,
+        "lat": 14.408953975000001,
+        "source": "https://www.openstreetmap.org/relation/9624941",
+        "kind": "computed-bounds-center"
+      },
+      "structuralReferenceResult": "automatic",
+      "commercialResult": "PENDING_OWNER_APPROVAL"
+    },
+    {
+      "id": "gb-79465075B29005595464714-west",
+      "name": "San José Pinula · 60% oeste",
+      "vertices": 99,
+      "maxRingVertices": 99,
+      "classifierCompatible": true,
+      "referencePoint": {
+        "lng": -90.37248231124029,
+        "lat": 14.549374245000052,
+        "source": "https://www.geoboundaries.org/api/current/gbOpen/GTM/ADM2/",
+        "kind": "computed-interior-scanline"
+      },
+      "structuralReferenceResult": "automatic",
+      "commercialResult": "PENDING_OWNER_APPROVAL"
+    },
+    {
+      "id": "gb-79465075B29005595464714-east",
+      "name": "San José Pinula · 40% este",
+      "vertices": 91,
+      "maxRingVertices": 91,
+      "classifierCompatible": true,
+      "referencePoint": {
+        "lng": -90.29386999242857,
+        "lat": 14.551696721763427,
+        "source": "https://www.geoboundaries.org/api/current/gbOpen/GTM/ADM2/",
+        "kind": "computed-interior-scanline"
+      },
+      "structuralReferenceResult": "automatic",
+      "commercialResult": "PENDING_OWNER_APPROVAL"
+    },
+    {
+      "id": "gb-79465075B31337947825966",
+      "name": "Santa Catarina Pinula",
+      "vertices": 114,
+      "maxRingVertices": 114,
+      "classifierCompatible": true,
+      "referencePoint": {
+        "lng": -90.46573343449995,
+        "lat": 14.567031847500061,
+        "source": "https://www.geoboundaries.org/api/current/gbOpen/GTM/ADM2/",
+        "kind": "computed-bounds-center"
+      },
+      "structuralReferenceResult": "automatic",
+      "commercialResult": "PENDING_OWNER_APPROVAL"
+    }
+  ],
+  "referenceCases": [
+    {
+      "name": "Fraijanes",
+      "point": [
+        -90.4388234,
+        14.4621012
+      ],
+      "source": "https://www.openstreetmap.org/node/2505212605",
+      "compatibleGeometryMatches": [
+        "Fraijanes · mitad norte"
+      ],
+      "notEvaluated": [
+        "osm-9266318",
+        "osm-9286045",
+        "osm-13733411"
+      ],
+      "commercialResult": "ENVIO_POR_CONFIRMAR_NO_APPROVED_COVERAGE"
+    },
+    {
+      "name": "KM. 36",
+      "point": [
+        -90.4685986,
+        14.3910611
+      ],
+      "source": "https://www.openstreetmap.org/node/9146903759",
+      "compatibleGeometryMatches": [],
+      "notEvaluated": [
+        "osm-9266318",
+        "osm-9286045",
+        "osm-13733411"
+      ],
+      "commercialResult": "ENVIO_POR_CONFIRMAR_NO_APPROVED_COVERAGE"
+    },
+    {
+      "name": "KM. 36",
+      "point": [
+        -90.4685018,
+        14.3910767
+      ],
+      "source": "https://www.openstreetmap.org/node/9146903760",
+      "compatibleGeometryMatches": [],
+      "notEvaluated": [
+        "osm-9266318",
+        "osm-9286045",
+        "osm-13733411"
+      ],
+      "commercialResult": "ENVIO_POR_CONFIRMAR_NO_APPROVED_COVERAGE"
+    },
+    {
+      "name": "KM. 35",
+      "point": [
+        -90.4694955,
+        14.3996638
+      ],
+      "source": "https://www.openstreetmap.org/node/9146903761",
+      "compatibleGeometryMatches": [],
+      "notEvaluated": [
+        "osm-9266318",
+        "osm-9286045",
+        "osm-13733411"
+      ],
+      "commercialResult": "ENVIO_POR_CONFIRMAR_NO_APPROVED_COVERAGE"
+    },
+    {
+      "name": "KM. 35",
+      "point": [
+        -90.4695979,
+        14.3996233
+      ],
+      "source": "https://www.openstreetmap.org/node/9146903762",
+      "compatibleGeometryMatches": [],
+      "notEvaluated": [
+        "osm-9266318",
+        "osm-9286045",
+        "osm-13733411"
+      ],
+      "commercialResult": "ENVIO_POR_CONFIRMAR_NO_APPROVED_COVERAGE"
+    },
+    {
+      "name": "Pavón",
+      "point": [
+        -90.4411697,
+        14.5186999
+      ],
+      "source": "https://www.openstreetmap.org/node/12019686246",
+      "compatibleGeometryMatches": [
+        "Fraijanes · mitad norte"
+      ],
+      "notEvaluated": [
+        "osm-9266318",
+        "osm-9286045",
+        "osm-13733411"
+      ],
+      "commercialResult": "ENVIO_POR_CONFIRMAR_NO_APPROVED_COVERAGE"
+    },
+    {
+      "name": "Vía hacia El Sausalito · punto de referencia, no límite",
+      "point": [
+        -90.4576895,
+        14.5215434
+      ],
+      "source": "https://www.openstreetmap.org/way/383796078",
+      "compatibleGeometryMatches": [
+        "Fraijanes · mitad norte"
+      ],
+      "notEvaluated": [
+        "osm-9266318",
+        "osm-9286045",
+        "osm-13733411"
+      ],
+      "commercialResult": "ENVIO_POR_CONFIRMAR_NO_APPROVED_COVERAGE"
+    },
+    {
+      "name": "Zona 10 de Villa Nueva (homónimo excluido)",
+      "point": [
+        -90.6148157,
+        14.501518
+      ],
+      "source": "https://www.openstreetmap.org/relation/10414515",
+      "compatibleGeometryMatches": [],
+      "notEvaluated": [
+        "osm-9266318",
+        "osm-9286045",
+        "osm-13733411"
+      ],
+      "commercialResult": "ENVIO_POR_CONFIRMAR_NO_APPROVED_COVERAGE"
+    }
+  ],
+  "boundaryCases": [
+    {
+      "name": "Zona 1 · Ciudad de Guatemala",
+      "point": {
+        "lng": -90.5200563,
+        "lat": 14.6493244
+      },
+      "source": "https://www.openstreetmap.org/relation/9283360",
+      "result": {
+        "kind": "manual",
+        "shippingMinor": null,
+        "reason": "boundary"
+      }
+    },
+    {
+      "name": "Zona 11 · Ciudad de Guatemala",
+      "point": {
+        "lng": -90.5626853,
+        "lat": 14.5889122
+      },
+      "source": "https://www.openstreetmap.org/relation/13519873",
+      "result": {
+        "kind": "manual",
+        "shippingMinor": null,
+        "reason": "boundary"
+      }
+    },
+    {
+      "name": "Zona 12 · Ciudad de Guatemala",
+      "point": {
+        "lng": -90.5356973,
+        "lat": 14.5969586
+      },
+      "source": "https://www.openstreetmap.org/relation/13523302",
+      "result": {
+        "kind": "manual",
+        "shippingMinor": null,
+        "reason": "boundary"
+      }
+    },
+    {
+      "name": "Zona 13 · Ciudad de Guatemala",
+      "point": {
+        "lng": -90.5237874,
+        "lat": 14.5622113
+      },
+      "source": "https://www.openstreetmap.org/relation/13680538",
+      "result": {
+        "kind": "manual",
+        "shippingMinor": null,
+        "reason": "boundary"
+      }
+    },
+    {
+      "name": "Zona 9 · Ciudad de Guatemala",
+      "point": {
+        "lng": -90.5140443,
+        "lat": 14.6140433
+      },
+      "source": "https://www.openstreetmap.org/relation/13680910",
+      "result": {
+        "kind": "manual",
+        "shippingMinor": null,
+        "reason": "boundary"
+      }
+    },
+    {
+      "name": "Zona 5 · Ciudad de Guatemala",
+      "point": {
+        "lng": -90.4991356,
+        "lat": 14.6365574
+      },
+      "source": "https://www.openstreetmap.org/relation/13730388",
+      "result": {
+        "kind": "manual",
+        "shippingMinor": null,
+        "reason": "boundary"
+      }
+    },
+    {
+      "name": "Zona 10 · Ciudad de Guatemala",
+      "point": {
+        "lng": -90.5179392,
+        "lat": 14.5934457
+      },
+      "source": "https://www.openstreetmap.org/relation/13733477",
+      "result": {
+        "kind": "manual",
+        "shippingMinor": null,
+        "reason": "boundary"
+      }
+    },
+    {
+      "name": "Zona 14 · Ciudad de Guatemala",
+      "point": {
+        "lng": -90.4912538,
+        "lat": 14.5738052
+      },
+      "source": "https://www.openstreetmap.org/relation/13733478",
+      "result": {
+        "kind": "manual",
+        "shippingMinor": null,
+        "reason": "boundary"
+      }
+    },
+    {
+      "name": "Zona 15 · Ciudad de Guatemala",
+      "point": {
+        "lng": -90.4864273,
+        "lat": 14.6075797
+      },
+      "source": "https://www.openstreetmap.org/relation/13733479",
+      "result": {
+        "kind": "manual",
+        "shippingMinor": null,
+        "reason": "boundary"
+      }
+    },
+    {
+      "name": "Fraijanes · mitad norte",
+      "point": {
+        "lng": -90.41506788725873,
+        "lat": 14.454157250000002
+      },
+      "source": "https://www.openstreetmap.org/relation/9624941",
+      "result": {
+        "kind": "manual",
+        "shippingMinor": null,
+        "reason": "boundary"
+      }
+    },
+    {
+      "name": "Fraijanes · mitad sur",
+      "point": {
+        "lng": -90.4801906,
+        "lat": 14.4213084
+      },
+      "source": "https://www.openstreetmap.org/relation/9624941",
+      "result": {
+        "kind": "manual",
+        "shippingMinor": null,
+        "reason": "boundary"
+      }
+    },
+    {
+      "name": "San José Pinula · 60% oeste",
+      "point": {
+        "lng": -90.37861339299997,
+        "lat": 14.482252738000057
+      },
+      "source": "https://www.geoboundaries.org/api/current/gbOpen/GTM/ADM2/",
+      "result": {
+        "kind": "manual",
+        "shippingMinor": null,
+        "reason": "boundary"
+      }
+    },
+    {
+      "name": "San José Pinula · 40% este",
+      "point": {
+        "lng": -90.31626848259995,
+        "lat": 14.493210924526819
+      },
+      "source": "https://www.geoboundaries.org/api/current/gbOpen/GTM/ADM2/",
+      "result": {
+        "kind": "manual",
+        "shippingMinor": null,
+        "reason": "boundary"
+      }
+    },
+    {
+      "name": "Santa Catarina Pinula",
+      "point": {
+        "lng": -90.42938952699996,
+        "lat": 14.547039212000072
+      },
+      "source": "https://www.geoboundaries.org/api/current/gbOpen/GTM/ADM2/",
+      "result": {
+        "kind": "manual",
+        "shippingMinor": null,
+        "reason": "boundary"
+      }
+    }
+  ]
+}

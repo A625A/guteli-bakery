@@ -28,6 +28,8 @@ import {
   products,
 } from '@/server/db/schema';
 import { createOrder } from '@/server/orders/create-order';
+import { createDeliveryService } from '@/server/delivery/service';
+import { coverage } from '../support/delivery/coverage';
 import { requireTestDatabaseUrl } from '@/test/database-url';
 
 const databaseUrl = requireTestDatabaseUrl(
@@ -155,6 +157,119 @@ describe('createOrder', () => {
 
   afterAll(async () => {
     await pool.end();
+  });
+
+  const deliveryService = createDeliveryService({
+    coverage: coverage(),
+    secret: 's'.repeat(32),
+    enabled: true,
+  });
+  function deliveryRequest(lng = 1) {
+    const point = { lng, lat: 1 };
+    const address = 'Dirección ficticia';
+    const quote = deliveryService.quote(
+      { fulfillment: 'delivery', address, point, confirmed: true },
+      now,
+    );
+    return createOrderRequestSchema.parse({
+      ...parsedRequest({ fulfillment: 'delivery', deliveryLocation: address }),
+      deliveryPoint: point,
+      deliveryConfirmed: true,
+      deliveryQuote: quote.token,
+    });
+  }
+  it.each([
+    [1, 1000, 'q10'],
+    [5, 3500, 'q35'],
+  ] as const)(
+    'persists server-verified shipping at point %s without leaking coordinates to operational records',
+    async (lng, shippingMinor, areaId) => {
+      await insertProduct({ stockQuantity: 3 });
+      const request = deliveryRequest(lng);
+      const result = await createOrder(
+        createInput(request, { deliveryService }),
+      );
+      expect(result.order).toMatchObject({
+        shippingMinor,
+        totalMinor: 15000 + shippingMinor,
+      });
+      const [stored] = await db.select().from(orders);
+      expect(stored).toMatchObject({
+        deliveryLatitude: 1,
+        deliveryLongitude: lng,
+        deliveryAreaId: areaId,
+        deliveryCoverageVersion: 'test-v1',
+        deliveryPricingSource: 'AUTOMATIC',
+      });
+      const records = JSON.stringify({
+        audit: await db.select().from(auditLogs),
+        outbox: await db.select().from(outboxEvents),
+      });
+      expect(records).not.toContain('deliveryLatitude');
+      expect(records).not.toContain(request.deliveryQuote);
+      expect(records).not.toContain(request.deliveryLocation);
+    },
+  );
+  it.each(['expired', 'tampered', 'moved'] as const)(
+    'rejects a %s quote before stock or aggregate writes',
+    async (mode) => {
+      await insertProduct({ stockQuantity: 3 });
+      const request = deliveryRequest();
+      if (mode === 'tampered')
+        request.deliveryQuote = 'x' + request.deliveryQuote!.slice(1);
+      if (mode === 'moved') request.deliveryPoint = { lng: 5, lat: 1 };
+      await expect(
+        createOrder(
+          createInput(request, {
+            deliveryService,
+            clock: () => new Date(+now + (mode === 'expired' ? 600001 : 0)),
+          }),
+        ),
+      ).rejects.toMatchObject({ code: 'DELIVERY_QUOTE_STALE' });
+      expect(await counts()).toEqual({
+        orders: 0,
+        items: 0,
+        idempotency: 0,
+        outbox: 0,
+        audit: 0,
+      });
+      expect((await db.select().from(products))[0].stockQuantity).toBe(3);
+    },
+  );
+  it('replays a saved quote after expiry and catalogue disablement, but rejects edited coordinates', async () => {
+    await insertProduct({ stockQuantity: 3 });
+    const request = deliveryRequest();
+    const first = await createOrder(createInput(request, { deliveryService }));
+    const later = {
+      deliveryService: createDeliveryService({
+        coverage: {},
+        secret: '',
+        enabled: false,
+      }),
+      clock: () => new Date(+now + 600001),
+    };
+    expect(await createOrder(createInput(request, later))).toEqual({
+      kind: 'replayed',
+      order: first.order,
+    });
+    expect((await db.select().from(products))[0].stockQuantity).toBe(1);
+    await expect(
+      createOrder(
+        createInput({ ...request, deliveryPoint: { lng: 5, lat: 1 } }, later),
+      ),
+    ).rejects.toMatchObject({ code: 'IDEMPOTENCY_CONFLICT' });
+  });
+  it('keeps confirmed outside-coverage coordinates private with a pending manual quote', async () => {
+    await insertProduct();
+    const result = await createOrder(
+      createInput(deliveryRequest(9), { deliveryService }),
+    );
+    expect(result.order.shippingMinor).toBeNull();
+    expect((await db.select().from(orders))[0]).toMatchObject({
+      deliveryLongitude: 9,
+      deliveryPricingSource: 'MANUAL_PENDING',
+      deliveryAreaId: null,
+    });
   });
 
   it('uses stored prices and writes immutable pickup snapshots with PII-free operations records', async () => {

@@ -1,0 +1,29 @@
+{
+  "date": "2026-11-04",
+  "timezone": "America/Guatemala",
+  "sourceCommit": "567311647a91276f5dba18e73d0978c234d8aa56",
+  "catalogueVersion": "review-2026-10-26-v5",
+  "agreement": "El usuario expresa conformidad con el mapa local y solicita guardar captura y referencia en GitHub. No se atribuye aprobación a Peter ni autorización de activación comercial.",
+  "productionEnabled": false,
+  "screenshot": {
+    "file": "mapa.png",
+    "sha256": "808cac2d0e23aa691cdbdc55de51981c97681859bd70733d95ca902d0a09ad43",
+    "viewport": {
+      "width": 1600,
+      "height": 1100
+    },
+    "fullPage": true,
+    "deviceScaleFactor": 1,
+    "selectedArea": "San José Pinula · 60% oeste",
+    "reviewerField": "empty"
+  },
+  "fileHashes": {
+    "data/delivery-review/areas.geojson": "f9f457c89ea654a6b13df9e069cf661d98816f57c82724bc3fc82d7983460938",
+    "data/delivery-review/roads.geojson": "61352e96a0bf79a933676c5f27a6653a598f81fab171862e18c6497e03d3630c",
+    "scripts/delivery-review/prepare.py": "4e99d0d7bbf21597c17d9417021e62aeb3eb382ad806a8d11fd1306553b5bc4a",
+    "scripts/delivery-review/ui/index.html": "91467b390fc4da5bf3a075fc6ce33ad8a96bf51d2b8f5d8d50de3d9587a80c66",
+    "scripts/delivery-review/ui/review.js": "b2e6cf2cb379f310ff0b270784a0ddb230fbb30aaeac573a3f445fe75d52e8e0",
+    "scripts/delivery-review/ui/review.css": "6128ea5350f15c9b5afd8ad059efc60681d131d84aa56bfefa858dd80b3d70e4",
+    "scripts/delivery-review/ui/model.mjs": "f000c530f9eabb399a041f3495903dacfd547c946ed75dfe3ecc8c861764e6d1"
+  }
+}

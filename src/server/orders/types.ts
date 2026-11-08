@@ -20,6 +20,7 @@ export type CreateOrderInput = Readonly<{
   now: Date;
   clock?: () => Date;
   database?: OrdersDatabase;
+  deliveryService?: import('@/server/delivery/service').DeliveryService;
   createOrderId?: () => string;
   createPublicId?: (now: Date) => string;
 }>;

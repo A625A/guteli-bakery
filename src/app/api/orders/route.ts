@@ -128,6 +128,15 @@ function safeFieldErrors(
 
 function orderErrorResponse(error: CreateOrderError, requestId: string) {
   switch (error.code) {
+    case 'DELIVERY_QUOTE_STALE':
+      return postErrorResponse(
+        {
+          code: error.code,
+          message: 'Confirma nuevamente tu ubicación y el costo de envío.',
+          requestId,
+        },
+        409,
+      );
     case 'IDEMPOTENCY_CONFLICT':
       return postErrorResponse(
         {

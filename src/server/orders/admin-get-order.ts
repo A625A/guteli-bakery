@@ -79,6 +79,11 @@ export async function adminGetOrder(publicId: string, requestHeaders: Headers) {
       fulfillment: orders.fulfillment,
       requestedDate: orders.requestedDate,
       deliveryLocation: orders.deliveryLocation,
+      deliveryLatitude: orders.deliveryLatitude,
+      deliveryLongitude: orders.deliveryLongitude,
+      deliveryPricingSource: orders.deliveryPricingSource,
+      deliveryAreaId: orders.deliveryAreaId,
+      deliveryCoverageVersion: orders.deliveryCoverageVersion,
       notes: orders.notes,
       subtotalMinor: orders.subtotalMinor,
       shippingMinor: orders.shippingMinor,
@@ -142,6 +147,13 @@ export async function adminGetOrder(publicId: string, requestHeaders: Headers) {
     fulfillment: order.fulfillment,
     requestedDate: order.requestedDate,
     deliveryLocation: order.deliveryLocation,
+    deliveryPoint:
+      order.deliveryLatitude !== null && order.deliveryLongitude !== null
+        ? { lat: order.deliveryLatitude, lng: order.deliveryLongitude }
+        : null,
+    deliveryPricingSource: order.deliveryPricingSource,
+    deliveryAreaId: order.deliveryAreaId,
+    deliveryCoverageVersion: order.deliveryCoverageVersion,
     notes: order.notes,
     subtotalMinor: order.subtotalMinor,
     shippingMinor: order.shippingMinor,

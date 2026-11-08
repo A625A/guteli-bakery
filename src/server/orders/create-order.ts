@@ -1,3 +1,7 @@
+import {
+  getDeliveryService,
+  type DeliveryQuote,
+} from '@/server/delivery/service';
 import { orderWhatsAppConsents, outboxEvents } from '@/server/db/schema';
 import {
   whatsappDestination,
@@ -42,6 +46,7 @@ const IDEMPOTENCY_TTL_MS = 24 * 60 * 60 * 1000;
 const MAX_IDENTIFIER_ATTEMPTS = 5;
 
 type OrderErrorCode =
+  | 'DELIVERY_QUOTE_STALE'
   | 'IDEMPOTENCY_CONFLICT'
   | 'INTERNAL_ERROR'
   | 'PRODUCT_OUT_OF_STOCK'
@@ -59,6 +64,7 @@ type PricedOrder = Readonly<{
   subtotalMinor: number;
   shippingMinor: number | null;
   totalMinor: number | null;
+  delivery?: DeliveryQuote;
 }>;
 
 type ResolvedDependencies = Readonly<{
@@ -348,6 +354,16 @@ async function persistOrder(
             input.request.fulfillment === 'delivery'
               ? (input.request.deliveryLocation ?? null)
               : null,
+          deliveryLatitude: input.request.deliveryPoint?.lat ?? null,
+          deliveryLongitude: input.request.deliveryPoint?.lng ?? null,
+          deliveryAreaId: pricedOrder.delivery?.areaId ?? null,
+          deliveryCoverageVersion: pricedOrder.delivery?.version ?? null,
+          deliveryPricingSource:
+            fulfillment === 'DELIVERY'
+              ? pricedOrder.delivery?.kind === 'automatic'
+                ? 'AUTOMATIC'
+                : 'MANUAL_PENDING'
+              : null,
           notes: input.request.notes ?? null,
           subtotalMinor: pricedOrder.subtotalMinor,
           shippingMinor: pricedOrder.shippingMinor,
@@ -453,6 +469,27 @@ async function createOrderInTransaction(
   dependencies: ResolvedDependencies,
 ) {
   const requestHash = hashCreateOrderRequest(input.request);
+  const deliveryService = input.deliveryService ?? getDeliveryService();
+  const deliveryInput = {
+    fulfillment: input.request.fulfillment,
+    address: input.request.deliveryLocation,
+    point: input.request.deliveryPoint,
+    confirmed: input.request.deliveryConfirmed,
+  };
+  // Pure verification: no provider I/O, before inventory locks. Replay is resolved first.
+  let delivery: DeliveryQuote | undefined;
+  let invalidQuote = false;
+  if (input.request.deliveryQuote) {
+    try {
+      delivery = deliveryService.verify(
+        deliveryInput,
+        input.request.deliveryQuote,
+        input.clock?.() ?? new Date(),
+      );
+    } catch {
+      invalidQuote = true;
+    }
+  }
   return dependencies.database.transaction(async (transaction) => {
     await acquireIdempotencyLock(
       transaction,
@@ -488,6 +525,19 @@ async function createOrderInTransaction(
       );
     }
 
+    if (invalidQuote) throw new CreateOrderError('DELIVERY_QUOTE_STALE');
+    if (input.request.deliveryQuote) {
+      // A quote can expire while waiting for idempotency/catalog locks.
+      try {
+        delivery = deliveryService.verify(
+          deliveryInput,
+          input.request.deliveryQuote,
+          input.clock?.() ?? new Date(),
+        );
+      } catch {
+        throw new CreateOrderError('DELIVERY_QUOTE_STALE');
+      }
+    }
     const lockedProducts = await lockRequestedProducts(
       transaction,
       orderProductIds(input.request),
@@ -507,6 +557,19 @@ async function createOrderInTransaction(
       })),
     );
 
+    const pricedWithDelivery: PricedOrder =
+      delivery?.kind === 'automatic'
+        ? {
+            ...pricedOrder,
+            delivery,
+            shippingMinor: delivery.shippingMinor,
+            totalMinor: checkedMinorSum(
+              pricedOrder.subtotalMinor,
+              delivery.shippingMinor!,
+            ),
+          }
+        : pricedOrder;
+
     if (input.successfulOrderRateLimitSubject) {
       const rateLimit = await consumeFixedWindowRateLimit(transaction, {
         policy: 'ORDER_SUCCESS_PHONE',
@@ -520,7 +583,7 @@ async function createOrderInTransaction(
       }
     }
 
-    return persistOrder(transaction, input, dependencies, pricedOrder);
+    return persistOrder(transaction, input, dependencies, pricedWithDelivery);
   });
 }
 

@@ -2,6 +2,7 @@
 .github
 .next
 .superpowers
+.local-demo/
 .env
 .env.*
 !.env.example
@@ -17,3 +18,7 @@ out
 Dockerfile*
 compose*.yaml
 *.log
+
+# Local geographic review is not part of the deployed application.
+data/delivery-review/
+scripts/delivery-review/

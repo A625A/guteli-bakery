@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Güteli · Revisión de entregas</title>
+    <link rel="stylesheet" href="/leaflet.css" />
+    <link rel="stylesheet" href="/review.css" />
+    <script defer src="/leaflet.js"></script>
+    <script type="module" src="/review.js"></script>
+  </head>
+  <body>
+    <header>
+      <div>
+        <p class="eyebrow">GÜTELI BAKERY · MESA DE REVISIÓN</p>
+        <h1>Hasta dónde entregamos</h1>
+        <p>Peter, revisemos los límites antes de convertirlos en cobertura.</p>
+      </div>
+      <div class="seal">
+        Solo revisión local<strong>Ventas y tarifas reales desactivadas</strong>
+      </div>
+    </header>
+    <div class="notice">
+      Polígonos administrativos propuestos, no cobertura aprobada. Sin Geoapify
+      ni solicitudes externas. Tus observaciones permanecen en memoria:
+      expórtalas antes de cerrar.
+    </div>
+    <div id="error" role="alert" hidden></div>
+    <main>
+      <aside class="areas-panel">
+        <div class="panel-title">
+          <h2>Áreas para revisar</h2>
+          <span id="count">Cargando…</span>
+        </div>
+        <label for="filter">Mostrar</label
+        ><select id="filter">
+          <option value="all">Todas las áreas</option>
+          <option value="CAES">Q10 · Carretera y sectores</option>
+          <option value="CAPITAL">Q35 · Zonas y sectores</option>
+          <option value="pending">Pendientes de delimitar</option>
+        </select>
+        <div id="areas"></div>
+        <div class="pickup">
+          <strong>Recogida · Q0</strong>
+          <p>
+            Sin polígono de entrega gratuita. Otras ubicaciones: envío por
+            confirmar.
+          </p>
+        </div>
+      </aside>
+      <section class="map-panel" aria-label="Mapa de revisión">
+        <div class="map-tools">
+          <button id="overview">Ver todas</button
+          ><button id="capital">Ver ciudad</button
+          ><button id="kilometre">Ver km35 / km36</button
+          ><label
+            ><input type="checkbox" id="context" checked /> Municipios de
+            referencia</label
+          >
+        </div>
+        <div
+          id="map"
+          aria-label="Mapa de Guatemala y propuestas de cobertura"
+          tabindex="0"
+        ></div>
+        <div class="legend">
+          <span><i class="q10"></i>Q10 propuesto</span
+          ><span><i class="q35"></i>Q35 propuesto</span
+          ><span><i class="pending"></i>Punto pendiente, sin área</span
+          ><span><i class="road"></i>Vías OSM, sin cobertura implícita</span>
+        </div>
+        <p class="map-note">
+          Cartografía vectorial descargada. Acerca el mapa para ver fronteras.
+          Los hitos km35/36 son referencias OSM que Peter debe contrastar. No
+          hay imágenes satelitales ni mapa vial completo.
+        </p>
+        <div class="annotation">
+          <label for="point-note">Observación sobre un punto público</label
+          ><input
+            id="point-note"
+            maxlength="400"
+            placeholder="Ej.: revisar este acceso o límite"
+          /><button id="add-point" aria-pressed="false">
+            Marcar ajuste en el mapa
+          </button>
+          <p id="point-status" role="status">
+            Sin direcciones personales ni nombres de clientes.
+          </p>
+        </div>
+      </section>
+      <aside class="detail-panel">
+        <h2 id="area-name">Selecciona un área</h2>
+        <p id="area-status"></p>
+        <p id="area-description"></p>
+        <dl id="metadata"></dl>
+        <div id="compatibility"></div>
+        <label for="reviewer">Persona que revisa</label
+        ><input
+          id="reviewer"
+          maxlength="80"
+          placeholder="Nombre de quien revisa"
+        />
+        <fieldset id="checklist">
+          <legend>Checklist con Peter</legend>
+          <label
+            ><input type="checkbox" data-check="identity" /> Es el municipio o
+            sector correcto.</label
+          ><label
+            ><input type="checkbox" data-check="boundary" /> Revisamos el límite
+            completo, accesos y bordes.</label
+          ><label
+            ><input type="checkbox" data-check="tariff" /> La tarifa indicada
+            corresponde al área.</label
+          ><label
+            ><input type="checkbox" data-check="exceptions" /> Revisamos
+            exclusiones y dudas con cotización manual.</label
+          >
+        </fieldset>
+        <label for="notes">Observaciones y correcciones</label
+        ><textarea
+          id="notes"
+          rows="4"
+          maxlength="2000"
+          placeholder="Indica los accesos o límites que deben cambiar."
+        ></textarea
+        ><button id="approve" disabled>
+          Aprobar propuesta en esta revisión</button
+        ><button id="reopen">Dejar en revisión</button>
+        <p id="approval-help">
+          La aprobación local se exporta como observación; no cambia el servidor
+          ni habilita cobros.
+        </p>
+        <button id="export" class="primary" disabled>
+          Exportar revisión JSON
+        </button>
+        <p id="save-status" role="status"></p>
+      </aside>
+    </main>
+    <footer>
+      <span
+        >Fuentes y licencias:
+        <a
+          href="https://www.openstreetmap.org/copyright"
+          target="_blank"
+          rel="noreferrer"
+          >© OpenStreetMap contributors · ODbL</a
+        >
+        ·
+        <a
+          href="https://www.geoboundaries.org/"
+          target="_blank"
+          rel="noreferrer"
+          >geoBoundaries</a
+        >
+        / CONRED–OCHA FISS ·
+        <a
+          href="https://creativecommons.org/licenses/by/3.0/igo/"
+          target="_blank"
+          rel="noreferrer"
+          >CC BY 3.0 IGO</a
+        >. Sin respaldo institucional a estas propuestas.</span
+      ><span id="snapshot"></span>
+    </footer>
+  </body>
+</html>

@@ -8,6 +8,7 @@ const networkMessage =
 
 const publicOrderErrorCodeSchema = z.enum([
   'VALIDATION_ERROR',
+  'DELIVERY_QUOTE_STALE',
   'IDEMPOTENCY_CONFLICT',
   'RATE_LIMITED',
   'PRODUCT_UNAVAILABLE',
@@ -76,6 +77,18 @@ type FetchImplementation = (
 function safeRequestBody(request: CreateOrderRequest): CreateOrderRequest {
   return {
     ...(request.whatsappOptIn === true ? { whatsappOptIn: true } : {}),
+    ...(request.fulfillment === 'delivery' && request.deliveryPoint
+      ? {
+          deliveryPoint: {
+            lng: request.deliveryPoint.lng,
+            lat: request.deliveryPoint.lat,
+          },
+          deliveryConfirmed: request.deliveryConfirmed,
+          ...(request.deliveryQuote
+            ? { deliveryQuote: request.deliveryQuote }
+            : {}),
+        }
+      : {}),
     customerName: request.customerName,
     phone: request.phone,
     fulfillment: request.fulfillment,
@@ -100,6 +113,13 @@ function knownFailure(
         ok: false,
         code,
         message: 'Revisa los datos del pedido e inténtalo de nuevo.',
+        canRetryUnchanged: false,
+      };
+    case 'DELIVERY_QUOTE_STALE':
+      return {
+        ok: false,
+        code,
+        message: 'Confirma nuevamente tu ubicación y el costo de envío.',
         canRetryUnchanged: false,
       };
     case 'IDEMPOTENCY_CONFLICT':

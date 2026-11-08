@@ -1,5 +1,7 @@
 # 04: Aprobar catálogo y operación de la demo
 
+**Estado vigente 25/10/2026:** Demo local del 24/10 validada 4/4; el usuario confirma que la aceptación de contenido sigue pendiente. Sin fixtures autorizados para la base pública. Ver [checkpoint](../../../docs/operations/oracle/CHECKPOINT.md). Las restricciones Git y bloqueos npm de los apartados inferiores son históricos; prevalece la autorización de consolidación actual. Ningún criterio externo se marca completado.
+
 **What to build / Qué entrega:** La futura demo presenta únicamente contenido aprobado y los dueños conocen permisos, límites comerciales y prácticas.
 
 **Blocked by / Bloqueado por:** Participación de propietarios; puede revisarse sobre la evidencia local sin depender de Oracle.

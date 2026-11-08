@@ -2,6 +2,7 @@ import { sql } from 'drizzle-orm';
 import {
   check,
   date,
+  doublePrecision,
   index,
   integer,
   pgEnum,
@@ -56,6 +57,13 @@ export const orders = pgTable(
     fulfillment: fulfillmentEnum('fulfillment').notNull(),
     requestedDate: date('requested_date').notNull(),
     deliveryLocation: varchar('delivery_location', { length: 300 }),
+    deliveryLatitude: doublePrecision('delivery_latitude'),
+    deliveryLongitude: doublePrecision('delivery_longitude'),
+    deliveryAreaId: varchar('delivery_area_id', { length: 80 }),
+    deliveryCoverageVersion: varchar('delivery_coverage_version', {
+      length: 80,
+    }),
+    deliveryPricingSource: varchar('delivery_pricing_source', { length: 20 }),
     notes: varchar('notes', { length: 500 }),
     subtotalMinor: integer('subtotal_minor').notNull(),
     shippingMinor: integer('shipping_minor'),
@@ -82,6 +90,14 @@ export const orders = pgTable(
     uniqueIndex('orders_receipt_token_hash_idx').on(table.receiptTokenHash),
     index('orders_created_at_idx').on(table.createdAt),
     index('orders_order_status_idx').on(table.orderStatus),
+    check(
+      'orders_delivery_point_valid',
+      sql`(${table.deliveryLatitude} IS NULL AND ${table.deliveryLongitude} IS NULL) OR (${table.fulfillment} = 'DELIVERY' AND ${table.anonymizedAt} IS NULL AND ${table.deliveryLatitude} IS NOT NULL AND ${table.deliveryLongitude} IS NOT NULL AND ${table.deliveryLatitude} BETWEEN -90 AND 90 AND ${table.deliveryLongitude} BETWEEN -180 AND 180)`,
+    ),
+    check(
+      'orders_delivery_source_valid',
+      sql`${table.deliveryPricingSource} IS NULL OR (${table.fulfillment} = 'DELIVERY' AND ${table.deliveryPricingSource} IN ('AUTOMATIC', 'MANUAL', 'MANUAL_PENDING'))`,
+    ),
     check('orders_subtotal_nonnegative', sql`${table.subtotalMinor} >= 0`),
     check(
       'orders_shipping_nonnegative',

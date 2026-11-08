@@ -108,6 +108,20 @@ export default async function AdminOrderDetailPage({
               <dd>{order.deliveryLocation}</dd>
             </>
           ) : null}
+          {order.deliveryPoint ? (
+            <>
+              <dt>Punto confirmado por el cliente</dt>
+              <dd>
+                {order.deliveryPoint.lat}, {order.deliveryPoint.lng}
+              </dd>
+              <dt>Origen de tarifa</dt>
+              <dd>
+                {order.deliveryPricingSource === 'AUTOMATIC'
+                  ? `Automática (${order.deliveryAreaId}, ${order.deliveryCoverageVersion})`
+                  : 'Cotización manual'}
+              </dd>
+            </>
+          ) : null}
           {order.notes ? (
             <>
               <dt>Notas</dt>

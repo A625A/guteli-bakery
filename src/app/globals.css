@@ -2277,3 +2277,54 @@ button:disabled,
   font-size: 0.9rem;
   font-weight: 600;
 }
+
+/* Delivery map loads only after an explicit address search and consent. */
+.delivery-map {
+  height: 320px;
+  width: 100%;
+  max-width: 100%;
+  z-index: 0;
+}
+.delivery-map-marker {
+  color: #8b351b;
+  font-size: 28px;
+  line-height: 28px;
+  text-shadow: 0 0 3px white;
+}
+.delivery-location {
+  display: grid;
+  gap: 0.75rem;
+  min-width: 0;
+}
+.delivery-location button {
+  white-space: normal;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid currentColor;
+  border-radius: 0.5rem;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+.delivery-location button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.delivery-location button:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+.delivery-location > label {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+}
+.delivery-location > label input {
+  flex: 0 0 auto;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+.delivery-location .leaflet-control-zoom a {
+  color: #222;
+}

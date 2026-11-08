@@ -5,7 +5,7 @@ import { suggestSlug } from '@/lib/suggest-slug';
 import Image from 'next/image';
 import { parseQuetzales, quetzalesInput } from '@/lib/owner-money';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import type { AdminProductDto } from '@/server/products/admin-products';
 
@@ -57,7 +57,17 @@ export function ProductForm({
     product?.deletedAt !== null && !!product,
   );
   const [pending, setPending] = useState(false);
-  const [imagePending, setImagePending] = useState(false);
+  const imageInput = useRef<HTMLInputElement>(null);
+  const [selection, setSelection] = useState<{
+    file: File;
+    url: string;
+  } | null>(null);
+  const [removedImageId, setRemovedImageId] = useState<string | null>(null);
+  useEffect(() => {
+    return () => {
+      if (selection) URL.revokeObjectURL(selection.url);
+    };
+  }, [selection]);
   const [message, setMessage] = useState<string | null>(null);
   const [images, setImages] = useState(product?.images ?? []);
   const [categoryOptions, setCategoryOptions] = useState(categories);
@@ -143,6 +153,7 @@ export function ProductForm({
   async function save(formData: FormData) {
     setPending(true);
     setMessage(null);
+    let savedProduct: AdminProductDto | undefined;
     try {
       const response = await fetch(
         product ? `/api/admin/products/${product.id}` : '/api/admin/products',
@@ -158,17 +169,31 @@ export function ProductForm({
           payload.error?.message ?? 'No se pudo guardar el producto.',
         );
       }
+      savedProduct = payload.product;
       setVersion(payload.product.version);
       setActive(payload.product.active);
       setDeleted(payload.product.deletedAt !== null);
-      setMessage(product ? 'Producto actualizado.' : 'Producto creado.');
       setProduct(payload.product);
+      const result = await savePhotograph(payload.product);
+      setProduct(result);
+      setVersion(result.version);
+      setImages(result.images);
+      clearPhotographChanges();
+      setMessage(product ? 'Producto actualizado.' : 'Producto creado.');
       document
         .getElementById('product-name')
         ?.dispatchEvent(new Event('admin:saved', { bubbles: true }));
       router.refresh();
     } catch (error) {
-      setMessage(ownerErrorMessage(error, 'No se pudo guardar el producto.'));
+      const detail = ownerErrorMessage(
+        error,
+        'No se pudo guardar el producto.',
+      );
+      setMessage(
+        savedProduct
+          ? `Los datos del producto se guardaron, pero no el cambio de fotografía. ${detail} Podés reintentar con Guardar producto. Si se perdió la conexión, actualizá la página para verificar el resultado.`
+          : detail,
+      );
     } finally {
       setPending(false);
     }
@@ -265,95 +290,67 @@ export function ProductForm({
     }
   }
 
-  async function uploadImage(formData: FormData) {
-    const file = formData.get('image');
-    if (!(file instanceof File) || file.size === 0) {
-      setMessage('Selecciona una imagen para continuar.');
-      return;
-    }
-    const extension = file.name.split('.').pop()?.toLowerCase();
-    const validExtension =
-      extension === 'jpg' ||
-      extension === 'jpeg' ||
-      extension === 'png' ||
-      extension === 'webp';
-    if (
-      file.size > MAX_IMAGE_BYTES ||
-      !IMAGE_TYPES.has(file.type) ||
-      !validExtension
-    ) {
-      setMessage('Usa una imagen JPEG, PNG o WebP de hasta 8 MB.');
-      return;
-    }
-
-    setPending(true);
-    setImagePending(true);
-    setMessage('Subiendo imagen…');
-    try {
-      const body = new FormData();
-      body.set('productId', product!.id);
-      body.set('expectedVersion', String(version));
-      body.set('file', file);
-      const response = await fetch('/api/admin/uploads', {
-        method: 'POST',
-        body,
-      });
-      const payload = (await response.json()) as MutationPayload;
-      if (!response.ok || !payload.product) {
-        throw new OwnerUiError(
-          payload.error?.message ?? 'No se pudo cargar la imagen.',
-        );
-      }
-      setVersion(payload.product.version);
-      setImages(payload.product.images);
-      document
-        .getElementById('product-image')
-        ?.dispatchEvent(new Event('admin:saved', { bubbles: true }));
-      setMessage('Imagen actualizada.');
-      router.refresh();
-    } catch (error) {
-      setMessage(ownerErrorMessage(error, 'No se pudo cargar la imagen.'));
-    } finally {
-      setImagePending(false);
-      setPending(false);
-    }
+  function clearPhotographChanges() {
+    setSelection(null);
+    setRemovedImageId(null);
+    if (imageInput.current) imageInput.current.value = '';
   }
 
-  async function removeImage(imageId: string) {
-    setPending(true);
-    setImagePending(true);
-    setMessage('Eliminando imagen…');
-    try {
-      const response = await fetch(`/api/admin/products/${product!.id}`, {
+  function selectPhotograph(file: File | undefined) {
+    if (!file) return;
+    const extension = file.name.split('.').pop()?.toLowerCase();
+    if (
+      !file.size ||
+      file.size > MAX_IMAGE_BYTES ||
+      !IMAGE_TYPES.has(file.type) ||
+      !['jpg', 'jpeg', 'png', 'webp'].includes(extension ?? '')
+    ) {
+      setMessage('Usá una imagen JPEG, PNG o WebP de hasta 8 MB.');
+      if (imageInput.current) imageInput.current.value = '';
+      return;
+    }
+    setSelection({ file, url: URL.createObjectURL(file) });
+    setRemovedImageId(null);
+    setMessage(null);
+  }
+
+  async function savePhotograph(
+    saved: AdminProductDto,
+  ): Promise<AdminProductDto> {
+    if (!selection && !removedImageId) return saved;
+    let response: Response;
+    if (selection) {
+      const body = new FormData();
+      body.set('productId', saved.id);
+      body.set('expectedVersion', String(saved.version));
+      body.set('file', selection.file);
+      response = await fetch('/api/admin/uploads', { method: 'POST', body });
+    } else {
+      response = await fetch(`/api/admin/products/${saved.id}`, {
         method: 'DELETE',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ imageId, expectedVersion: version }),
+        body: JSON.stringify({
+          imageId: removedImageId,
+          expectedVersion: saved.version,
+        }),
       });
-      const payload = (await response.json()) as MutationPayload;
-      if (!response.ok || !payload.product) {
-        throw new OwnerUiError(
-          payload.error?.message ?? 'No se pudo eliminar la imagen.',
-        );
-      }
-      setVersion(payload.product.version);
-      setImages(payload.product.images);
-      setMessage('Imagen eliminada.');
-      router.refresh();
-    } catch (error) {
-      setMessage(ownerErrorMessage(error, 'No se pudo eliminar la imagen.'));
-    } finally {
-      setImagePending(false);
-      setPending(false);
     }
+    const payload = (await response.json()) as MutationPayload;
+    if (!response.ok || !payload.product) {
+      throw new OwnerUiError(
+        payload.error?.message ?? 'No se pudo guardar la fotografía.',
+      );
+    }
+    return payload.product;
   }
 
   return (
     <section
       className="admin-auth-card"
-      aria-busy={pending || imagePending}
+      aria-busy={pending}
       aria-label={product ? 'Editar producto' : 'Crear producto'}
     >
-      <fieldset disabled={pending || imagePending} className="admin-fields">
+      <fieldset disabled={pending} className="admin-fields">
         <legend className="visually-hidden">Datos del producto</legend>
         {product && images[0] ? (
           <div className="admin-editor-photo">
@@ -543,6 +540,93 @@ export function ProductForm({
               required
             />
           </details>
+          {!deleted ? (
+            <section aria-labelledby="current-images-title">
+              <h2 id="current-images-title">Fotografía del producto</h2>
+              <p id="product-image-help">
+                JPEG, PNG o WebP, hasta 8 MB. Se guarda una fotografía por
+                producto. La nueva reemplaza la actual al guardar el producto.
+              </p>
+              <input
+                ref={imageInput}
+                id="product-image"
+                aria-label="Imagen del producto"
+                aria-describedby="product-image-help"
+                type="file"
+                accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                hidden
+                onChange={(event) => selectPhotograph(event.target.files?.[0])}
+              />
+              <button type="button" onClick={() => imageInput.current?.click()}>
+                Agregar fotografía
+              </button>
+              {selection ? (
+                <div>
+                  <Image
+                    src={selection.url}
+                    alt="Vista previa de la fotografía seleccionada"
+                    width={320}
+                    height={240}
+                    style={{
+                      maxWidth: '100%',
+                      height: 'auto',
+                      objectFit: 'contain',
+                    }}
+                    unoptimized
+                  />
+                  <p>Fotografía seleccionada, pendiente de guardar.</p>
+                  <button type="button" onClick={clearPhotographChanges}>
+                    Quitar fotografía seleccionada
+                  </button>
+                </div>
+              ) : null}
+              {images.map((image) => (
+                <div key={image.id}>
+                  <Image
+                    src={imageUrl(image.storageKey)}
+                    alt={`Fotografía actual de ${product?.name ?? 'producto'}`}
+                    width={Math.min(image.width, 320)}
+                    height={Math.max(
+                      1,
+                      Math.round(
+                        (Math.min(image.width, 320) * image.height) /
+                          image.width,
+                      ),
+                    )}
+                    style={{ maxWidth: '100%', height: 'auto' }}
+                    unoptimized
+                  />
+                  <p>
+                    {removedImageId === image.id
+                      ? 'Esta fotografía se quitará al guardar. El producto quedará sin fotografía.'
+                      : selection
+                        ? 'Fotografía actual; se reemplazará al guardar.'
+                        : 'Fotografía guardada.'}
+                  </p>
+                  {!selection ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setRemovedImageId(
+                          removedImageId === image.id ? null : image.id,
+                        );
+                        imageInput.current?.dispatchEvent(
+                          new Event('admin:dirty', { bubbles: true }),
+                        );
+                      }}
+                    >
+                      {removedImageId === image.id
+                        ? 'Conservar fotografía'
+                        : 'Quitar fotografía actual'}
+                    </button>
+                  ) : null}
+                </div>
+              ))}
+              {!images.length && !selection ? (
+                <p>Este producto no tiene fotografía.</p>
+              ) : null}
+            </section>
+          ) : null}
           <button
             type="submit"
             disabled={pending || !selectedCategoryId || deleted}
@@ -623,71 +707,6 @@ export function ProductForm({
               </button>
             </div>
           </details>
-        ) : null}
-        {product && !deleted ? (
-          <section aria-labelledby="current-images-title">
-            <h2 id="current-images-title">Administrar imagen</h2>
-            <p id="product-image-help">
-              JPEG, PNG o WebP. Máximo 8 MB; se publicará como WebP optimizado.
-            </p>
-            <form
-              onSubmit={(event) => {
-                event.preventDefault();
-                if (!imagePending)
-                  void uploadImage(new FormData(event.currentTarget));
-              }}
-              aria-describedby="product-image-help"
-            >
-              <label htmlFor="product-image">Imagen del producto</label>
-              <input
-                id="product-image"
-                name="image"
-                type="file"
-                accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
-                disabled={pending}
-                required
-              />
-              <button type="submit" disabled={pending}>
-                Cargar imagen
-              </button>
-            </form>
-            {imagePending ? (
-              <progress aria-label="Progreso de imagen">Procesando</progress>
-            ) : null}
-            {images.length ? (
-              <ul>
-                {images.map((image) => (
-                  <li key={image.id}>
-                    <Image
-                      src={imageUrl(image.storageKey)}
-                      alt={`Vista previa de ${product.name}`}
-                      width={Math.min(image.width, 320)}
-                      height={Math.max(
-                        1,
-                        Math.round(
-                          (Math.min(image.width, 320) * image.height) /
-                            image.width,
-                        ),
-                      )}
-                      unoptimized
-                    />
-                    <p>
-                      {image.width} × {image.height} px · WebP
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => removeImage(image.id)}
-                      disabled={pending}
-                    >
-                      Eliminar imagen
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p>Este producto no tiene imagen.</p>
-            )}
-          </section>
         ) : null}
         {message ? (
           <p role="status" aria-live="polite">

@@ -1,0 +1,37 @@
+{
+  "date": "2026-10-23",
+  "timezone": "America/Guatemala",
+  "initial_head": "6eb72daed77589049828aa3338469ebcbbcea3f6",
+  "observed_head": "2b9db89cd8d3b6840ea43d338c5253c96bc85550",
+  "branch": "infra/oracle-always-free-preparation",
+  "scope": "local uncommitted Ticket05; historical ARM64 retained; no Oracle",
+  "tests": {
+    "unit": 27,
+    "integration_images": 12,
+    "browser_lifecycles": 2,
+    "lint": "passed",
+    "typescript": "passed"
+  },
+  "database_root": "/private/tmp/guteli-ticket05.PwxL7n/pgdata",
+  "database_stopped": true,
+  "upload_roots": [],
+  "unchanged_from_6eb72da": [
+    "infra/oracle/",
+    "scripts/oracle/",
+    "package.json",
+    "package-lock.json"
+  ],
+  "hash_scope": "final snapshot only; does not retrospectively certify test start",
+  "files": {
+    "src/components/admin/ProductForm.tsx": "4ee45fddce398f51be3d26305434e03c475fbbd4d78e683a7efc9727dfd22699",
+    "tests/integration/admin-images.test.ts": "14e56a098dcc58d017b27f4068a42f494af1d43c9f49346cafca7225201c6d9f",
+    "tests/browser/admin-catalog.spec.ts": "cd1c6cf402d6f86a5044b0d53fe45bca01c518c1bbb6e8388cd126a0a013aff8",
+    "tests/oracle-browser/photos.spec.ts": "1acdc7b6847191fd81d1553fe562df1a2542a2124c30168a8363f254116b34ce",
+    "playwright.oracle-photos.config.ts": "b1c3f84e9f7e42e9e935243a5ddf57a78b312d2f92a7d99db18d8af8b29ed3f9",
+    "docs/operations/oracle/instalacion-ticket-05.md": "431a17a008eb7a0acbe12a8164df3d9c6ab595142d5205708e593af34fabba35",
+    ".scratch/oracle-remaining/issues/05-instalacion-autorizada.md": "a4c093374bb340b9242edde93758830f0cf845d7d87175a533c8ed95fef9bf28",
+    "docs/operations/oracle/CHECKPOINT.md": "5a573f4b713dea1bff7bbe8567ee44581157f7d974358a8307535c50e730dd7d",
+    ".scratch/oracle-remaining/README.md": "c9d6be1c07fbd5be264061d8c2a4fe507ef9033542d1d5f34856f03069124f5e",
+    "artifacts/oracle-preparation/ticket-05/RESULTADO.md": "feff3c4963f7fc2f76252dd99327f9be415d85c29ad715b4ffe5443720278d7e"
+  }
+}

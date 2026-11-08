@@ -30,7 +30,8 @@ Los enlaces privados de pedidos no deben publicarse. Atiende las solicitudes de 
 - Una existencia vacía significa que no llevas un conteo. Cero indica agotado. Este control no es una reserva ni un límite de producción diaria.
 - Desactivar oculta el producto sin retirar su historial. Para retirar un producto, marca la confirmación y luego pulsa **Retirar producto**. Los pedidos históricos se conservan.
 - Duplicar crea una copia inactiva para revisarla antes de ofrecerla. No convierte la copia en un producto publicado automáticamente.
-- Carga imágenes JPEG, PNG o WebP de hasta 8 MB. Revisa la vista previa y usa **Eliminar imagen** si necesitas reemplazarla.
+- Usa **Agregar fotografía** al crear o editar: JPEG, PNG o WebP de hasta 8 MB. Revisa la vista previa y pulsa **Crear producto** o **Guardar producto** para aplicarla. Se guarda una fotografía; seleccionar otra reemplaza la actual al guardar. **Quitar fotografía seleccionada** descarta la nueva selección. **Quitar fotografía actual** prepara su eliminación; puedes deshacerla con **Conservar fotografía** antes de guardar.
+- Si aparece que los datos se guardaron pero la fotografía falló, revisa el mensaje y reintenta sobre el mismo producto. Si se perdió la conexión, recarga primero para comprobar el resultado; no crees otro producto.
 - En **Promociones**, define porcentaje, inicio, fin, productos seleccionados o catálogo completo y si está habilitada. Los horarios corresponden a Guatemala. Si coinciden varias promociones, se aplica el descuento válido más alto; no se suman.
 
 Los pedidos sin pago verificado siguen los precios vigentes. Una promoción vencida deja de aplicar aunque el cliente ya haya iniciado un pedido. El cliente debe volver a aceptar un total que cambió. Seleccionar un método de pago no conserva un descuento vencido.

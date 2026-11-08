@@ -22,6 +22,9 @@ test-results/
 
 *.log
 
+# Private, synthetic owner demo (database, credentials, uploads and evidence)
+.local-demo/
+
 # Local infrastructure validation caches
 __pycache__/
 *.pyc
