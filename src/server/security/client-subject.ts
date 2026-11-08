@@ -1,5 +1,6 @@
 import { createHmac } from 'node:crypto';
 import { isIP } from 'node:net';
+import { isNetlify } from '@/server/config/platform';
 
 export class ClientAddressError extends Error {
   constructor() {
@@ -47,6 +48,13 @@ export function getTrustedClientAddress(
     directAddress: string | null | undefined;
   }>,
 ): string {
+  if (isNetlify()) {
+    const address = normalizeClientAddress(
+      request.headers.get('x-nf-client-connection-ip') ?? '',
+    );
+    if (!address) throw new ClientAddressError();
+    return address;
+  }
   if (options.trustedProxyHops === 0) {
     const directAddress = options.directAddress
       ? normalizeClientAddress(options.directAddress)

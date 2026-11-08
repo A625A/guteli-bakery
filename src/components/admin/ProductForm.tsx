@@ -2,6 +2,7 @@
 import { OwnerUiError, ownerErrorMessage } from '@/lib/owner-ui-error';
 
 import { suggestSlug } from '@/lib/suggest-slug';
+import { prepareImageUpload } from '@/lib/image-upload-transport';
 import Image from 'next/image';
 import { parseQuetzales, quetzalesInput } from '@/lib/owner-money';
 import { useRouter } from 'next/navigation';
@@ -323,7 +324,7 @@ export function ProductForm({
       const body = new FormData();
       body.set('productId', saved.id);
       body.set('expectedVersion', String(saved.version));
-      body.set('file', selection.file);
+      body.set('file', await prepareImageUpload(selection.file));
       response = await fetch('/api/admin/uploads', { method: 'POST', body });
     } else {
       response = await fetch(`/api/admin/products/${saved.id}`, {

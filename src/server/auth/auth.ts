@@ -5,6 +5,7 @@ import { betterAuth } from 'better-auth';
 import { twoFactor } from 'better-auth/plugins';
 
 import { safeAuthLog } from '@/server/observability/safe-log';
+import { isNetlify } from '@/server/config/platform';
 import { db } from '@/server/db/client';
 import * as schema from '@/server/db/schema';
 
@@ -44,6 +45,18 @@ export const auth = betterAuth({
     enabled: true,
     disableSignUp: true,
     minPasswordLength: 14,
+  },
+  // Preserve the existing credential-only schema after Better Auth 1.7.7
+  // stopped declaring issuer as a core account field. No schema rewrite needed.
+  account: {
+    additionalFields: {
+      issuer: {
+        type: 'string',
+        required: true,
+        defaultValue: 'local:credential',
+        input: false,
+      },
+    },
   },
   session: {
     expiresIn: 60 * 60 * 8,
@@ -85,6 +98,11 @@ export const auth = betterAuth({
   },
   advanced: {
     useSecureCookies: isProduction,
+    ipAddress: {
+      ipAddressHeaders: isNetlify()
+        ? ['x-nf-client-connection-ip']
+        : ['x-forwarded-for'],
+    },
     database: {
       generateId: 'uuid',
     },

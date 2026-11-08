@@ -96,7 +96,7 @@ The customer-facing flow stays intentionally simple while persistence, administr
 
 ## Run Locally
 
-Requirements: Node.js 20.19+ and npm 10+. Use only a disposable local database and fictitious data for the commands below. The Node development workflow does not require Docker if PostgreSQL 17 is already available locally.
+Requirements: Node.js 22.13+ (Node 22 LTS recommended) and npm 10+. Use only a disposable local database and fictitious data for the commands below. The Node development workflow does not require Docker if PostgreSQL 17 is already available locally.
 
 ```bash
 npm ci
@@ -188,6 +188,10 @@ A public deployment is not currently provided from this repository.
 - [Engineering handbook](AI/AI-EOS/00_START_HERE.md)
 
 The screenshots in this README come from the running application, not design mockups.
+
+## Preparación local para Netlify y Neon
+
+La preparación alternativa para **Netlify Free + Neon**, con almacenamiento de fotografías en Blobs, variables requeridas, migración manual y provisión segura del propietario, está en [la guía de Netlify y Neon](docs/operations/netlify-neon.md). Está validada localmente; publicación, migración de Neon y acceso real de administración siguen pendientes de autorización y verificación externa.
 
 ## Preparación local para Oracle
 

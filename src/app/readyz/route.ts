@@ -2,6 +2,8 @@ import { access, constants, lstat, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import journal from '../../../drizzle/meta/_journal.json';
 import { privateHeaders } from '@/server/privacy/headers';
+import { isNetlify } from '@/server/config/platform';
+import { NetlifyObjectStorage } from '@/server/storage/netlify-storage';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,17 +25,25 @@ export async function GET() {
       text: 'select 1 from operational_checks limit 1',
       ...{ query_timeout: 1000 },
     });
-    const root = process.env.UPLOADS_ROOT;
-    if (!root) throw new Error();
-    const info = await lstat(root);
-    if (!info.isDirectory() || info.isSymbolicLink()) throw new Error();
-    await access(root, constants.R_OK | constants.W_OK | constants.X_OK);
-    if (
-      process.env.REQUIRE_PERSISTENT_STORAGE === 'true' &&
-      (await readFile(join(root, '.guteli-volume'), 'utf8')).trim() !==
-        'guteli-uploads-v1'
-    )
-      throw new Error();
+    if (isNetlify() || process.env.STORAGE_PROVIDER === 'netlify-blobs') {
+      if (
+        process.env.STORAGE_PROVIDER !== 'netlify-blobs' ||
+        !(await new NetlifyObjectStorage().checkAccess())
+      )
+        throw new Error();
+    } else {
+      const root = process.env.UPLOADS_ROOT;
+      if (!root) throw new Error();
+      const info = await lstat(root);
+      if (!info.isDirectory() || info.isSymbolicLink()) throw new Error();
+      await access(root, constants.R_OK | constants.W_OK | constants.X_OK);
+      if (
+        process.env.REQUIRE_PERSISTENT_STORAGE === 'true' &&
+        (await readFile(join(root, '.guteli-volume'), 'utf8')).trim() !==
+          'guteli-uploads-v1'
+      )
+        throw new Error();
+    }
     return Response.json({ status: 'ok' }, { headers: privateHeaders });
   } catch {
     return Response.json(

@@ -1,13 +1,10 @@
 import { loadEnvConfig } from '@next/env';
 import { defineConfig } from 'drizzle-kit';
+import { migrationDatabaseUrl } from './src/server/config/database';
 
 loadEnvConfig(process.cwd());
 
-const databaseUrl = process.env.DATABASE_URL;
-
-if (!databaseUrl) {
-  throw new Error('DATABASE_URL is required to run Drizzle commands.');
-}
+const databaseUrl = migrationDatabaseUrl(process.env);
 
 export default defineConfig({
   dialect: 'postgresql',

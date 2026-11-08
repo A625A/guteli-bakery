@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "engines": {
-    "node": ">=20.19.0",
+    "node": ">=22.13.0",
     "npm": ">=10.0.0"
   },
   "scripts": {
@@ -36,7 +36,8 @@
     "delivery:review": "python3 scripts/delivery-review/serve.py"
   },
   "dependencies": {
-    "better-auth": "^1.7.2",
+    "@netlify/blobs": "11.1.8",
+    "better-auth": "1.7.7",
     "drizzle-orm": "^0.45.2",
     "leaflet": "1.9.4",
     "next": "16.4.2",

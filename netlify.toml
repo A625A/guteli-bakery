@@ -1,0 +1,13 @@
+[build]
+  command = "NODE_ENV=production npm run production:check && npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
+  NEXT_PUBLIC_DEMO_MODE = "true"
+  DEPLOYMENT_PLATFORM = "netlify"
+
+# Secrets and runtime flags must also be set in the Netlify UI (Functions scope).
+# netlify.toml build variables are not runtime environment variables.
+# Never run migrations, provisioning or development seeds in a build hook.
+# Use Netlify's automatically maintained OpenNext adapter; no SPA redirects.

@@ -45,7 +45,7 @@ export function describeOperations(
         facts.storage === null ? 'unknown' : facts.storage ? 'ok' : 'attention',
       message:
         facts.storage === true
-          ? 'La carpeta permite lectura y escritura. Falta comprobar espacio, permanencia y restauración de archivos.'
+          ? 'El almacenamiento respondió a la comprobación de acceso. Las cargas, la permanencia y la restauración se verifican por separado.'
           : 'No pudimos comprobar el acceso a los archivos. Pide apoyo técnico.',
     },
     {

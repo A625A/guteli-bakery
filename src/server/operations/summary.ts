@@ -6,6 +6,8 @@ import { requireAdmin } from '@/server/auth/authorize';
 import { db } from '@/server/db/client';
 import { operationalChecks, outboxEvents } from '@/server/db/schema';
 import { resolveUploadsRoot } from '@/server/config/uploads-root';
+import { isNetlify } from '@/server/config/platform';
+import { NetlifyObjectStorage } from '@/server/storage/netlify-storage';
 import { readAutomationSettings } from '@/server/notifications/automation-settings';
 import {
   logOperationalEvent,
@@ -75,7 +77,9 @@ export async function getOperationsSummary(
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {
     facts.storage = await Promise.race([
-      checkStorageAccess(resolveUploadsRoot()),
+      isNetlify() || process.env.STORAGE_PROVIDER === 'netlify-blobs'
+        ? new NetlifyObjectStorage().checkAccess()
+        : checkStorageAccess(resolveUploadsRoot()),
       new Promise<null>((resolve) => {
         timer = setTimeout(() => resolve(null), 1000);
       }),

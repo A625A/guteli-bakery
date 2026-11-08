@@ -19,6 +19,7 @@ test-results/
 .superpowers/
 
 .vercel/
+.netlify/
 
 *.log
 

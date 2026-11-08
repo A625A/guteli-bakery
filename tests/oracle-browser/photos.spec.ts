@@ -2,10 +2,14 @@ import { expect, test } from '@playwright/test';
 import { base32 } from '@better-auth/utils/base32';
 import { createOTP } from '@better-auth/utils/otp';
 import sharp from 'sharp';
+import { randomBytes } from 'node:crypto';
 import {
   adminCatalogAuthFixture,
   adminShellAuthFixture,
 } from '../support/admin-auth-fixture';
+const evidenceDirectory =
+  process.env.GUTELI_PHOTO_ARTIFACTS ??
+  'artifacts/oracle-preparation/ticket-05';
 
 for (const width of [1440, 390]) {
   test(`photograph lifecycle at ${width}px`, async ({ page }) => {
@@ -66,6 +70,15 @@ for (const width of [1440, 390]) {
         .png()
         .toBuffer(),
     };
+    if (process.env.GUTELI_TEST_LARGE_UPLOAD === 'true') {
+      file.buffer = await sharp(randomBytes(1200 * 1500 * 3), {
+        raw: { width: 1200, height: 1500, channels: 3 },
+      })
+        .png({ compressionLevel: 0 })
+        .toBuffer();
+      expect(file.buffer.length).toBeGreaterThan(4 * 1024 * 1024);
+      expect(file.buffer.length).toBeLessThan(8 * 1024 * 1024);
+    }
     await expect(
       page.getByRole('button', { name: 'Agregar fotografía', exact: true }),
     ).toBeVisible();
@@ -104,9 +117,22 @@ for (const width of [1440, 390]) {
     );
     await expect(preview).toBeVisible();
     await page.unroute('**/api/admin/uploads');
+    const uploaded = page.waitForResponse(
+      (response) =>
+        response.url().endsWith('/api/admin/uploads') &&
+        response.status() === 201,
+    );
     await page
       .getByRole('button', { name: 'Guardar producto', exact: true })
       .click();
+    const uploadResponse = await uploaded;
+    if (process.env.GUTELI_TEST_LARGE_UPLOAD === 'true') {
+      const length = Number(
+        (await uploadResponse.request().allHeaders())['content-length'],
+      );
+      expect(length).toBeGreaterThan(0);
+      expect(length).toBeLessThan(4 * 1024 * 1024 + 65536);
+    }
     await expect(page.getByRole('status')).toHaveText('Producto actualizado.');
     await page.getByRole('button', { name: 'Cerrar editor' }).click();
     await page.goto(`/admin/products/${product.id}`);
@@ -174,14 +200,12 @@ for (const width of [1440, 390]) {
     );
     const catalog = await page.context().newPage();
     await catalog.goto('/menu');
-    const card = catalog
-      .locator('.product-card')
-      .filter({
-        has: catalog.getByRole('heading', {
-          name: `Foto prueba ${width}`,
-          exact: true,
-        }),
-      });
+    const card = catalog.locator('.product-card').filter({
+      has: catalog.getByRole('heading', {
+        name: `Foto prueba ${width}`,
+        exact: true,
+      }),
+    });
     const catalogImage = card.locator('img');
     await expect(catalogImage).toBeVisible();
     await expect
@@ -221,7 +245,7 @@ for (const width of [1440, 390]) {
     expect((await page.request.get(secondSrc!)).status()).toBe(200);
     await page.unroute(`**/api/admin/products/${product.id}`);
     await page.screenshot({
-      path: `artifacts/oracle-preparation/ticket-05/photo-${width}.png`,
+      path: `${evidenceDirectory}/photo-${width}.png`,
       fullPage: true,
     });
     expect(
@@ -248,7 +272,7 @@ for (const width of [1440, 390]) {
     await page.getByLabel('Imagen del producto').setInputFiles(file);
     await expect(preview).toBeVisible();
     await page.screenshot({
-      path: `artifacts/oracle-preparation/ticket-05/preview-${width}.png`,
+      path: `${evidenceDirectory}/preview-${width}.png`,
     });
     const directResponse = page.waitForResponse(
       (r) =>

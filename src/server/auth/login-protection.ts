@@ -12,6 +12,7 @@ import { z } from 'zod';
 import { db } from '@/server/db/client';
 import { rateLimitBuckets, session, user } from '@/server/db/schema';
 import { getTrustedClientAddress } from '@/server/security/client-subject';
+import { isNetlify } from '@/server/config/platform';
 
 const LOGIN_POLICY = 'ADMIN_LOGIN_ACCOUNT_IP';
 const WINDOW_MS = 15 * 60 * 1000;
@@ -43,7 +44,11 @@ function getSettings() {
             'test-login-rate-limit-secret-must-be-at-least-32-bytes',
           TRUSTED_PROXY_HOPS: process.env.TRUSTED_PROXY_HOPS ?? '0',
         }
-      : process.env;
+      : {
+          ...process.env,
+          TRUSTED_PROXY_HOPS:
+            process.env.TRUSTED_PROXY_HOPS ?? (isNetlify() ? '0' : undefined),
+        };
   const parsed = settingsSchema.safeParse(testDefaults);
   if (!parsed.success) throw new Error('Invalid login protection environment.');
   return parsed.data;
@@ -87,7 +92,11 @@ function requestContext(ctx: { body?: unknown; request?: Request }) {
   if (!email || !ctx.request) return null;
 
   const settings = getSettings();
-  if (settings.TRUSTED_PROXY_HOPS === 0 && process.env.NODE_ENV !== 'test') {
+  if (
+    settings.TRUSTED_PROXY_HOPS === 0 &&
+    process.env.NODE_ENV !== 'test' &&
+    !isNetlify()
+  ) {
     throw new Error('A trusted proxy is required for login protection.');
   }
   const address = getTrustedClientAddress(ctx.request, {

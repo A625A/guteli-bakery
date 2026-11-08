@@ -3,6 +3,7 @@ import 'server-only';
 import { isAbsolute, resolve } from 'node:path';
 import { parseServerEnv } from './env';
 import { parseOrderSecuritySettings } from './order-security-env';
+import { isNetlify } from './platform';
 
 function isNonPlaceholderSecret(value: string | undefined): value is string {
   return (
@@ -33,9 +34,14 @@ export function validateProductionRuntime(input: NodeJS.ProcessEnv) {
       throw new Error();
     const database = new URL(settings.DATABASE_URL);
     const password = decodeURIComponent(database.password);
+    const netlify = isNetlify(input);
     if (
       !database.username ||
-      !isNonPlaceholderSecret(password) ||
+      !(netlify
+        ? password.length >= 16 &&
+          new Set(password).size >= 8 &&
+          !/(?:placeholder|replace|password)/i.test(password)
+        : isNonPlaceholderSecret(password)) ||
       secrets.includes(password)
     )
       throw new Error();
@@ -54,12 +60,33 @@ export function validateProductionRuntime(input: NodeJS.ProcessEnv) {
     )
       throw new Error();
     if (
-      !input.TRUSTED_PROXY_HOPS ||
-      !settings.UPLOADS_ROOT ||
-      !isAbsolute(settings.UPLOADS_ROOT) ||
-      resolve(settings.UPLOADS_ROOT) === '/'
+      !netlify &&
+      (!input.TRUSTED_PROXY_HOPS ||
+        !settings.UPLOADS_ROOT ||
+        !isAbsolute(settings.UPLOADS_ROOT) ||
+        resolve(settings.UPLOADS_ROOT) === '/')
     )
       throw new Error();
+    if (netlify) {
+      if (
+        input.STORAGE_PROVIDER !== 'netlify-blobs' ||
+        !/^ep-[a-z0-9-]+-pooler\.[a-z0-9.-]+\.neon\.tech$/.test(
+          database.hostname,
+        ) ||
+        !['require', 'verify-full'].includes(
+          database.searchParams.get('sslmode') ?? '',
+        ) ||
+        database.searchParams.get('uselibpqcompat') === 'true' ||
+        input.COMMERCIAL_ORDERS_ENABLED !== 'false' ||
+        input.NEXT_PUBLIC_DEMO_MODE !== 'true' ||
+        [
+          'DELIVERY_MAPS_ENABLED',
+          'DELIVERY_PROVIDER_APPROVED',
+          'DELIVERY_COVERAGE_ENABLED',
+        ].some((key) => input[key] !== 'false')
+      )
+        throw new Error();
+    }
     // This release has no verified payment provider or deployed notification worker.
     if (
       input.PAYMENTS_ENABLED !== 'false' ||
@@ -68,7 +95,7 @@ export function validateProductionRuntime(input: NodeJS.ProcessEnv) {
       throw new Error();
     return {
       origin: origin.origin,
-      uploadsRoot: resolve(settings.UPLOADS_ROOT),
+      uploadsRoot: netlify ? null : resolve(settings.UPLOADS_ROOT!),
       trustedProxyHops: security.trustedProxyHops,
       paymentsEnabled: false as const,
       notificationsEnabled: false as const,

@@ -5,6 +5,11 @@ import { join } from 'node:path';
 import journal from '../../drizzle/meta/_journal.json';
 vi.mock('server-only', () => ({}));
 vi.mock('@/server/db/client', () => ({ pool: { query: vi.fn() } }));
+vi.mock('@/server/storage/netlify-storage', () => ({
+  NetlifyObjectStorage: class {
+    checkAccess = async () => true;
+  },
+}));
 import { pool } from '@/server/db/client';
 import { GET } from '@/app/readyz/route';
 const dirs: string[] = [];
@@ -31,6 +36,13 @@ async function prepared() {
   return dir;
 }
 describe('safe public readiness', () => {
+  it('checks durable Netlify storage without requiring a local volume', async () => {
+    await prepared();
+    vi.stubEnv('DEPLOYMENT_PLATFORM', 'netlify');
+    vi.stubEnv('STORAGE_PROVIDER', 'netlify-blobs');
+    vi.stubEnv('UPLOADS_ROOT', undefined);
+    expect((await GET()).status).toBe(200);
+  });
   it('returns only availability for prepared schema and storage', async () => {
     await prepared();
     const response = await GET();

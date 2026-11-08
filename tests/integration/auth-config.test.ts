@@ -60,7 +60,6 @@ describe('Better Auth configuration', () => {
     await context.internalAdapter.linkAccount({
       userId: provisionedUser.id,
       providerId: 'credential',
-      issuer: 'local:credential',
       accountId: provisionedUser.id,
       password: await context.password.hash(password),
     });
@@ -175,6 +174,7 @@ describe('Better Auth configuration', () => {
     });
     expect(storedUser?.setupCredentialExpiresAt).toBeInstanceOf(Date);
     expect(storedAccounts).toHaveLength(1);
+    expect(storedAccounts[0]?.issuer).toBe('local:credential');
     expect(storedSessions).toHaveLength(1);
     expect(audit.actorId).toBe(provisionedUser.id);
   });

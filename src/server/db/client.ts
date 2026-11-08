@@ -4,8 +4,7 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 
 import { getServerEnv } from '@/server/config/env';
-
-const DATABASE_CONNECTION_TIMEOUT_MS = 750;
+import { databasePoolOptions } from '@/server/config/database';
 
 type DatabasePoolError = Error & { code?: unknown };
 
@@ -26,10 +25,12 @@ function classifyPoolError(error: DatabasePoolError) {
 }
 
 const createPool = () => {
-  const databasePool = new Pool({
-    connectionString: getServerEnv().DATABASE_URL,
-    connectionTimeoutMillis: DATABASE_CONNECTION_TIMEOUT_MS,
-  });
+  const databasePool = new Pool(
+    databasePoolOptions({
+      ...process.env,
+      DATABASE_URL: getServerEnv().DATABASE_URL,
+    }),
+  );
 
   databasePool.on('error', (error: DatabasePoolError) => {
     console.error({
@@ -46,7 +47,7 @@ const globalForDb = globalThis as typeof globalThis & {
 };
 
 const pool =
-  process.env.NODE_ENV === 'development'
+  process.env.NODE_ENV !== 'test'
     ? (globalForDb.__guteliPool ??= createPool())
     : createPool();
 
