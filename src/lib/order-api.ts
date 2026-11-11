@@ -31,6 +31,10 @@ export const acceptedOrderSchema = z
       'CANCELLED',
     ]),
     paymentStatus: z.enum(['UNPAID', 'PENDING', 'PAID', 'FAILED', 'REFUNDED']),
+    paymentMethod: z
+      .enum(['BANK_TRANSFER', 'CASH_PICKUP', 'CASH_DELIVERY'])
+      .nullable()
+      .optional(),
     subtotalMinor: moneySchema,
     shippingMinor: moneySchema.nullable(),
     totalMinor: moneySchema.nullable(),
@@ -92,6 +96,7 @@ function safeRequestBody(request: CreateOrderRequest): CreateOrderRequest {
     customerName: request.customerName,
     phone: request.phone,
     fulfillment: request.fulfillment,
+    paymentMethod: request.paymentMethod,
     requestedDate: request.requestedDate,
     ...(request.fulfillment === 'delivery' && request.deliveryLocation
       ? { deliveryLocation: request.deliveryLocation }

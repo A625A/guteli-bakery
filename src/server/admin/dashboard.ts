@@ -1,6 +1,7 @@
 import 'server-only';
 
-import { and, desc, eq, isNull, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
+import { readEmailSettings } from '@/server/notifications/email-settings';
 
 import { requireAdmin } from '@/server/auth/authorize';
 import { db } from '@/server/db/client';
@@ -34,6 +35,12 @@ export type AdminDashboardDTO = Readonly<{
   lowStockProductCount: number;
   pendingNotificationCount: number;
   failedNotificationCount: number;
+  emailConfigured: boolean;
+  failedEmailOrders: readonly {
+    publicId: string;
+    deliveryStatus: string;
+    lastErrorCode: string | null;
+  }[];
   recentOrders: readonly Readonly<{
     publicId: string;
     orderStatus: OrderStatus;
@@ -49,19 +56,25 @@ export async function getAdminDashboard(
 ): Promise<AdminDashboardDTO> {
   await requireAdmin(requestHeaders);
 
-  const [counts, todayRows, notificationRows, productRows, recentOrders] =
-    await Promise.all([
-      db
-        .select({
-          orderStatus: orders.orderStatus,
-          count: sql<number>`count(*)::integer`,
-        })
-        .from(orders)
-        .groupBy(orders.orderStatus),
-      db
-        .select({
-          completed: sql<number>`count(*) filter (where ${orders.orderStatus}='COMPLETED' AND (${orders.terminalAt} at time zone ${GUATEMALA_TIME_ZONE})::date = (${now}::timestamptz at time zone ${GUATEMALA_TIME_ZONE})::date)::integer`,
-          count: sql<number>`count(*) filter (
+  const [
+    counts,
+    todayRows,
+    notificationRows,
+    productRows,
+    recentOrders,
+    failedEmailOrders,
+  ] = await Promise.all([
+    db
+      .select({
+        orderStatus: orders.orderStatus,
+        count: sql<number>`count(*)::integer`,
+      })
+      .from(orders)
+      .groupBy(orders.orderStatus),
+    db
+      .select({
+        completed: sql<number>`count(*) filter (where ${orders.orderStatus}='COMPLETED' AND (${orders.terminalAt} at time zone ${GUATEMALA_TIME_ZONE})::date = (${now}::timestamptz at time zone ${GUATEMALA_TIME_ZONE})::date)::integer`,
+        count: sql<number>`count(*) filter (
           where ${orders.createdAt} >= (
             date_trunc('day', ${now}::timestamptz at time zone ${GUATEMALA_TIME_ZONE})
             at time zone ${GUATEMALA_TIME_ZONE}
@@ -71,50 +84,74 @@ export async function getAdminDashboard(
             + interval '1 day'
           ) at time zone ${GUATEMALA_TIME_ZONE}
         )::integer`,
-        })
-        .from(orders),
-      db
-        .select({
-          pendingCount: sql<number>`count(*) filter (
+      })
+      .from(orders),
+    db
+      .select({
+        pendingCount: sql<number>`count(*) filter (
             where ${outboxEvents.state} = 'PENDING'
           )::integer`,
-          failedCount: sql<number>`count(*) filter (
-            where ${outboxEvents.state} = 'FAILED'
+        failedCount: sql<number>`count(*) filter (
+            where ${outboxEvents.state} IN ('FAILED', 'BLOCKED')
           )::integer`,
-        })
-        .from(outboxEvents)
-        .where(eq(outboxEvents.eventType, 'OWNER_ORDER_CREATED')),
-      db
-        .select({
-          activeCount: sql<number>`count(*)::integer`,
-          unavailableCount: sql<number>`count(*) filter (
+      })
+      .from(outboxEvents)
+      .where(
+        inArray(outboxEvents.eventType, [
+          'OWNER_ORDER_CREATED',
+          'OWNER_ORDER_EMAIL',
+        ]),
+      ),
+    db
+      .select({
+        activeCount: sql<number>`count(*)::integer`,
+        unavailableCount: sql<number>`count(*) filter (
             where ${products.stockQuantity} = 0
           )::integer`,
-          lowStockCount: sql<number>`count(*) filter (
+        lowStockCount: sql<number>`count(*) filter (
             where ${products.stockQuantity} between 1 and ${LOW_STOCK_THRESHOLD}
           )::integer`,
-        })
-        .from(products)
-        .innerJoin(categories, eq(products.categoryId, categories.id))
-        .where(
-          and(
-            eq(products.active, true),
-            isNull(products.deletedAt),
-            eq(categories.active, true),
-          ),
+      })
+      .from(products)
+      .innerJoin(categories, eq(products.categoryId, categories.id))
+      .where(
+        and(
+          eq(products.active, true),
+          isNull(products.deletedAt),
+          eq(categories.active, true),
         ),
-      db
-        .select({
-          publicId: orders.publicId,
-          orderStatus: orders.orderStatus,
-          fulfillment: orders.fulfillment,
-          requestedDate: orders.requestedDate,
-          createdAt: orders.createdAt,
-        })
-        .from(orders)
-        .orderBy(desc(orders.createdAt), desc(orders.id))
-        .limit(10),
-    ]);
+      ),
+    db
+      .select({
+        publicId: orders.publicId,
+        orderStatus: orders.orderStatus,
+        fulfillment: orders.fulfillment,
+        requestedDate: orders.requestedDate,
+        createdAt: orders.createdAt,
+      })
+      .from(orders)
+      .orderBy(desc(orders.createdAt), desc(orders.id))
+      .limit(10),
+    db
+      .select({
+        publicId: orders.publicId,
+        deliveryStatus: outboxEvents.deliveryStatus,
+        lastErrorCode: outboxEvents.lastErrorCode,
+      })
+      .from(outboxEvents)
+      .innerJoin(
+        orders,
+        sql`${outboxEvents.payload}->>'orderId' = ${orders.id}::text`,
+      )
+      .where(
+        and(
+          eq(outboxEvents.eventType, 'OWNER_ORDER_EMAIL'),
+          inArray(outboxEvents.state, ['FAILED', 'BLOCKED']),
+        ),
+      )
+      .orderBy(desc(outboxEvents.updatedAt))
+      .limit(10),
+  ]);
 
   const orderCounts = Object.fromEntries(
     orderStatusEnum.enumValues.map((status) => [status, 0]),
@@ -122,6 +159,8 @@ export async function getAdminDashboard(
   for (const row of counts) orderCounts[row.orderStatus] = row.count;
 
   return {
+    emailConfigured: readEmailSettings() !== null,
+    failedEmailOrders,
     orderCounts,
     ordersReceivedTodayCount: todayRows[0]?.count ?? 0,
     completedTodayCount: todayRows[0]?.completed ?? 0,

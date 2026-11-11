@@ -39,6 +39,7 @@ const input = () => ({
     customerName: 'Ana',
     phone: '55551234',
     fulfillment: 'pickup' as const,
+    paymentMethod: 'BANK_TRANSFER' as const,
     requestedDate: '2026-10-12',
     items: [{ productId, quantity: 5 }],
   },

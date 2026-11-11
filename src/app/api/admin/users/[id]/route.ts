@@ -1,3 +1,4 @@
+import { readBoundedJson } from '@/server/http/read-bounded-json';
 import { z } from 'zod';
 
 import { updateAdminUser } from '@/server/auth/admin-users';
@@ -55,7 +56,7 @@ export async function PATCH(
 
   let body: unknown;
   try {
-    body = await request.json();
+    body = await readBoundedJson(request, 64 * 1024);
   } catch {
     return validationError(requestId);
   }

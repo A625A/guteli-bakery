@@ -99,6 +99,7 @@ function parsedRequest(
     customerName: overrides.customerName ?? 'María López',
     phone: overrides.phone ?? '+502 5555-5555',
     fulfillment,
+    paymentMethod: 'BANK_TRANSFER',
     requestedDate: '2026-08-31',
     ...(fulfillment === 'delivery'
       ? { deliveryLocation: overrides.deliveryLocation ?? 'Zona 10, Guatemala' }
@@ -432,7 +433,7 @@ describe('createOrder', () => {
       orders: 1,
       items: 1,
       idempotency: 1,
-      outbox: 1,
+      outbox: 2,
       audit: 1,
     });
   });
@@ -454,7 +455,7 @@ describe('createOrder', () => {
         orders: 1,
         items: 1,
         idempotency: 1,
-        outbox: 1,
+        outbox: 2,
         audit: 1,
       });
     } finally {
@@ -477,7 +478,7 @@ describe('createOrder', () => {
       orders: 1,
       items: 1,
       idempotency: 1,
-      outbox: 1,
+      outbox: 2,
       audit: 1,
     });
   });
@@ -514,7 +515,7 @@ describe('createOrder', () => {
       orders: 2,
       items: 1,
       idempotency: 1,
-      outbox: 1,
+      outbox: 2,
       audit: 1,
     });
   });

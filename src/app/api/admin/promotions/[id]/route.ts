@@ -1,3 +1,4 @@
+import { readBoundedJson } from '@/server/http/read-bounded-json';
 import { z } from 'zod';
 import { getRequestId } from '@/server/observability/request-id';
 import { savePromotion } from '@/server/products/admin-promotions';
@@ -18,7 +19,7 @@ export async function PATCH(
     return adminCatalogValidationError(requestId);
   let body: unknown;
   try {
-    body = await request.json();
+    body = await readBoundedJson(request, 64 * 1024);
   } catch {
     return adminCatalogValidationError(requestId);
   }

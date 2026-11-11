@@ -1,5 +1,9 @@
 import { privateHeaders } from '@/server/privacy/headers';
 import { logOperationalEvent } from '@/server/observability/safe-log';
+import {
+  BoundedJsonBodyError,
+  readBoundedBytes,
+} from '@/server/http/read-bounded-json';
 import { toNextJsHandler } from 'better-auth/next-js';
 
 import { auth } from '@/server/auth/auth';
@@ -52,13 +56,24 @@ async function post(request: Request) {
     }
   }
 
-  return await handlers.POST(request);
+  const body = await readBoundedBytes(request, 16 * 1024);
+  // Preserve the library's JSON/form parsing and all original request metadata.
+  return await handlers.POST(new Request(request, { body }));
 }
 
 export async function POST(request: Request) {
   try {
     return await post(request);
-  } catch {
+  } catch (error) {
+    if (error instanceof BoundedJsonBodyError && error.kind === 'too_large') {
+      return Response.json(
+        {
+          code: 'AUTH_REQUEST_TOO_LARGE',
+          message: 'La solicitud de acceso excede el tamaño permitido.',
+        },
+        { status: 413, headers: privateHeaders },
+      );
+    }
     return unavailableAuthResponse();
   }
 }

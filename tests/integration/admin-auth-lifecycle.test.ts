@@ -225,6 +225,7 @@ describe('real Better Auth admin lifecycle', () => {
       'guteli-admin-session-policy',
       'two-factor',
       'guteli-login-protection',
+      'guteli-credential-revocation',
     ]);
   });
 
@@ -485,10 +486,12 @@ describe('real Better Auth admin lifecycle', () => {
     expect(signedSubject).toContain('.');
     expect(signedSubject).not.toMatch(/^[a-f0-9]{64}$/);
     expect(
-      (await db.select().from(rateLimitBuckets)).reduce(
-        (total, bucket) => total + bucket.count,
-        0,
-      ),
+      (
+        await db
+          .select()
+          .from(rateLimitBuckets)
+          .where(eq(rateLimitBuckets.policy, 'ADMIN_LOGIN_ACCOUNT_IP'))
+      ).reduce((total, bucket) => total + bucket.count, 0),
     ).toBe(3);
 
     const generated = await auth.api.generateTOTP({
@@ -508,10 +511,12 @@ describe('real Better Auth admin lifecycle', () => {
       ).status,
     ).toBe(401);
     expect(
-      (await db.select().from(rateLimitBuckets)).reduce(
-        (total, bucket) => total + bucket.count,
-        0,
-      ),
+      (
+        await db
+          .select()
+          .from(rateLimitBuckets)
+          .where(eq(rateLimitBuckets.policy, 'ADMIN_LOGIN_ACCOUNT_IP'))
+      ).reduce((total, bucket) => total + bucket.count, 0),
     ).toBe(3);
 
     const completed = await authPost(
@@ -527,7 +532,10 @@ describe('real Better Auth admin lifecycle', () => {
         .find((value) => value.startsWith('better-auth.admin_login_subject=')),
     ).toContain('Max-Age=0');
 
-    const remainingBuckets = await db.select().from(rateLimitBuckets);
+    const remainingBuckets = await db
+      .select()
+      .from(rateLimitBuckets)
+      .where(eq(rateLimitBuckets.policy, 'ADMIN_LOGIN_ACCOUNT_IP'));
     expect(remainingBuckets).toHaveLength(1);
     expect(remainingBuckets[0]?.count).toBe(1);
     const [verifiedSession] = await db.select().from(session);
@@ -569,7 +577,12 @@ describe('real Better Auth admin lifecycle', () => {
         )
       ).status,
     ).toBe(200);
-    await expect(db.select().from(rateLimitBuckets)).resolves.toHaveLength(0);
+    await expect(
+      db
+        .select()
+        .from(rateLimitBuckets)
+        .where(eq(rateLimitBuckets.policy, 'ADMIN_LOGIN_ACCOUNT_IP')),
+    ).resolves.toHaveLength(0);
 
     expect((await authPost('sign-out', {}, firstChallenge)).status).toBe(200);
     const secondChallenge = new CookieJar();
@@ -591,7 +604,12 @@ describe('real Better Auth admin lifecycle', () => {
         )
       ).status,
     ).toBe(401);
-    await expect(db.select().from(rateLimitBuckets)).resolves.toHaveLength(0);
+    await expect(
+      db
+        .select()
+        .from(rateLimitBuckets)
+        .where(eq(rateLimitBuckets.policy, 'ADMIN_LOGIN_ACCOUNT_IP')),
+    ).resolves.toHaveLength(0);
   });
 
   it('keeps current-session logout separate from logout-all', async () => {

@@ -64,6 +64,7 @@ function request() {
     customerName: 'Ana López',
     phone: '+502 5555-5555',
     fulfillment: 'pickup',
+    paymentMethod: 'BANK_TRANSFER' as const,
     requestedDate: '2026-08-31',
     items: [{ productId, quantity: 1 }],
   });
@@ -147,7 +148,10 @@ describe('createOrder concurrency', () => {
     expect(storedOrders).toHaveLength(1);
     expect(storedItems).toHaveLength(1);
     expect(storedIdempotency).toHaveLength(1);
-    expect(storedOutbox).toHaveLength(1);
+    expect(storedOutbox.map((event) => event.eventType).sort()).toEqual([
+      'OWNER_ORDER_CREATED',
+      'OWNER_ORDER_EMAIL',
+    ]);
     expect(storedAudit).toHaveLength(1);
   });
 
@@ -197,6 +201,9 @@ describe('createOrder concurrency', () => {
     expect(storedOrders).toHaveLength(1);
     expect(storedItems).toHaveLength(1);
     expect(storedIdempotency).toHaveLength(1);
-    expect(storedOutbox).toHaveLength(1);
+    expect(storedOutbox.map((event) => event.eventType).sort()).toEqual([
+      'OWNER_ORDER_CREATED',
+      'OWNER_ORDER_EMAIL',
+    ]);
   });
 });

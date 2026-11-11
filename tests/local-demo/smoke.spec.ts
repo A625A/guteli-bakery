@@ -115,8 +115,8 @@ test('catálogo, fotos y carrito en escritorio y móvil; bloqueos comerciales', 
       page.getByRole('button', { name: 'Enviar pedido', exact: true }),
     ).toHaveCount(0);
     await expect(
-      page.getByRole('button', { name: 'Pagar en línea — Próximamente' }),
-    ).toBeDisabled();
+      page.getByText('El pago se coordina con la tienda.', { exact: true }),
+    ).toBeVisible();
     await page.screenshot({
       path: `${demoRoot}/cart-${width}.png`,
       fullPage: true,

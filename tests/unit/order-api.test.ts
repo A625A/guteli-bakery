@@ -6,6 +6,7 @@ const request = {
   customerName: 'Ana López',
   phone: '+502 5555-5555',
   fulfillment: 'delivery' as const,
+  paymentMethod: 'BANK_TRANSFER' as const,
   requestedDate: '2026-09-02',
   deliveryLocation: 'Zona 10, Guatemala',
   notes: 'Tocar el timbre',

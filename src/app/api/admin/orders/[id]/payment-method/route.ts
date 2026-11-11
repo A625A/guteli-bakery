@@ -1,3 +1,4 @@
+import { readBoundedJson } from '@/server/http/read-bounded-json';
 import { isAdminOrderReference } from '@/server/orders/admin-order-reference';
 import { getRequestId } from '@/server/observability/request-id';
 import {
@@ -30,7 +31,7 @@ export async function PATCH(
   }
   let body: unknown;
   try {
-    body = await request.json();
+    body = await readBoundedJson(request, 64 * 1024);
   } catch {
     return adminOrderValidationError(requestId);
   }

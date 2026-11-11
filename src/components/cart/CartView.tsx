@@ -163,9 +163,9 @@ export function CartView({
               ) : (
                 <p>Este subtotal es de referencia. No se genera un pedido.</p>
               )}
-              <button className="cart-totals__payment" type="button" disabled>
-                Pagar en línea — Próximamente
-              </button>
+              <p className="cart-totals__payment">
+                El pago se coordina con la tienda.
+              </p>
               {commercialEnabled ? (
                 <a className="cart-totals__continue" href="#cart-checkout">
                   Continuar con mi pedido

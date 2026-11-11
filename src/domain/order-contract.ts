@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { deliveryPointSchema } from './delivery';
 import { whatsappDestination } from './whatsapp-consent';
+import { paymentMethods, methodMatchesFulfillment } from './payment-method';
 
 import { addCalendarDays, getMinimumOrderDate } from '@/lib/date';
 
@@ -96,6 +97,7 @@ export const createOrderRequestSchema = z
     phone: phoneSchema,
     whatsappOptIn: z.boolean().optional(),
     fulfillment: z.enum(['pickup', 'delivery']),
+    paymentMethod: z.enum(paymentMethods),
     requestedDate: isoLocalDateSchema,
     deliveryLocation: deliveryLocationSchema.optional(),
     notes: notesSchema.optional(),
@@ -111,6 +113,18 @@ export const createOrderRequestSchema = z
   })
   .strict()
   .superRefine((request, context) => {
+    if (
+      !methodMatchesFulfillment(
+        request.paymentMethod,
+        request.fulfillment === 'pickup' ? 'PICKUP' : 'DELIVERY',
+      )
+    ) {
+      context.addIssue({
+        code: 'custom',
+        path: ['paymentMethod'],
+        message: 'Payment method does not match fulfillment.',
+      });
+    }
     const hasDeliveryData =
       request.deliveryPoint !== undefined ||
       request.deliveryConfirmed !== undefined ||

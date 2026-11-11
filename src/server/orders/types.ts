@@ -32,6 +32,7 @@ export type CreateOrderResult = Readonly<{
     receiptToken: string;
     orderStatus: OrderStatus;
     paymentStatus: PaymentStatus;
+    paymentMethod: import('@/domain/payment-method').PaymentMethod | null;
     subtotalMinor: number;
     shippingMinor: number | null;
     totalMinor: number | null;

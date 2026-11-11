@@ -7,7 +7,7 @@ import { Pool } from 'pg';
 import { afterAll, beforeAll, expect, it, vi } from 'vitest';
 vi.mock('server-only', () => ({}));
 import journal from '../../drizzle/meta/_journal.json';
-import snapshot from '../../drizzle/meta/0016_snapshot.json';
+import snapshot from '../../drizzle/meta/0017_snapshot.json';
 import { requireTestDatabaseUrl } from '@/test/database-url';
 
 const pool = new Pool({
@@ -25,9 +25,9 @@ beforeAll(async () => {
 });
 afterAll(() => pool.end());
 
-it('installs all 17 migrations in order, verifies hashes and reruns without changes', async () => {
+it('installs all 18 migrations in order, verifies hashes and reruns without changes', async () => {
   expect(journal.entries.map((e) => e.idx)).toEqual(
-    Array.from({ length: 17 }, (_, i) => i),
+    Array.from({ length: 18 }, (_, i) => i),
   );
   const { rows } = await pool.query(
     'select hash, created_at from drizzle.__drizzle_migrations order by id',

@@ -235,10 +235,12 @@ describe('owner provisioning and credential protection', () => {
       'a-password-that-is-at-least-14-characters',
     );
     expect(
-      (await db.select().from(rateLimitBuckets)).reduce(
-        (total, bucket) => total + bucket.count,
-        0,
-      ),
+      (
+        await db
+          .select()
+          .from(rateLimitBuckets)
+          .where(eq(rateLimitBuckets.policy, 'ADMIN_LOGIN_ACCOUNT_IP'))
+      ).reduce((total, bucket) => total + bucket.count, 0),
     ).toBe(1);
     const unknown = await signIn(
       'missing@example.test',
@@ -347,7 +349,10 @@ describe('owner provisioning and credential protection', () => {
       .where(eq(user.email, 'owner@example.test'));
 
     const expired = await signIn('owner@example.test', password);
-    const buckets = await db.select().from(rateLimitBuckets);
+    const buckets = await db
+      .select()
+      .from(rateLimitBuckets)
+      .where(eq(rateLimitBuckets.policy, 'ADMIN_LOGIN_ACCOUNT_IP'));
 
     expect(expired.status).toBe(401);
     expect(await expired.json()).toMatchObject({
@@ -444,7 +449,10 @@ describe('owner provisioning and credential protection', () => {
     }
 
     const throttled = await signIn(email, 'an-incorrect-password');
-    const buckets = await db.select().from(rateLimitBuckets);
+    const buckets = await db
+      .select()
+      .from(rateLimitBuckets)
+      .where(eq(rateLimitBuckets.policy, 'ADMIN_LOGIN_ACCOUNT_IP'));
 
     expect(throttled.status).toBe(429);
     expect(Number(throttled.headers.get('retry-after'))).toBeGreaterThan(0);
@@ -509,7 +517,10 @@ describe('owner provisioning and credential protection', () => {
       'an-incorrect-password',
       '203.0.113.200, 198.51.100.17',
     );
-    const buckets = await db.select().from(rateLimitBuckets);
+    const buckets = await db
+      .select()
+      .from(rateLimitBuckets)
+      .where(eq(rateLimitBuckets.policy, 'ADMIN_LOGIN_ACCOUNT_IP'));
 
     expect(throttled.status).toBe(429);
     expect(new Set(buckets.map((bucket) => bucket.subject)).size).toBe(1);

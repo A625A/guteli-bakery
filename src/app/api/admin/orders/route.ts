@@ -54,6 +54,35 @@ export function adminOrderErrorResponse(error: unknown, requestId: string) {
       AdminOrderError['code'],
       readonly [number, string]
     > = {
+      VALIDATION_ERROR: [400, 'Los datos del pago no son válidos.'],
+      PAYMENT_AMOUNT_MISMATCH: [
+        409,
+        'El importe recibido debe coincidir con el total vigente en GTQ.',
+      ],
+      PAYMENT_ACCEPTANCE_REQUIRED: [
+        409,
+        'El cliente debe aceptar el método y el total vigentes antes de verificar el pago.',
+      ],
+      PAYMENT_ALREADY_RECORDED: [
+        409,
+        'Este pago ya fue registrado o su estado requiere revisión manual.',
+      ],
+      PAYMENT_IDEMPOTENCY_CONFLICT: [
+        409,
+        'Este intento corresponde a otros datos de pago. Actualiza el pedido.',
+      ],
+      PAYMENT_CONFIRMATION_REQUIRED: [
+        409,
+        'Confirma el pedido antes de verificar el pago.',
+      ],
+      CASH_COLLECTION_REQUIRED: [
+        409,
+        'Registra el efectivo solamente al cobrar durante la recogida o entrega.',
+      ],
+      REFUND_NOT_ALLOWED: [
+        409,
+        'Solo se registra una devolución completa ya realizada de un pedido cancelado con cobro verificado.',
+      ],
       INVALID_PAYMENT_METHOD: [
         400,
         'El método no corresponde a la modalidad del pedido.',

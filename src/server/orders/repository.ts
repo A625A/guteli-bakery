@@ -32,6 +32,7 @@ export type PersistedOrder = Readonly<{
   receiptTokenHash: string;
   orderStatus: OrderStatus;
   paymentStatus: PaymentStatus;
+  paymentMethod: import('@/domain/payment-method').PaymentMethod | null;
   subtotalMinor: number;
   shippingMinor: number | null;
   totalMinor: number | null;
@@ -43,6 +44,7 @@ export type NewOrderValues = Readonly<{
   customerName: string;
   phone: string;
   fulfillment: 'PICKUP' | 'DELIVERY';
+  paymentMethod: import('@/domain/payment-method').PaymentMethod;
   requestedDate: string;
   deliveryLocation: string | null;
   deliveryLatitude?: number | null;
@@ -93,8 +95,10 @@ export async function findIdempotentOrder(
       id: orders.id,
       publicId: orders.publicId,
       receiptTokenHash: orders.receiptTokenHash,
+      anonymizedAt: orders.anonymizedAt,
       orderStatus: orders.orderStatus,
       paymentStatus: orders.paymentStatus,
+      paymentMethod: orders.paymentMethod,
       subtotalMinor: orders.subtotalMinor,
       shippingMinor: orders.shippingMinor,
       totalMinor: orders.totalMinor,
@@ -153,6 +157,7 @@ export async function insertOrder(
     receiptTokenHash: orders.receiptTokenHash,
     orderStatus: orders.orderStatus,
     paymentStatus: orders.paymentStatus,
+    paymentMethod: orders.paymentMethod,
     subtotalMinor: orders.subtotalMinor,
     shippingMinor: orders.shippingMinor,
     totalMinor: orders.totalMinor,

@@ -15,18 +15,28 @@ type Preview = Summary & { expiresAt: number };
 // Conservative UI fallback, not a claimed WhatsApp protocol limit.
 const MAX_LINK_LENGTH = 6000;
 
-export function WhatsAppOrderSummary({ publicId }: { publicId: string }) {
+export function WhatsAppOrderSummary({
+  publicId,
+  receiptToken,
+}: {
+  publicId: string;
+  receiptToken?: string;
+}) {
   const [preview, setPreview] = useState<Preview | null>(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState('');
   const generation = useRef(0);
   const active = useRef<AbortController | null>(null);
+  const popup = useRef<Window | null>(null);
+  const selectText = useRef(false);
   const text = useRef<HTMLTextAreaElement>(null);
 
   function clear() {
     generation.current++;
     active.current?.abort();
     active.current = null;
+    popup.current?.close();
+    popup.current = null;
     setBusy(false);
     setPreview(null);
   }
@@ -35,6 +45,8 @@ export function WhatsAppOrderSummary({ publicId }: { publicId: string }) {
       generation.current++;
       active.current?.abort();
       active.current = null;
+      popup.current?.close();
+      popup.current = null;
     };
     const invalidate = () => {
       if (document.visibilityState !== 'visible') return;
@@ -51,6 +63,13 @@ export function WhatsAppOrderSummary({ publicId }: { publicId: string }) {
     };
   }, [publicId]);
   useEffect(() => {
+    if (preview && selectText.current) {
+      selectText.current = false;
+      text.current?.focus();
+      text.current?.select();
+    }
+  }, [preview]);
+  useEffect(() => {
     if (!preview) return;
     const timer = setTimeout(
       () => {
@@ -64,6 +83,16 @@ export function WhatsAppOrderSummary({ publicId }: { publicId: string }) {
 
   async function prepare(action: 'preview' | 'copy' | 'open') {
     if (active.current) return;
+    // Reserve the window during the tap; mobile browsers block windows opened
+    // after an asynchronous request. It contains no customer data or tokens.
+    if (action === 'open' && publicSiteConfig.handoff.kind === 'live') {
+      try {
+        popup.current = window.open('about:blank', '_blank');
+        if (popup.current) popup.current.opener = null;
+      } catch {
+        popup.current = null;
+      }
+    }
     const id = ++generation.current;
     const controller = new AbortController();
     active.current = controller;
@@ -76,7 +105,10 @@ export function WhatsAppOrderSummary({ publicId }: { publicId: string }) {
         method: 'POST',
         cache: 'no-store',
         signal: controller.signal,
-        headers: { 'content-type': 'application/json' },
+        headers: {
+          'content-type': 'application/json',
+          ...(receiptToken ? { 'x-order-receipt': receiptToken } : {}),
+        },
         body: JSON.stringify({
           publicId,
           ...(action !== 'preview' && preview
@@ -100,6 +132,8 @@ export function WhatsAppOrderSummary({ publicId }: { publicId: string }) {
       const next = { ...summary, expiresAt: performance.now() + ttl };
       setPreview(next);
       if (response.status === 409) {
+        popup.current?.close();
+        popup.current = null;
         setNotice(
           'El pedido cambió. Revisa el resumen actualizado antes de compartirlo.',
         );
@@ -115,8 +149,14 @@ export function WhatsAppOrderSummary({ publicId }: { publicId: string }) {
             setNotice(
               'No pudimos copiar automáticamente. Selecciona el texto del resumen y cópialo manualmente.',
             );
-            text.current?.focus();
-            text.current?.select();
+            selectText.current = true;
+            requestAnimationFrame(() => {
+              if (generation.current === id && text.current) {
+                selectText.current = false;
+                text.current.focus();
+                text.current.select();
+              }
+            });
           }
         }
       }
@@ -130,18 +170,32 @@ export function WhatsAppOrderSummary({ publicId }: { publicId: string }) {
             'El envío por WhatsApp no está habilitado en este entorno. Puedes copiar el resumen.',
           );
         } else if (url.length > MAX_LINK_LENGTH) {
+          popup.current?.close();
+          popup.current = null;
           setNotice(
             'El resumen es largo. Cópialo y pégalo en el chat; no se recortó ningún producto.',
           );
-        } else {
-          window.open(url, '_blank', 'noopener,noreferrer');
+        } else if (popup.current && !popup.current.closed) {
+          // Suppress the private confirmation URL as referrer on navigation.
+          const policy = popup.current.document.createElement('meta');
+          policy.name = 'referrer';
+          policy.content = 'no-referrer';
+          popup.current.document.head.append(policy);
+          popup.current.location.replace(url);
+          popup.current = null;
           setNotice(
             'WhatsApp requiere que pulses Enviar. Si no se abrió, copia el resumen o usa Contactar a Güteli.',
+          );
+        } else {
+          setNotice(
+            'El navegador bloqueó la apertura. Pulsa Enviar pedido por WhatsApp para reintentar o copia el resumen y pégalo en el chat.',
           );
         }
       }
     } catch {
       if (generation.current === id) {
+        popup.current?.close();
+        popup.current = null;
         setPreview(null);
         setNotice(
           'No pudimos preparar el resumen. Tu sesión pudo vencer; revisa el pedido o contacta a Güteli.',
@@ -167,17 +221,31 @@ export function WhatsAppOrderSummary({ publicId }: { publicId: string }) {
     >
       <h2 id="whatsapp-summary-heading">Comparte tu pedido por WhatsApp</h2>
       <p>
-        Es opcional. Revisa antes de compartir: el mensaje incluye tu nombre,
-        teléfono, dirección de entrega y notas cuando correspondan. Tú debes
-        pulsar Enviar en WhatsApp; abrirlo no confirma el pago ni cambia el
-        pedido.
+        Tu pedido ya está guardado. El mensaje incluye su referencia, productos
+        y precios; tus datos de contacto y dirección quedan en la consulta
+        privada de la tienda. Debes pulsar Enviar en WhatsApp. Abrirlo no
+        confirma el envío del mensaje ni el pago.
       </p>
+      <button
+        className="button-link button-link--primary"
+        disabled={busy || tooLong}
+        onClick={() => void prepare('open')}
+      >
+        Enviar pedido por WhatsApp
+      </button>
       <button
         className="button-link button-link--secondary"
         disabled={busy}
         onClick={() => void prepare('preview')}
       >
-        Preparar resumen para WhatsApp
+        Ver resumen antes de compartir
+      </button>
+      <button
+        className="button-link button-link--secondary"
+        disabled={busy}
+        onClick={() => void prepare('copy')}
+      >
+        Copiar resumen
       </button>
       {notice ? <p role="status">{notice}</p> : null}
       {publicSiteConfig.handoff.kind !== 'live' ? (
@@ -203,20 +271,6 @@ export function WhatsAppOrderSummary({ publicId }: { publicId: string }) {
             </p>
           ) : null}
           <div className="order-confirmation__actions">
-            <button
-              className="button-link button-link--primary"
-              disabled={busy || tooLong || !previewUrl}
-              onClick={() => void prepare('open')}
-            >
-              Abrir WhatsApp
-            </button>
-            <button
-              className="button-link button-link--secondary"
-              disabled={busy}
-              onClick={() => void prepare('copy')}
-            >
-              Copiar resumen
-            </button>
             <button
               className="button-link button-link--secondary"
               onClick={clear}

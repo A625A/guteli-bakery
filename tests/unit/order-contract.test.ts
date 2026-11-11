@@ -15,6 +15,7 @@ function validRequest() {
     customerName: 'Ana López',
     phone: '+502 5555-5555',
     fulfillment: 'pickup' as const,
+    paymentMethod: 'BANK_TRANSFER' as const,
     requestedDate: '2026-08-31',
     items: [{ productId, quantity: 2 }],
   };
@@ -232,6 +233,7 @@ describe('canonical order request hashing', () => {
       notes: 'Tocar\nel timbre',
       requestedDate: '2026-08-31',
       fulfillment: 'pickup',
+      paymentMethod: 'BANK_TRANSFER' as const,
       phone: '+502 5555-5555',
       customerName: 'Ana López',
     });
@@ -262,7 +264,7 @@ describe('canonical order request hashing', () => {
     vi.spyOn(String.prototype, 'localeCompare').mockReturnValue(-1);
 
     expect(canonicalizeCreateOrderRequest(request)).toBe(
-      `{"customerName":"Ana López","phone":"+502 5555-5555","fulfillment":"pickup","requestedDate":"2026-08-31","deliveryLocation":null,"notes":null,"items":[{"productId":"${productId}","quantity":2},{"productId":"${secondProductId}","quantity":1}]}`,
+      `{"customerName":"Ana López","phone":"+502 5555-5555","fulfillment":"pickup","paymentMethod":"BANK_TRANSFER","requestedDate":"2026-08-31","deliveryLocation":null,"notes":null,"items":[{"productId":"${productId}","quantity":2},{"productId":"${secondProductId}","quantity":1}]}`,
     );
   });
 });

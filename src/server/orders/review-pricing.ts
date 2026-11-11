@@ -12,6 +12,8 @@ import {
   orderPricingRevisions,
   orderPricingState,
   orders,
+  orderPaymentEvents,
+  auditLogs,
 } from '@/server/db/schema';
 import { acquireCatalogMutationLock } from '@/server/products/catalog-mutation-lock';
 import { readPromotions } from '@/server/products/promotions';
@@ -126,6 +128,7 @@ export async function reviewPricingInTransaction(
   )
     throw new RangeError('Invalid checkout total');
   const snapshot: PricingSnapshot = {
+    paymentMethod: order.paymentMethod,
     items,
     subtotalMinor,
     shippingMinor: order.shippingMinor,
@@ -188,7 +191,10 @@ export async function reviewPricingInTransaction(
     totalMinor !== null &&
     items.length > 0 &&
     items.every((item) => item.available) &&
-    order.requestedDate >= getMinimumOrderDate(now);
+    // Lead time governs a new request. An existing confirmed order may need a
+    // delivery quote/method acknowledgment on its actual collection day.
+    (order.requestedDate >= getMinimumOrderDate(now) ||
+      order.orderStatus !== 'RECEIVED');
   const conflict =
     expectedRevision !== undefined &&
     (expectedRevision !== revisionId || !canAccept);
@@ -197,12 +203,35 @@ export async function reviewPricingInTransaction(
       .update(orderPricingState)
       .set({ acceptedRevisionId: revisionId, acceptedAt: now })
       .where(eq(orderPricingState.orderId, orderId));
+    if (!accepted) {
+      await transaction.insert(auditLogs).values({
+        action: 'ORDER_CUSTOMER_TOTAL_ACCEPTED',
+        entityType: 'ORDER',
+        entityId: orderId,
+        requestId: 'private-checkout-acceptance',
+        metadata: {
+          revisionId,
+          paymentMethod: order.paymentMethod,
+          totalMinor,
+          source: 'PRIVATE_CHECKOUT',
+        },
+        createdAt: now,
+      });
+    }
     accepted = true;
   }
+  const evidence = await transaction
+    .select({ kind: orderPaymentEvents.kind })
+    .from(orderPaymentEvents)
+    .where(eq(orderPaymentEvents.orderId, order.id));
   return {
+    paymentVerified: evidence.some((event) => event.kind === 'VERIFIED'),
+    refundVerified: evidence.some((event) => event.kind === 'REFUNDED'),
     publicId: order.publicId,
     revisionId,
-    accepted: accepted && (frozen || canAccept),
+    // Existing acknowledgment is evidence of the exact revision, independent of
+    // whether the customer can submit a new acceptance at this moment.
+    accepted: accepted && (frozen || order.orderStatus !== 'CANCELLED'),
     canAccept,
     conflict,
     paymentMethod: order.paymentMethod,

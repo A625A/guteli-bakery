@@ -13,6 +13,10 @@ import {
 import { orders } from '@/server/db/schema';
 import { readCheckoutCredential } from '@/server/orders/checkout-credential';
 import {
+  lockPrivateOrder,
+  findPrivateOrder,
+} from '@/server/orders/private-order-access';
+import {
   CREATE_ORDER_OPERATION,
   findIdempotentOrder,
 } from '@/server/orders/repository';
@@ -78,7 +82,10 @@ export function createCheckoutSummaryHandler(dependencies: Dependencies = {}) {
           dependencies.secureCookies ?? process.env.NODE_ENV === 'production',
         );
       const credential = readCredential();
-      if (!credential) return fail(404);
+      const receiptProof = request.headers.get('x-order-receipt');
+      const stillAuthorized = () =>
+        receiptProof !== null || Boolean(readCredential());
+      if (!credential && receiptProof === null) return fail(404);
       if (
         !request.headers.get('content-type')?.startsWith('application/json') ||
         !request.body
@@ -108,22 +115,48 @@ export function createCheckoutSummaryHandler(dependencies: Dependencies = {}) {
       if (!parsed.success) return fail(400);
       const db =
         dependencies.database ?? (await import('@/server/db/client')).db;
+      const candidate =
+        receiptProof !== null
+          ? await findPrivateOrder(db, receiptProof, parsed.data.publicId)
+          : credential
+            ? await findIdempotentOrder(
+                db,
+                CREATE_ORDER_OPERATION,
+                createHmacSubject(
+                  settings.receiptTokenSecret,
+                  'public-order-idempotency',
+                  'public-storefront',
+                ),
+                credential.key,
+              )
+            : null;
+      if (!candidate || candidate.publicId !== parsed.data.publicId)
+        return fail(404);
       const summary = await db.transaction(async (transaction) => {
         await acquireCatalogMutationLock(transaction);
-        const found = await findIdempotentOrder(
-          transaction,
-          CREATE_ORDER_OPERATION,
-          createHmacSubject(
-            settings.receiptTokenSecret,
-            'public-order-idempotency',
-            'public-storefront',
-          ),
-          credential.key,
-        );
+        const found =
+          receiptProof !== null
+            ? await lockPrivateOrder(
+                transaction,
+                receiptProof,
+                parsed.data.publicId,
+              )
+            : credential
+              ? await findIdempotentOrder(
+                  transaction,
+                  CREATE_ORDER_OPERATION,
+                  createHmacSubject(
+                    settings.receiptTokenSecret,
+                    'public-order-idempotency',
+                    'public-storefront',
+                  ),
+                  credential.key,
+                )
+              : null;
         if (
           !found ||
           found.publicId !== parsed.data.publicId ||
-          !readCredential()
+          !stillAuthorized()
         )
           return null;
         const review = await reviewPricingInTransaction(
@@ -131,7 +164,7 @@ export function createCheckoutSummaryHandler(dependencies: Dependencies = {}) {
           found.id,
           clock,
         );
-        if (!review || !readCredential()) return null;
+        if (!review || !stillAuthorized()) return null;
         const [order] = await transaction
           .select({
             customerName: orders.customerName,
@@ -144,7 +177,7 @@ export function createCheckoutSummaryHandler(dependencies: Dependencies = {}) {
           })
           .from(orders)
           .where(eq(orders.id, found.id));
-        if (!order || !readCredential()) return null;
+        if (!order || !stillAuthorized()) return null;
         const { anonymizedAt, ...details } = order;
         if (anonymizedAt) return null;
         // Compare semantic content, not the timestamp that changes on each refresh.
@@ -159,7 +192,7 @@ export function createCheckoutSummaryHandler(dependencies: Dependencies = {}) {
           validUntil: review.validUntil,
         };
       });
-      if (!summary || !readCredential()) return fail(404);
+      if (!summary || !stillAuthorized()) return fail(404);
       return Response.json(
         { summary },
         {

@@ -17,6 +17,26 @@ export function notificationDeliveryLabel(status: string): string {
 }
 
 const errorLabels: Readonly<Record<string, string>> = {
+  EMAIL_RETRY:
+    'El correo no se confirmó; se reintentará dentro del período seguro.',
+  EMAIL_CONFIGURATION_CHANGED:
+    'La configuración del correo cambió; requiere revisión antes de reenviar.',
+  EMAIL_IDEMPOTENCY_EXPIRED:
+    'Venció el período seguro para reintentar el correo; revisa el proveedor antes de reenviar.',
+  EMAIL_BEFORE_ACTIVATION:
+    'Este pedido es anterior al período autorizado para avisos por correo.',
+  EMAIL_INVALID_EVENT:
+    'No se pudo preparar el aviso por correo; revisa el pedido.',
+  EMAIL_RETRY_LIMIT:
+    'Se agotaron los intentos del correo. Revisa el proveedor antes de reenviar.',
+  EMAIL_RATE_LIMITED:
+    'El proveedor limitó los correos. Se reintentará dentro del período seguro.',
+  EMAIL_PROVIDER_UNAVAILABLE:
+    'El proveedor de correo no está disponible; se reintentará.',
+  EMAIL_SEND_OUTCOME_UNKNOWN:
+    'No se confirmó la aceptación del correo. Se reintentará con la misma clave dentro del período seguro.',
+  EMAIL_PROVIDER_REJECTED:
+    'El proveedor rechazó el correo. Revisa las credenciales, el remitente y el destinatario.',
   NOT_CONFIGURED: 'El envío automático no está configurado.',
   OUTSIDE_AUTHORIZED_WINDOW:
     'El pedido está fuera del período autorizado para enviar mensajes.',

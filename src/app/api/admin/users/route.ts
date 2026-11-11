@@ -1,3 +1,4 @@
+import { readBoundedJson } from '@/server/http/read-bounded-json';
 import { z } from 'zod';
 
 import {
@@ -162,7 +163,7 @@ export async function POST(request: Request) {
 
   let body: unknown;
   try {
-    body = await request.json();
+    body = await readBoundedJson(request, 64 * 1024);
   } catch {
     return errorResponse(
       requestId,

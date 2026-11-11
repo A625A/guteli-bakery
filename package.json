@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@netlify/blobs": "11.1.8",
-    "better-auth": "1.7.7",
+    "better-auth": "1.7.18",
     "drizzle-orm": "^0.45.2",
     "leaflet": "1.9.4",
     "next": "16.4.2",
@@ -69,6 +69,9 @@
     "yaml": "^2.9.0"
   },
   "overrides": {
+    "@typescript-eslint/typescript-estree": {
+      "minimatch": "11.0.1"
+    },
     "@esbuild-kit/core-utils@3.3.2": {
       "esbuild": "0.25.12"
     },

@@ -46,7 +46,6 @@ it('summarizes discounted units, delivery and final total without claiming payme
   const text = buildCheckoutSummary(sample());
   for (const expected of [
     'GUT-26-ABC',
-    'Ana & José',
     '5 × Panadería — Pan',
     'Bolsa de 5',
     'Precio regular: Q100',
@@ -56,15 +55,15 @@ it('summarizes discounted units, delivery and final total without claiming payme
     'Descuento total: Q350',
     'Subtotal: Q150',
     'Envío: Q25',
-    'Total: Q175',
+    'Total pendiente de aceptación: Q175',
     'Sin pagar',
     '2026-10-20',
-    'Zona 1',
-    'Sin nueces',
     'America/Guatemala',
   ])
     expect(text).toContain(expected);
   expect(text).not.toContain('Pago verificado');
+  for (const privateValue of ['Ana & José', '55551234', 'Zona 1', 'Sin nueces'])
+    expect(text).not.toContain(privateValue);
 });
 it.each(['UNPAID', 'PENDING', 'PAID', 'REFUNDED', 'FAILED', 'UNKNOWN'])(
   'does not invent verification from a %s marker',
@@ -98,7 +97,7 @@ it('preserves unknown delivery totals, decimal money and literal special charact
   });
   expect(text).toContain('Total: por confirmar');
   expect(text).toContain('Q123.45');
-  expect(text).toContain('Notas: Café & té + 50% Pago: PAID');
+  expect(text).not.toContain('Café & té');
   expect(text).not.toContain('\nPago: PAID');
   const url = new URL(buildWhatsAppUrl('+502 4256-9861', text));
   expect(url.origin).toBe('https://wa.me');
@@ -133,11 +132,37 @@ it('keeps WhatsApp navigation disabled in demo and unavailable modes', async () 
   ).toBe(text);
 });
 
-it('describes the owner-selected method without implying payment was received', () => {
+it('describes the customer-selected method without implying payment was received', () => {
   const text = buildCheckoutSummary({
     ...sample(),
     paymentMethod: 'BANK_TRANSFER',
   });
   expect(text).toContain('Método de pago: Transferencia bancaria');
   expect(text).toContain('No se ha verificado ningún pago');
+});
+
+it('labels the total accepted only when acceptance is authoritative', () => {
+  expect(buildCheckoutSummary({ ...sample(), accepted: true })).toContain(
+    'Total aceptado por el cliente: Q175',
+  );
+});
+
+it('describes verified manual payment only with the authoritative evidence flag', () => {
+  expect(
+    buildCheckoutSummary({
+      ...sample(),
+      paymentStatus: 'PAID',
+      paymentVerified: true,
+    }),
+  ).toContain('Pago recibido y verificado manualmente por la tienda.');
+});
+
+it('describes a completed manual refund only with its authoritative evidence flag', () => {
+  expect(
+    buildCheckoutSummary({
+      ...sample(),
+      paymentStatus: 'REFUNDED',
+      refundVerified: true,
+    }),
+  ).toContain('Reembolso completado y registrado manualmente por la tienda.');
 });

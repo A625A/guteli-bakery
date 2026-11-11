@@ -1,3 +1,4 @@
+import { enqueueOwnerOrderEmail } from '@/server/notifications/email-outbox';
 import {
   getDeliveryService,
   type DeliveryQuote,
@@ -11,12 +12,14 @@ import {
 import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
 
 import { priceProduct } from '@/domain/pricing';
+import {
+  paymentMethods,
+  methodMatchesFulfillment,
+} from '@/domain/payment-method';
 import { acquireCatalogMutationLock } from '@/server/products/catalog-mutation-lock';
 import { readPromotions } from '@/server/products/promotions';
-import {
-  reviewOrderPricing,
-  reviewPricingInTransaction,
-} from './review-pricing';
+import { reviewPricingInTransaction } from './review-pricing';
+import { lockPublicOrderById } from './private-order-access';
 import type { CreateOrderRequest } from '@/domain/order-contract';
 import { createPublicOrderId, hashReceiptToken } from './identifiers';
 import {
@@ -46,6 +49,7 @@ const IDEMPOTENCY_TTL_MS = 24 * 60 * 60 * 1000;
 const MAX_IDENTIFIER_ATTEMPTS = 5;
 
 type OrderErrorCode =
+  | 'VALIDATION_ERROR'
   | 'DELIVERY_QUOTE_STALE'
   | 'IDEMPOTENCY_CONFLICT'
   | 'INTERNAL_ERROR'
@@ -275,6 +279,7 @@ function createResult(
       receiptToken,
       orderStatus: order.orderStatus,
       paymentStatus: order.paymentStatus,
+      paymentMethod: order.paymentMethod,
       subtotalMinor: order.subtotalMinor,
       shippingMinor: order.shippingMinor,
       totalMinor: order.totalMinor,
@@ -293,35 +298,36 @@ export async function recoverCreatedOrder(
     'public-order-idempotency',
     'public-storefront',
   );
-  const existing = await findIdempotentOrder(
-    await getDatabase(database),
+  const connection = await getDatabase(database);
+  const candidate = await findIdempotentOrder(
+    connection,
     CREATE_ORDER_OPERATION,
     idempotencySubject,
     idempotencyKey,
   );
-  const review = existing
-    ? await reviewOrderPricing(existing.id, database)
-    : null;
-  return existing
-    ? createResult(
-        'replayed',
-        {
-          ...existing,
-          ...(review
-            ? {
-                subtotalMinor: review.subtotalMinor,
-                totalMinor: review.totalMinor,
-                shippingMinor: review.shippingMinor,
-              }
-            : {}),
-        },
-        {
-          idempotencyKey,
-          idempotencySubject,
-          receiptTokenSecret,
-        },
-      ).order
-    : null;
+  if (!candidate || candidate.anonymizedAt) return null;
+  return connection.transaction(async (transaction) => {
+    await acquireCatalogMutationLock(transaction);
+    const existing = await findIdempotentOrder(
+      transaction,
+      CREATE_ORDER_OPERATION,
+      idempotencySubject,
+      idempotencyKey,
+    );
+    if (!existing || !(await lockPublicOrderById(transaction, existing.id)))
+      return null;
+    const review = await reviewPricingInTransaction(transaction, existing.id);
+    return createResult(
+      'replayed',
+      {
+        ...existing,
+        subtotalMinor: review!.subtotalMinor,
+        totalMinor: review!.totalMinor,
+        shippingMinor: review!.shippingMinor,
+      },
+      { idempotencyKey, idempotencySubject, receiptTokenSecret },
+    ).order;
+  });
 }
 
 async function persistOrder(
@@ -349,6 +355,7 @@ async function persistOrder(
           customerName: input.request.customerName,
           phone: input.request.phone,
           fulfillment,
+          paymentMethod: input.request.paymentMethod,
           requestedDate: input.request.requestedDate,
           deliveryLocation:
             input.request.fulfillment === 'delivery'
@@ -453,6 +460,11 @@ async function persistOrder(
     order.id,
     input.clock,
   );
+  await enqueueOwnerOrderEmail(
+    transaction,
+    { orderId: order.id, requestId: input.requestId },
+    dependencies.now,
+  );
   return createResult(
     'created',
     {
@@ -505,6 +517,11 @@ async function createOrderInTransaction(
       input.idempotencyKey,
     );
     if (existing) {
+      // Keep the original idempotency binding, but never restore revoked access
+      // or create a replacement order with this key.
+      if (!(await lockPublicOrderById(transaction, existing.id))) {
+        throw new CreateOrderError('IDEMPOTENCY_CONFLICT');
+      }
       if (!safeEquals(existing.requestHash, requestHash)) {
         throw new CreateOrderError('IDEMPOTENCY_CONFLICT');
       }
@@ -590,6 +607,15 @@ async function createOrderInTransaction(
 export async function createOrder(
   input: CreateOrderInput,
 ): Promise<CreateOrderResult> {
+  if (
+    !paymentMethods.includes(input.request.paymentMethod) ||
+    !methodMatchesFulfillment(
+      input.request.paymentMethod,
+      toFulfillment(input.request.fulfillment),
+    )
+  ) {
+    throw new CreateOrderError('VALIDATION_ERROR');
+  }
   const dependencies = await resolveDependencies(input);
 
   for (let attempt = 0; attempt < 2; attempt += 1) {

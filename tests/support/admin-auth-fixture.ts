@@ -32,3 +32,10 @@ export const adminUxAuthFixture = {
   setupPassword: 'ux-setup-password-at-least-14-characters',
   password: 'ux-changed-password-at-least-14-characters',
 } as const;
+
+export const manualPaymentAuthFixture = {
+  email: 'browser-manual-payment-owner@example.test',
+  name: 'Propietaria de cobros de prueba',
+  setupPassword: 'payment-setup-password-at-least-14-characters',
+  password: 'payment-changed-password-at-least-14-characters',
+} as const;

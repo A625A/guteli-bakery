@@ -3,7 +3,7 @@ import 'server-only';
 import { createHmac } from 'node:crypto';
 
 import type { GenericEndpointContext } from '@better-auth/core';
-import { and, asc, eq, gte, lt, ne, sql } from 'drizzle-orm';
+import { and, asc, eq, gte, ne, sql } from 'drizzle-orm';
 import { APIError, createAuthMiddleware } from 'better-auth/api';
 import type { BetterAuthPlugin } from 'better-auth';
 import { deleteSessionCookie, expireCookie } from 'better-auth/cookies';
@@ -13,6 +13,8 @@ import { db } from '@/server/db/client';
 import { rateLimitBuckets, session, user } from '@/server/db/schema';
 import { getTrustedClientAddress } from '@/server/security/client-subject';
 import { isNetlify } from '@/server/config/platform';
+import { authRateLimitStorage } from './rate-limit-storage';
+import { logOperationalEvent } from '@/server/observability/safe-log';
 
 const LOGIN_POLICY = 'ADMIN_LOGIN_ACCOUNT_IP';
 const WINDOW_MS = 15 * 60 * 1000;
@@ -34,6 +36,10 @@ type LoginAttemptContext = Readonly<{
   email: string;
   subject: string;
 }>;
+
+type ReservedContext = GenericEndpointContext['context'] & {
+  loginReservationId?: string;
+};
 
 function getSettings() {
   const testDefaults =
@@ -110,47 +116,85 @@ function requestContext(ctx: { body?: unknown; request?: Request }) {
   } satisfies LoginAttemptContext;
 }
 
-async function rejectIfThrottled(ctx: {
-  body?: unknown;
-  request?: Request;
-  setHeader: (name: string, value: string) => void;
-}) {
+async function rejectIfThrottled(ctx: GenericEndpointContext) {
   const attempt = requestContext(ctx);
   if (!attempt) throw invalidCredentials();
-
   const now = new Date();
   const cutoff = new Date(now.getTime() - WINDOW_MS);
-  const buckets = await db
-    .select({
-      count: rateLimitBuckets.count,
-      windowStartedAt: rateLimitBuckets.windowStartedAt,
-    })
-    .from(rateLimitBuckets)
-    .where(
-      and(
-        eq(rateLimitBuckets.policy, LOGIN_POLICY),
-        eq(rateLimitBuckets.subject, attempt.subject),
-        gte(rateLimitBuckets.windowStartedAt, cutoff),
-      ),
-    )
-    .orderBy(asc(rateLimitBuckets.windowStartedAt));
-
-  const failureCount = buckets.reduce((sum, bucket) => sum + bucket.count, 0);
-  if (failureCount >= FAILURE_LIMIT) {
+  const reservation = await db.transaction(async (transaction) => {
+    // Serialize only the budget reservation, never the expensive password hash.
+    await transaction.execute(
+      sql`SELECT pg_advisory_xact_lock(hashtextextended(${`login:${attempt.subject}`}, 0))`,
+    );
+    await transaction.execute(sql`DELETE FROM rate_limit_buckets WHERE id IN (
+      SELECT id FROM rate_limit_buckets
+      WHERE policy IN ('ADMIN_LOGIN_ACCOUNT_IP', 'ADMIN_AUTH_ENDPOINT')
+        AND updated_at < ${new Date(now.getTime() - 24 * 60 * 60 * 1000)}
+      LIMIT 100 FOR UPDATE SKIP LOCKED
+    )`);
+    const buckets = await transaction
+      .select({
+        count: rateLimitBuckets.count,
+        windowStartedAt: rateLimitBuckets.windowStartedAt,
+      })
+      .from(rateLimitBuckets)
+      .where(
+        and(
+          eq(rateLimitBuckets.policy, LOGIN_POLICY),
+          eq(rateLimitBuckets.subject, attempt.subject),
+          gte(rateLimitBuckets.windowStartedAt, cutoff),
+        ),
+      )
+      .orderBy(asc(rateLimitBuckets.windowStartedAt));
+    if (
+      buckets.reduce((sum, bucket) => sum + bucket.count, 0) >= FAILURE_LIMIT
+    ) {
+      return {
+        retryAfter: retryAfterSeconds(now, buckets[0]?.windowStartedAt ?? now),
+      };
+    }
+    const [reserved] = await transaction
+      .insert(rateLimitBuckets)
+      .values({
+        policy: LOGIN_POLICY,
+        subject: attempt.subject,
+        windowStartedAt: now,
+        count: 1,
+        updatedAt: now,
+      })
+      .onConflictDoUpdate({
+        target: [
+          rateLimitBuckets.policy,
+          rateLimitBuckets.subject,
+          rateLimitBuckets.windowStartedAt,
+        ],
+        set: { count: sql`${rateLimitBuckets.count} + 1`, updatedAt: now },
+      })
+      .returning({ id: rateLimitBuckets.id });
+    return { id: reserved.id };
+  });
+  if ('retryAfter' in reservation) {
+    logOperationalEvent('AUTH_THROTTLED');
     throw new APIError(
       'TOO_MANY_REQUESTS',
-      {
-        code: 'LOGIN_THROTTLED',
-        message: 'Try again later',
-      },
-      {
-        'Retry-After': String(
-          retryAfterSeconds(now, buckets[0]?.windowStartedAt ?? now),
-        ),
-      },
+      { code: 'LOGIN_THROTTLED', message: 'Try again later' },
+      { 'Retry-After': String(reservation.retryAfter) },
     );
   }
-
+  (ctx.context as ReservedContext).loginReservationId = reservation.id;
+  // Separate account budget stops address rotation; the library's shared IP
+  // endpoint budget stops spraying many accounts from the same address.
+  const accountBudget = await authRateLimitStorage.consume(
+    `password-account:${attempt.email}`,
+    { window: 15 * 60, max: 20 },
+  );
+  if (!accountBudget.allowed) {
+    throw new APIError(
+      'TOO_MANY_REQUESTS',
+      { code: 'LOGIN_THROTTLED', message: 'Try again later' },
+      { 'Retry-After': String(accountBudget.retryAfter) },
+    );
+  }
   const [candidate] = await db
     .select({
       active: user.active,
@@ -167,43 +211,24 @@ async function rejectIfThrottled(ctx: {
         candidate.setupCredentialExpiresAt !== null &&
         candidate.setupCredentialExpiresAt.getTime() <= now.getTime()))
   ) {
-    await recordFailedAttempt(ctx);
+    logOperationalEvent('AUTH_LOGIN_FAILED');
     throw invalidCredentials();
   }
 }
 
-async function recordFailedAttempt(ctx: { body?: unknown; request?: Request }) {
-  const attempt = requestContext(ctx);
-  if (!attempt) return;
-
-  const now = new Date();
-  const cutoff = new Date(now.getTime() - WINDOW_MS);
+async function releaseSuccessfulPasswordAttempt(ctx: GenericEndpointContext) {
+  const id = (ctx.context as ReservedContext).loginReservationId;
+  if (!id) return;
+  // Same-millisecond requests may share a row, so release one reservation only.
   await db
-    .delete(rateLimitBuckets)
+    .update(rateLimitBuckets)
+    .set({ count: sql`${rateLimitBuckets.count} - 1` })
     .where(
-      and(
-        eq(rateLimitBuckets.policy, LOGIN_POLICY),
-        eq(rateLimitBuckets.subject, attempt.subject),
-        lt(rateLimitBuckets.windowStartedAt, cutoff),
-      ),
+      and(eq(rateLimitBuckets.id, id), sql`${rateLimitBuckets.count} > 0`),
     );
   await db
-    .insert(rateLimitBuckets)
-    .values({
-      policy: LOGIN_POLICY,
-      subject: attempt.subject,
-      windowStartedAt: now,
-      count: 1,
-      updatedAt: now,
-    })
-    .onConflictDoUpdate({
-      target: [
-        rateLimitBuckets.policy,
-        rateLimitBuckets.subject,
-        rateLimitBuckets.windowStartedAt,
-      ],
-      set: { count: sql`${rateLimitBuckets.count} + 1`, updatedAt: now },
-    });
+    .delete(rateLimitBuckets)
+    .where(and(eq(rateLimitBuckets.id, id), eq(rateLimitBuckets.count, 0)));
 }
 
 async function rememberAttemptSubject(ctx: GenericEndpointContext) {
@@ -298,6 +323,20 @@ export function loginProtectionPlugin(): BetterAuthPlugin {
     hooks: {
       before: [
         {
+          matcher: (ctx) =>
+            ctx.path === '/two-factor/verify-totp' ||
+            ctx.path === '/two-factor/verify-backup-code',
+          handler: createAuthMiddleware(async (ctx) => {
+            const body = ctx.body as { trustDevice?: unknown } | undefined;
+            if (body?.trustDevice === true) {
+              throw new APIError('FORBIDDEN', {
+                code: 'AUTH_OPERATION_NOT_ALLOWED',
+                message: 'A fresh MFA challenge is required for each sign-in',
+              });
+            }
+          }),
+        },
+        {
           matcher: (ctx) => ctx.path === '/change-password',
           handler: createAuthMiddleware(async (ctx) => {
             const body = ctx.body as
@@ -315,6 +354,22 @@ export function loginProtectionPlugin(): BetterAuthPlugin {
           matcher: (ctx) => ctx.path === '/sign-in/email',
           handler: createAuthMiddleware(async (ctx) => {
             await rejectIfThrottled(ctx);
+            // Remembered devices conflict with our per-sign-in MFA marker.
+            // Revoke legacy trust before Better Auth can skip the challenge.
+            const cookie = ctx.context.createAuthCookie('trust_device');
+            const trustedDevice = await ctx.getSignedCookie(
+              cookie.name,
+              ctx.context.secret,
+            );
+            if (trustedDevice) {
+              const identifier = trustedDevice.split('!')[1];
+              if (identifier) {
+                await ctx.context.internalAdapter.deleteVerificationByIdentifier(
+                  identifier,
+                );
+              }
+              expireCookie(ctx, cookie);
+            }
           }),
         },
       ],
@@ -325,11 +380,13 @@ export function loginProtectionPlugin(): BetterAuthPlugin {
             const returned = ctx.context.returned as
               { body?: { code?: string } } | undefined;
             if (returned?.body?.code === 'INVALID_EMAIL_OR_PASSWORD') {
-              await recordFailedAttempt(ctx);
+              logOperationalEvent('AUTH_LOGIN_FAILED');
               return;
             }
-            if (!(returned instanceof APIError))
+            if (!(returned instanceof APIError)) {
+              await releaseSuccessfulPasswordAttempt(ctx);
               await rememberAttemptSubject(ctx);
+            }
           }),
         },
         {

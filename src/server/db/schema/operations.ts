@@ -26,6 +26,10 @@ export const outboxStateEnum = pgEnum('outbox_state', [
 export type OrderOutboxPayload = {
   orderId: string;
   requestId: string;
+  ownerEmail?: {
+    snapshot: import('../../notifications/email-message').OwnerEmailSnapshot;
+    frozen?: import('../../notifications/email-message').FrozenOwnerEmail;
+  };
 };
 
 export const idempotencyRecords = pgTable(

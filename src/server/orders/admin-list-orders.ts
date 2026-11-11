@@ -24,6 +24,9 @@ export type AdminOrderListDto = Readonly<{
   quoteState: 'NOT_APPLICABLE' | 'PENDING' | 'QUOTED';
   orderStatus: OrderStatus;
   paymentStatus: 'UNPAID' | 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED';
+  paymentMethod: import('@/domain/payment-method').PaymentMethod | null;
+  paymentVerified: boolean;
+  refundVerified: boolean;
   version: number;
 }>;
 
@@ -163,6 +166,7 @@ export async function adminListOrders(
     totalMinor: orders.totalMinor,
     orderStatus: orders.orderStatus,
     paymentStatus: orders.paymentStatus,
+    paymentMethod: orders.paymentMethod,
     version: orders.version,
   };
   const [rows, [{ value: total }]] = await Promise.all([
@@ -188,6 +192,8 @@ export async function adminListOrders(
       .where(eq(orders.id, id));
     current.push({
       ...order,
+      paymentVerified: review?.paymentVerified ?? false,
+      refundVerified: review?.refundVerified ?? false,
       subtotalMinor: review?.subtotalMinor ?? order.subtotalMinor,
       shippingMinor: review ? review.shippingMinor : order.shippingMinor,
       totalMinor: review ? review.totalMinor : order.totalMinor,

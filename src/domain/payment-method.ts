@@ -26,16 +26,24 @@ export function methodMatchesFulfillment(
   );
 }
 // No authoritative collection evidence exists yet. Never turn a legacy marker into proof.
-export function paymentStatusLabel(status: string): string {
+export function paymentStatusLabel(
+  status: string,
+  paymentVerified = false,
+  refundVerified = false,
+): string {
   switch (status) {
     case 'UNPAID':
       return 'Pendiente de pago';
     case 'PENDING':
       return 'Pago pendiente de verificación';
     case 'PAID':
-      return 'Pago registrado, sin verificación';
+      return paymentVerified
+        ? 'Pago recibido y verificado por el dueño'
+        : 'Pago registrado, sin verificación';
     case 'REFUNDED':
-      return 'Reembolso registrado, sin verificación';
+      return refundVerified
+        ? 'Reembolso realizado y registrado por el dueño'
+        : 'Reembolso registrado, sin verificación';
     case 'FAILED':
       return 'Pago no completado';
     default:

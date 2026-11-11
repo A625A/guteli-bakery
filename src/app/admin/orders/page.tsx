@@ -3,7 +3,10 @@ import { headers } from 'next/headers';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 
-import { paymentStatusLabel } from '@/domain/payment-method';
+import {
+  paymentStatusLabel,
+  paymentMethodLabel,
+} from '@/domain/payment-method';
 import { orderStatusLabel } from '@/lib/order-status-label';
 import { requireVerifiedAdminSession } from '@/server/auth/admin-page-access';
 import {
@@ -180,7 +183,12 @@ export default async function AdminOrdersPage({
                   </span>
                 </td>
                 <td data-label="Pago">
-                  {paymentStatusLabel(order.paymentStatus)}
+                  {paymentStatusLabel(
+                    order.paymentStatus,
+                    order.paymentVerified,
+                    order.refundVerified,
+                  )}
+                  <small>{paymentMethodLabel(order.paymentMethod)}</small>
                 </td>
                 <td data-label="Total">{money(order.totalMinor)}</td>
                 <td>

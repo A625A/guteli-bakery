@@ -43,6 +43,7 @@ export async function processNextWhatsAppEvent({
     .where(
       and(
         eq(outboxEvents.deliveryStatus, 'SENDING'),
+        inArray(outboxEvents.eventType, EVENTS),
         lt(outboxEvents.leaseExpiresAt, now()),
       ),
     );

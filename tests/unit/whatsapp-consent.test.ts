@@ -6,6 +6,7 @@ const request = {
   customerName: 'Ana',
   phone: '55551234',
   fulfillment: 'pickup' as const,
+  paymentMethod: 'BANK_TRANSFER' as const,
   requestedDate: getMinimumOrderDate(),
   items: [{ productId: '00000000-0000-4000-8000-000000000001', quantity: 1 }],
 };

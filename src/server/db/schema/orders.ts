@@ -109,6 +109,10 @@ export const orders = pgTable(
     ),
     check('orders_version_positive', sql`${table.version} >= 1`),
     check(
+      'orders_payment_method_matches_fulfillment',
+      sql`${table.paymentMethod} IS NULL OR ${table.paymentMethod} = 'BANK_TRANSFER' OR (${table.paymentMethod} = 'CASH_PICKUP' AND ${table.fulfillment} = 'PICKUP') OR (${table.paymentMethod} = 'CASH_DELIVERY' AND ${table.fulfillment} = 'DELIVERY')`,
+    ),
+    check(
       'orders_terminal_timestamp_consistent',
       sql`
         (

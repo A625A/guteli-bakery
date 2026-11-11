@@ -5,6 +5,7 @@ const base = {
   customerName: 'PRUEBA',
   phone: '55555555',
   fulfillment: 'delivery',
+  paymentMethod: 'BANK_TRANSFER' as const,
   requestedDate: '2099-01-01',
   deliveryLocation: 'Dirección ficticia',
   items: [{ productId: '00000000-0000-4000-8000-000000000001', quantity: 1 }],

@@ -70,13 +70,34 @@ export default async function AdminPage({
           </span>
         </div>
       </section>
-      {d.failedNotificationCount > 0 || d.pendingNotificationCount > 0 ? (
+      {!d.emailConfigured ||
+      d.failedNotificationCount > 0 ||
+      d.pendingNotificationCount > 0 ? (
         <section className="admin-panel" aria-label="Avisos">
           <h2>Notificaciones por revisar</h2>
+          {!d.emailConfigured ? (
+            <p>
+              El correo de respaldo está deshabilitado o falta completar su
+              configuración. Los pedidos siguen guardados en este panel.
+            </p>
+          ) : null}
           <p>
             {d.failedNotificationCount} fallidas · {d.pendingNotificationCount}{' '}
             pendientes. Revisa el detalle del pedido para consultar su estado.
           </p>
+          {d.failedEmailOrders.length ? (
+            <ul>
+              {d.failedEmailOrders.map((order) => (
+                <li key={order.publicId}>
+                  <Link
+                    href={`/admin/orders/${encodeURIComponent(order.publicId)}`}
+                  >
+                    Revisar correo del pedido {order.publicId}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : null}
         </section>
       ) : null}
       <AnalyticsPanel initialQuery={analyticsQuery.toString() || 'period=7'} />

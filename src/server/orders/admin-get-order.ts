@@ -9,6 +9,7 @@ import {
   orderItems,
   orders,
   outboxEvents,
+  orderPaymentEvents,
 } from '@/server/db/schema';
 import type { OrderStatus } from '@/domain/order-state';
 
@@ -103,43 +104,60 @@ export async function adminGetOrder(publicId: string, requestHeaders: Headers) {
     .limit(1);
   if (!order) return null;
 
-  const [items, historyRows, notifications] = await Promise.all([
-    db
-      .select({
-        productName: orderItems.productName,
-        categoryLabel: orderItems.categoryLabel,
-        saleUnit: orderItems.saleUnit,
-        unitPriceMinor: orderItems.unitPriceMinor,
-        quantity: orderItems.quantity,
-        lineTotalMinor: orderItems.lineTotalMinor,
-      })
-      .from(orderItems)
-      .where(eq(orderItems.orderId, order.id))
-      .orderBy(asc(orderItems.createdAt), asc(orderItems.id)),
-    db
-      .select({
-        action: auditLogs.action,
-        metadata: auditLogs.metadata,
-        createdAt: auditLogs.createdAt,
-      })
-      .from(auditLogs)
-      .where(eq(auditLogs.entityId, order.id))
-      .orderBy(asc(auditLogs.createdAt), asc(auditLogs.id)),
-    db
-      .select({
-        eventType: outboxEvents.eventType,
-        state: outboxEvents.state,
-        deliveryStatus: outboxEvents.deliveryStatus,
-        attempts: outboxEvents.attempts,
-        lastErrorCode: outboxEvents.lastErrorCode,
-        createdAt: outboxEvents.createdAt,
-        updatedAt: outboxEvents.updatedAt,
-        sentAt: outboxEvents.sentAt,
-      })
-      .from(outboxEvents)
-      .where(sql`${outboxEvents.payload}->>'orderId' = ${order.id}`)
-      .orderBy(desc(outboxEvents.createdAt), desc(outboxEvents.id)),
-  ]);
+  const [items, historyRows, notifications, paymentHistory] = await Promise.all(
+    [
+      db
+        .select({
+          productName: orderItems.productName,
+          categoryLabel: orderItems.categoryLabel,
+          saleUnit: orderItems.saleUnit,
+          unitPriceMinor: orderItems.unitPriceMinor,
+          quantity: orderItems.quantity,
+          lineTotalMinor: orderItems.lineTotalMinor,
+        })
+        .from(orderItems)
+        .where(eq(orderItems.orderId, order.id))
+        .orderBy(asc(orderItems.createdAt), asc(orderItems.id)),
+      db
+        .select({
+          action: auditLogs.action,
+          metadata: auditLogs.metadata,
+          createdAt: auditLogs.createdAt,
+        })
+        .from(auditLogs)
+        .where(eq(auditLogs.entityId, order.id))
+        .orderBy(asc(auditLogs.createdAt), asc(auditLogs.id)),
+      db
+        .select({
+          eventType: outboxEvents.eventType,
+          state: outboxEvents.state,
+          deliveryStatus: outboxEvents.deliveryStatus,
+          attempts: outboxEvents.attempts,
+          lastErrorCode: outboxEvents.lastErrorCode,
+          createdAt: outboxEvents.createdAt,
+          updatedAt: outboxEvents.updatedAt,
+          sentAt: outboxEvents.sentAt,
+        })
+        .from(outboxEvents)
+        .where(sql`${outboxEvents.payload}->>'orderId' = ${order.id}`)
+        .orderBy(desc(outboxEvents.createdAt), desc(outboxEvents.id)),
+      db
+        .select({
+          kind: orderPaymentEvents.kind,
+          amountMinor: orderPaymentEvents.amountMinor,
+          currency: orderPaymentEvents.currency,
+          paymentMethod: orderPaymentEvents.paymentMethod,
+          verifiedAt: orderPaymentEvents.verifiedAt,
+          actorId: orderPaymentEvents.actorId,
+          note: orderPaymentEvents.note,
+          previousStatus: orderPaymentEvents.previousStatus,
+          newStatus: orderPaymentEvents.newStatus,
+        })
+        .from(orderPaymentEvents)
+        .where(eq(orderPaymentEvents.orderId, order.id))
+        .orderBy(asc(orderPaymentEvents.verifiedAt)),
+    ],
+  );
   return {
     publicId: order.publicId,
     customerName: order.customerName,
@@ -160,6 +178,34 @@ export async function adminGetOrder(publicId: string, requestHeaders: Headers) {
     totalMinor: order.totalMinor,
     orderStatus: order.orderStatus,
     paymentStatus: order.paymentStatus,
+    paymentVerified: review?.paymentVerified ?? false,
+    refundVerified: review?.refundVerified ?? false,
+    pricingRevisionId: review?.revisionId ?? null,
+    paymentHistory: paymentHistory.map((event) => ({
+      ...event,
+      note: actor.role === 'OWNER' ? event.note : null,
+      verifiedAt: event.verifiedAt.toISOString(),
+    })),
+    canVerifyPayment:
+      actor.role === 'OWNER' &&
+      Boolean(review?.accepted) &&
+      Boolean(order.paymentMethod) &&
+      ['UNPAID', 'FAILED'].includes(order.paymentStatus) &&
+      !['RECEIVED', 'CANCELLED'].includes(order.orderStatus) &&
+      (order.paymentMethod === 'BANK_TRANSFER' ||
+        (order.paymentMethod === 'CASH_PICKUP'
+          ? ['READY', 'COMPLETED']
+          : ['OUT_FOR_DELIVERY', 'COMPLETED']
+        ).includes(order.orderStatus)),
+    refundRequired:
+      order.orderStatus === 'CANCELLED' &&
+      Boolean(review?.paymentVerified) &&
+      order.paymentStatus === 'PAID',
+    canRecordRefund:
+      actor.role === 'OWNER' &&
+      order.orderStatus === 'CANCELLED' &&
+      Boolean(review?.paymentVerified) &&
+      order.paymentStatus === 'PAID',
     paymentMethod: order.paymentMethod,
     paymentInstructionsDraft:
       actor.role === 'OWNER' ? order.paymentInstructionsDraft : null,

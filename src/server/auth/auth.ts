@@ -11,6 +11,8 @@ import * as schema from '@/server/db/schema';
 
 import { adminSessionPolicyPlugin } from './admin-session-policy';
 import { loginProtectionPlugin } from './login-protection';
+import { authRateLimitStorage } from './rate-limit-storage';
+import { credentialRevocationPlugin } from './credential-revocation';
 
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -58,6 +60,7 @@ export const auth = betterAuth({
       },
     },
   },
+  rateLimit: { customStorage: authRateLimitStorage },
   session: {
     expiresIn: 60 * 60 * 8,
     updateAge: 60 * 60,
@@ -111,5 +114,6 @@ export const auth = betterAuth({
     adminSessionPolicyPlugin(),
     twoFactor({ issuer: 'Guteli Bakery', accountLockout: { enabled: true } }),
     loginProtectionPlugin(),
+    credentialRevocationPlugin(),
   ],
 });

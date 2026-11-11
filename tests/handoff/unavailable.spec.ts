@@ -12,6 +12,9 @@ async function prepareOrder(page: Page) {
   await page.goto('/cart/');
   await page.getByLabel('Nombre completo').fill('Ana López');
   await page.getByLabel('Teléfono').fill('5555 5555');
+  await page
+    .getByRole('radio', { name: 'Transferencia bancaria', exact: true })
+    .check();
   const date = page.getByLabel('Fecha solicitada');
   await date.fill((await date.getAttribute('min')) ?? '');
 }

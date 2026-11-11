@@ -7,7 +7,7 @@ import {
 } from '@/domain/payment-method';
 import { requireOwner, authorizeOwnerAccess } from '@/server/auth/authorize';
 import { db } from '@/server/db/client';
-import { orders } from '@/server/db/schema';
+import { orders, orderPricingState } from '@/server/db/schema';
 import { requireTrustedMutationOrigin } from '@/server/security/origin';
 import {
   AdminOrderError,
@@ -71,6 +71,12 @@ export async function assignPaymentMethod(
         paymentStatus: orders.paymentStatus,
         version: orders.version,
       });
+    if (before.method !== data.paymentMethod) {
+      await transaction
+        .update(orderPricingState)
+        .set({ acceptedRevisionId: null, acceptedAt: null })
+        .where(eq(orderPricingState.orderId, order.id));
+    }
     // Never include account instructions in audit metadata or public responses.
     await insertAdminOrderAudit(transaction, {
       actorId: actor.userId,

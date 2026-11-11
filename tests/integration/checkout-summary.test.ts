@@ -6,6 +6,7 @@ import { Pool } from 'pg';
 import { afterAll, beforeEach, expect, it, vi } from 'vitest';
 vi.mock('server-only', () => ({}));
 import { createCheckoutSummaryHandler } from '@/app/api/checkout-summary/route';
+import { createCheckoutReviewHandlers } from '@/app/api/checkout-review/route';
 import { categories, products, orders, promotions } from '@/server/db/schema';
 import { createOrder } from '@/server/orders/create-order';
 import { issueCheckoutCredential } from '@/server/orders/checkout-credential';
@@ -92,6 +93,7 @@ beforeEach(async () => {
       customerName: 'Ana private',
       phone: '55551234',
       fulfillment: 'delivery',
+      paymentMethod: 'CASH_DELIVERY' as const,
       deliveryLocation: 'Zona 1 private',
       requestedDate: '2026-10-20',
       notes: 'Sin nueces private',
@@ -102,14 +104,147 @@ beforeEach(async () => {
   receiptToken = created.order.receiptToken;
 });
 afterAll(() => pool.end());
-it('returns private current details only to the matching checkout owner, never on the public receipt', async () => {
+it('allows the private order link to acknowledge an owner change after the checkout cookie expires', async () => {
+  await database
+    .update(orders)
+    .set({
+      shippingMinor: 500,
+      totalMinor: 50500,
+      paymentMethod: 'BANK_TRANSFER',
+      orderStatus: 'CONFIRMED',
+    })
+    .where(eq(orders.publicId, publicId));
+  now = new Date('2026-10-15T12:00:00Z');
+  const reviewHandlers = createCheckoutReviewHandlers({
+    database,
+    now: () => now,
+    getOrderSecuritySettings: () => settings,
+    applicationOrigin: origin,
+    secureCookies: true,
+  });
+  const privateHeaders = {
+    'x-order-receipt': receiptToken,
+    'x-order-reference': publicId,
+    origin,
+    'content-type': 'application/json',
+  };
+  const response = await reviewHandlers.GET(
+    new Request(`${origin}/api/checkout-review`, { headers: privateHeaders }),
+  );
+  expect(response.status).toBe(200);
+  const { review } = await response.json();
+  expect(review).toMatchObject({
+    paymentMethod: 'BANK_TRANSFER',
+    totalMinor: 50500,
+    canAccept: true,
+    accepted: false,
+  });
+  const accepted = await reviewHandlers.POST(
+    new Request(`${origin}/api/checkout-review`, {
+      method: 'POST',
+      headers: privateHeaders,
+      body: JSON.stringify({ publicId, revisionId: review.revisionId }),
+    }),
+  );
+  expect(accepted.status).toBe(200);
+  expect((await accepted.json()).review.accepted).toBe(true);
+  const denied = await reviewHandlers.POST(
+    new Request(`${origin}/api/checkout-review`, {
+      method: 'POST',
+      headers: { ...privateHeaders, origin: 'https://evil.example' },
+      body: JSON.stringify({ publicId, revisionId: review.revisionId }),
+    }),
+  );
+  expect(denied.status).toBe(403);
+  const shareRequest = request({ publicId }, '');
+  shareRequest.headers.set('x-order-receipt', receiptToken);
+  const summary = await handler()(shareRequest);
+  expect(summary.status).toBe(200);
+  const message = (await summary.json()).summary.message;
+  expect(message).toContain('Total aceptado por el cliente: Q505');
+  expect(message).not.toContain(receiptToken);
+});
+it('uses the exact receipt capability even with a newer unrelated checkout cookie and never downgrades an invalid one', async () => {
+  const other = issueCheckoutCredential(settings.receiptTokenSecret, now);
+  const otherOrder = await createOrder({
+    database,
+    now,
+    clock: () => now,
+    requestId: 'other-order',
+    receiptTokenSecret: settings.receiptTokenSecret,
+    idempotencyKey: other.key,
+    idempotencySubject: createHmacSubject(
+      settings.receiptTokenSecret,
+      'public-order-idempotency',
+      'public-storefront',
+    ),
+    request: {
+      customerName: 'Otro',
+      phone: '55554444',
+      fulfillment: 'pickup',
+      paymentMethod: 'BANK_TRANSFER',
+      requestedDate: '2026-10-20',
+      items: [{ productId, quantity: 1 }],
+    },
+  });
+  const reviews = createCheckoutReviewHandlers({
+    database,
+    now: () => now,
+    getOrderSecuritySettings: () => settings,
+    applicationOrigin: origin,
+    secureCookies: true,
+  });
+  const baseHeaders = {
+    'x-order-receipt': receiptToken,
+    'x-order-reference': publicId,
+    cookie: `__Host-guteli-checkout=${other.value}`,
+  };
+  const good = await reviews.GET(
+    new Request(`${origin}/api/checkout-review`, { headers: baseHeaders }),
+  );
+  expect(good.status).toBe(200);
+  expect((await good.json()).review.publicId).toBe(publicId);
+  for (const patch of [
+    { 'x-order-reference': otherOrder.order.publicId },
+    { 'x-order-receipt': 'malformed' },
+    { 'x-order-receipt': 'A'.repeat(43) },
+  ]) {
+    expect(
+      (
+        await reviews.GET(
+          new Request(`${origin}/api/checkout-review`, {
+            headers: { ...baseHeaders, ...patch },
+          }),
+        )
+      ).status,
+    ).toBe(404);
+  }
+  const crossOrigin = request({ publicId }, '');
+  crossOrigin.headers.set('x-order-receipt', receiptToken);
+  crossOrigin.headers.set('origin', 'https://evil.example');
+  expect((await handler()(crossOrigin)).status).toBe(403);
+  await database
+    .update(orders)
+    .set({ anonymizedAt: now })
+    .where(eq(orders.publicId, publicId));
+  expect(
+    (
+      await reviews.GET(
+        new Request(`${origin}/api/checkout-review`, { headers: baseHeaders }),
+      )
+    ).status,
+  ).toBe(404);
+});
+it('returns current summary only to matching checkout owner without unnecessary personal data', async () => {
   const response = await handler()(request());
   expect(response.status).toBe(200);
   expect(response.headers.get('cache-control')).toBe('private, no-store');
   expect(response.headers.get('referrer-policy')).toBe('no-referrer');
   expect(response.headers.get('x-robots-tag')).toContain('noindex');
   const { summary } = await response.json();
-  expect(summary.message).toContain('Ana private');
+  expect(summary.message).not.toMatch(
+    /Ana private|55551234|Zona 1 private|Sin nueces private/,
+  );
   expect(summary.message).toContain('Total: por confirmar');
   expect(summary.message).toContain('Q500');
   expect(summary.message).not.toContain(receiptToken);
@@ -181,7 +316,9 @@ it('refreshes promotion expiry and delivery quotes before sharing and forces re-
     request({ publicId, expectedVersion: updated.summary.version }),
   );
   expect(quoted.status).toBe(409);
-  expect((await quoted.json()).summary.message).toContain('Total: Q525');
+  expect((await quoted.json()).summary.message).toContain(
+    'Total pendiente de aceptación: Q525',
+  );
 });
 it('preserves frozen marked-paid prices but never promotes a marker into verified payment', async () => {
   await database.insert(promotions).values({
@@ -203,7 +340,7 @@ it('preserves frozen marked-paid prices but never promotes a marker into verifie
     .set({ priceMinor: 20000 })
     .where(eq(products.id, productId));
   const { summary } = await (await handler()(request())).json();
-  expect(summary.message).toContain('Total: Q150');
+  expect(summary.message).toContain('Total pendiente de aceptación: Q150');
   expect(summary.message).toContain('sin verificación del proveedor');
   expect(summary.message).not.toContain('Pago verificado');
   expect((await database.select().from(orders))[0].paymentStatus).toBe('PAID');
@@ -249,7 +386,9 @@ it('a changed customer detail forces review and anonymized orders expose no summ
     request({ publicId, expectedVersion: first.summary.version }),
   );
   expect(changed.status).toBe(409);
-  expect((await changed.json()).summary.message).toContain('Otra indicación');
+  expect((await changed.json()).summary.message).not.toContain(
+    'Otra indicación',
+  );
   await database
     .update(orders)
     .set({ anonymizedAt: now })

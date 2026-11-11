@@ -20,6 +20,7 @@ export type PricingLine = Readonly<{
 }>;
 
 export type PricingSnapshot = Readonly<{
+  paymentMethod?: import('@/domain/payment-method').PaymentMethod | null;
   items: readonly PricingLine[];
   subtotalMinor: number;
   shippingMinor: number | null;
@@ -31,6 +32,8 @@ export type PricingSnapshot = Readonly<{
 }>;
 
 export type CheckoutPricingReview = Readonly<{
+  paymentVerified?: boolean;
+  refundVerified?: boolean;
   publicId: string;
   revisionId: string | null;
   accepted: boolean;

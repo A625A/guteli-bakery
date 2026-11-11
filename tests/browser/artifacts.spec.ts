@@ -122,6 +122,9 @@ async function fillPickupRequest(page: Page, includeName = true) {
   }
   await page.getByLabel('Teléfono').fill('5555 5555');
   await page.getByLabel('Recogida').check();
+  await page
+    .getByRole('radio', { name: 'Transferencia bancaria', exact: true })
+    .check();
 
   const date = page.getByLabel('Fecha solicitada');
   const minimumDate = await date.getAttribute('min');

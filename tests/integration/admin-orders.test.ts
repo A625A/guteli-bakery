@@ -40,6 +40,7 @@ import {
 import { reviewOrderPricing } from '@/server/orders/review-pricing';
 import { orderPricingState } from '@/server/db/schema';
 import { requireTestDatabaseUrl } from '@/test/database-url';
+import { getAdminDashboard } from '@/server/admin/dashboard';
 
 const databaseUrl = requireTestDatabaseUrl(
   process.env.DATABASE_URL_TEST,
@@ -276,6 +277,42 @@ function mutationRequest(
 
 describe('protected admin order operations', () => {
   beforeEach(resetDatabase);
+
+  it('surfaces failed backup email with a protected order link target and safe failure details', async () => {
+    const actor = await enrolledActor();
+    const order = await orderFixture();
+    await db.insert(outboxEvents).values({
+      eventType: 'OWNER_ORDER_EMAIL',
+      dedupeKey: `email:order:${order.id}`,
+      payload: { orderId: order.id, requestId: 'email-dashboard-test' },
+      state: 'FAILED',
+      deliveryStatus: 'FAILED',
+      attempts: 1,
+      lastErrorCode: 'EMAIL_PROVIDER_REJECTED',
+    });
+    const dashboard = await getAdminDashboard(actor.jar.headers());
+    expect(dashboard.failedNotificationCount).toBe(1);
+    expect(dashboard.emailConfigured).toBe(false);
+    expect(dashboard.failedEmailOrders).toEqual([
+      {
+        publicId: order.publicId,
+        deliveryStatus: 'FAILED',
+        lastErrorCode: 'EMAIL_PROVIDER_REJECTED',
+      },
+    ]);
+    expect(JSON.stringify(dashboard.failedEmailOrders)).not.toMatch(
+      /55550001|Zona 10|receipt/i,
+    );
+    const detail = await adminGetOrder(order.publicId, actor.jar.headers());
+    expect(detail!.notifications).toContainEqual(
+      expect.objectContaining({
+        eventType: 'OWNER_ORDER_EMAIL',
+        state: 'FAILED',
+        attempts: 1,
+        lastErrorCode: 'EMAIL_PROVIDER_REJECTED',
+      }),
+    );
+  });
   afterAll(() => pool.end());
 
   it('lets only the owner assign a method without receiving money or changing prices', async () => {

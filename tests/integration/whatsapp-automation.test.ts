@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { Pool } from 'pg';
@@ -31,6 +31,7 @@ function input(optIn = false, key = randomUUID()) {
       customerName: 'Ana',
       phone: '55551234',
       fulfillment: 'pickup' as const,
+      paymentMethod: 'BANK_TRANSFER' as const,
       requestedDate: '2099-01-01',
       whatsappOptIn: optIn,
       items: [{ productId, quantity: 5 }],
@@ -63,7 +64,15 @@ afterAll(() => pool.end());
 it('atomically queues one owner and one consented customer event despite concurrent order retries', async () => {
   const request = input(true);
   await Promise.all([createOrder(request), createOrder(request)]);
-  const events = await database.select().from(outboxEvents);
+  const events = await database
+    .select()
+    .from(outboxEvents)
+    .where(
+      inArray(outboxEvents.eventType, [
+        'OWNER_ORDER_CREATED',
+        'CUSTOMER_ORDER_CREATED',
+      ]),
+    );
   expect(events.map((e) => e.eventType).sort()).toEqual([
     'CUSTOMER_ORDER_CREATED',
     'OWNER_ORDER_CREATED',
@@ -91,7 +100,17 @@ it('atomically queues one owner and one consented customer event despite concurr
 it('without consent only the owner event is created', async () => {
   await createOrder(input());
   expect(
-    (await database.select().from(outboxEvents)).map((e) => e.eventType),
+    (
+      await database
+        .select()
+        .from(outboxEvents)
+        .where(
+          inArray(outboxEvents.eventType, [
+            'OWNER_ORDER_CREATED',
+            'CUSTOMER_ORDER_CREATED',
+          ]),
+        )
+    ).map((e) => e.eventType),
   ).toEqual(['OWNER_ORDER_CREATED']);
   expect(
     (await pool.query('SELECT * FROM order_whatsapp_consents')).rowCount,
@@ -146,7 +165,15 @@ it('disabled processor never contacts Meta; enabled workers claim each recipient
         ),
     ),
   ).toBe(true);
-  const events = await database.select().from(outboxEvents);
+  const events = await database
+    .select()
+    .from(outboxEvents)
+    .where(
+      inArray(outboxEvents.eventType, [
+        'OWNER_ORDER_CREATED',
+        'CUSTOMER_ORDER_CREATED',
+      ]),
+    );
   expect(
     events.every((e) => e.deliveryStatus === 'ACCEPTED' && e.sentAt === null),
   ).toBe(true);
@@ -218,7 +245,15 @@ it('authenticates callbacks and reconciles an early delivered callback without d
   await handlers.POST(
     webhook(envelope([{ ...status, status: 'sent' }, status])),
   );
-  const [event] = await database.select().from(outboxEvents);
+  const [event] = await database
+    .select()
+    .from(outboxEvents)
+    .where(
+      inArray(outboxEvents.eventType, [
+        'OWNER_ORDER_CREATED',
+        'CUSTOMER_ORDER_CREATED',
+      ]),
+    );
   expect(event.deliveryStatus).toBe('DELIVERED');
   expect(
     (await pool.query('SELECT payment_status FROM orders')).rows[0]
@@ -302,14 +337,30 @@ it('retries definitive rate limits with backoff and fresh pricing, but never aut
   ).toBe('IDLE');
   expect(uncertain).toHaveBeenCalledTimes(1);
   expect(
-    (await database.select().from(outboxEvents)).some(
-      (e) => e.lastErrorCode === 'PROVIDER_NETWORK_ERROR',
-    ),
+    (
+      await database
+        .select()
+        .from(outboxEvents)
+        .where(
+          inArray(outboxEvents.eventType, [
+            'OWNER_ORDER_CREATED',
+            'CUSTOMER_ORDER_CREATED',
+          ]),
+        )
+    ).some((e) => e.lastErrorCode === 'PROVIDER_NETWORK_ERROR'),
   ).toBe(true);
 });
 it('holds a crashed in-flight claim and never sends expired, oversized, or future payment events', async () => {
   await createOrder(input());
-  const [event] = await database.select().from(outboxEvents);
+  const [event] = await database
+    .select()
+    .from(outboxEvents)
+    .where(
+      inArray(outboxEvents.eventType, [
+        'OWNER_ORDER_CREATED',
+        'CUSTOMER_ORDER_CREATED',
+      ]),
+    );
   const fetchImpl = vi.fn();
   const settings = automationSettings(now);
   await database
@@ -326,9 +377,19 @@ it('holds a crashed in-flight claim and never sends expired, oversized, or futur
     fetchImpl,
     now: () => now,
   });
-  expect((await database.select().from(outboxEvents))[0].deliveryStatus).toBe(
-    'UNKNOWN',
-  );
+  expect(
+    (
+      await database
+        .select()
+        .from(outboxEvents)
+        .where(
+          inArray(outboxEvents.eventType, [
+            'OWNER_ORDER_CREATED',
+            'CUSTOMER_ORDER_CREATED',
+          ]),
+        )
+    )[0].deliveryStatus,
+  ).toBe('UNKNOWN');
   await database
     .update(outboxEvents)
     .set({
@@ -399,9 +460,19 @@ it('does not let wrong-account, wrong-sender or wrong-recipient callbacks establ
     envelope([{ ...status, recipient_id: '50255551234' }]),
   ])
     expect((await handlers.POST(webhook(body))).status).toBe(200);
-  expect((await database.select().from(outboxEvents))[0].deliveryStatus).toBe(
-    'ACCEPTED',
-  );
+  expect(
+    (
+      await database
+        .select()
+        .from(outboxEvents)
+        .where(
+          inArray(outboxEvents.eventType, [
+            'OWNER_ORDER_CREATED',
+            'CUSTOMER_ORDER_CREATED',
+          ]),
+        )
+    )[0].deliveryStatus,
+  ).toBe('ACCEPTED');
   expect(
     (
       await handlers.GET(
@@ -421,9 +492,19 @@ it('does not let wrong-account, wrong-sender or wrong-recipient callbacks establ
     ).status,
   ).toBe(403);
   await handlers.POST(webhook(envelope([status])));
-  expect((await database.select().from(outboxEvents))[0].deliveryStatus).toBe(
-    'READ',
-  );
+  expect(
+    (
+      await database
+        .select()
+        .from(outboxEvents)
+        .where(
+          inArray(outboxEvents.eventType, [
+            'OWNER_ORDER_CREATED',
+            'CUSTOMER_ORDER_CREATED',
+          ]),
+        )
+    )[0].deliveryStatus,
+  ).toBe('READ');
 });
 
 it('holds definitively rejected delivery after five rate-limit attempts without calling it uncertain', async () => {
@@ -440,7 +521,15 @@ it('holds definitively rejected delivery after five rate-limit attempts without 
     now = new Date(now.getTime() + 600000);
   }
   expect(fetchImpl).toHaveBeenCalledTimes(5);
-  const [event] = await database.select().from(outboxEvents);
+  const [event] = await database
+    .select()
+    .from(outboxEvents)
+    .where(
+      inArray(outboxEvents.eventType, [
+        'OWNER_ORDER_CREATED',
+        'CUSTOMER_ORDER_CREATED',
+      ]),
+    );
   expect(event.deliveryStatus).toBe('BLOCKED');
   expect(event.lastErrorCode).toBe('RETRY_LIMIT');
   await processNextWhatsAppEvent({

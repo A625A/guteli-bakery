@@ -1,4 +1,5 @@
 import { PaymentMethodForm } from '@/components/admin/PaymentMethodForm';
+import { PaymentVerificationForm } from '@/components/admin/PaymentVerificationForm';
 import {
   paymentMethodLabel,
   paymentStatusLabel,
@@ -152,7 +153,20 @@ export default async function AdminOrderDetailPage({
             : 'Pendiente de aceptación vigente'}
         </p>
         <p>Método: {paymentMethodLabel(order.paymentMethod)}</p>
-        <p>Pago: {paymentStatusLabel(order.paymentStatus)}</p>
+        <p>
+          Pago:{' '}
+          {paymentStatusLabel(
+            order.paymentStatus,
+            order.paymentVerified,
+            order.refundVerified,
+          )}
+        </p>
+        {order.refundRequired ? (
+          <p role="alert">
+            Pedido cancelado con pago recibido. Coordina la devolución con el
+            cliente y registra el reembolso solo después de realizarlo.
+          </p>
+        ) : null}
         <p>
           Confirmar el pedido significa que la tienda acepta atenderlo. No
           verifica que se haya recibido dinero.
@@ -169,6 +183,41 @@ export default async function AdminOrderDetailPage({
             (Guatemala)
           </p>
         ) : null}
+      </section>
+      {(order.canVerifyPayment || order.canRecordRefund) &&
+      order.pricingRevisionId &&
+      order.paymentMethod &&
+      order.totalMinor !== null ? (
+        <PaymentVerificationForm
+          key={`${order.publicId}-${order.version}`}
+          publicId={order.publicId}
+          version={order.version}
+          revisionId={order.pricingRevisionId}
+          method={order.paymentMethod}
+          totalMinor={order.totalMinor}
+          refund={order.canRecordRefund}
+        />
+      ) : null}
+      <section aria-labelledby="payment-history-title">
+        <h2 id="payment-history-title">Historial de cobros y devoluciones</h2>
+        {order.paymentHistory.length ? (
+          <ol>
+            {order.paymentHistory.map((event) => (
+              <li key={event.kind}>
+                {event.kind === 'VERIFIED'
+                  ? 'Pago recibido'
+                  : 'Devolución realizada'}
+                : {money(event.amountMinor)} {event.currency} ·{' '}
+                {paymentMethodLabel(event.paymentMethod)} ·{' '}
+                {localDate(event.verifiedAt)} (Guatemala). Responsable:{' '}
+                {event.actorId}. {event.previousStatus} → {event.newStatus}.
+                {event.note ? <p>Referencia interna: {event.note}</p> : null}
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <p>Sin cobros verificados ni devoluciones registradas.</p>
+        )}
       </section>
       {order.canAssignPaymentMethod ? (
         <PaymentMethodForm
@@ -223,9 +272,11 @@ export default async function AdminOrderDetailPage({
           <ul>
             {order.notifications.map((notification) => (
               <li key={`${notification.eventType}-${notification.createdAt}`}>
-                {notification.eventType === 'CUSTOMER_ORDER_CREATED'
-                  ? 'Cliente'
-                  : 'Tienda'}
+                {notification.eventType === 'OWNER_ORDER_EMAIL'
+                  ? 'Correo de respaldo a la tienda'
+                  : notification.eventType === 'CUSTOMER_ORDER_CREATED'
+                    ? 'Cliente'
+                    : 'Tienda'}
                 : {notificationDeliveryLabel(notification.deliveryStatus)}
                 {notification.lastErrorCode
                   ? ` (${notificationErrorLabel(notification.lastErrorCode)})`

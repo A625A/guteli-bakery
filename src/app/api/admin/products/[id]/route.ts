@@ -1,3 +1,4 @@
+import { readBoundedJson } from '@/server/http/read-bounded-json';
 import { z } from 'zod';
 
 import { getRequestId } from '@/server/observability/request-id';
@@ -60,7 +61,7 @@ export async function GET(
 async function requestBody(request: Request) {
   if (!hasJsonContentType(request)) return null;
   try {
-    return await request.json();
+    return await readBoundedJson(request, 64 * 1024);
   } catch {
     return null;
   }

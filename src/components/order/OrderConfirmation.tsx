@@ -43,6 +43,11 @@ export function OrderConfirmation({
         <p className="order-confirmation__public-id">{receipt.publicId}</p>
       </header>
 
+      <WhatsAppOrderSummary
+        publicId={receipt.publicId}
+        receiptToken={receiptToken}
+      />
+
       <section
         className="order-confirmation__status"
         aria-labelledby="order-status-title"
@@ -59,7 +64,13 @@ export function OrderConfirmation({
           </div>
           <div>
             <dt>Pago</dt>
-            <dd>{paymentStatusLabel(receipt.paymentStatus)}</dd>
+            <dd>
+              {paymentStatusLabel(
+                receipt.paymentStatus,
+                receipt.paymentVerified,
+                receipt.refundVerified,
+              )}
+            </dd>
           </div>
           <div>
             <dt>Modalidad</dt>
@@ -129,12 +140,11 @@ export function OrderConfirmation({
       </section>
 
       <CheckoutPriceReview state={reviewState} />
-      <WhatsAppOrderSummary publicId={receipt.publicId} />
       <nav
         className="order-confirmation__actions"
         aria-label="Después de confirmar el pedido"
       >
-        <Link className="button-link button-link--primary" href="/menu/">
+        <Link className="button-link button-link--secondary" href="/menu/">
           Volver al menú
         </Link>
         <Link className="button-link button-link--secondary" href="/contact/">

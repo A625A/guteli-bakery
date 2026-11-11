@@ -1,3 +1,4 @@
+import { readBoundedJson } from '@/server/http/read-bounded-json';
 import { getRequestId } from '@/server/observability/request-id';
 import {
   adminProductCreateSchema,
@@ -41,7 +42,7 @@ export async function POST(request: Request) {
     return adminCatalogValidationError(requestId);
   let body: unknown;
   try {
-    body = await request.json();
+    body = await readBoundedJson(request, 64 * 1024);
   } catch {
     return adminCatalogValidationError(requestId);
   }

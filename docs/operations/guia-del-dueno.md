@@ -10,7 +10,7 @@ Esta guía describe las funciones preparadas localmente. La tienda mantiene los 
 4. Usa el autenticador en cada acceso que lo solicite. Si lo pierdes, usa un código de recuperación; si tampoco tienes los códigos, solicita asistencia al responsable técnico. No desactives las protecciones ni compartas la cuenta.
 5. Cierra sesión cuando termines, especialmente en una computadora compartida.
 
-El dueño puede gestionar usuarios y asignar métodos de pago. Un administrador puede atender productos y pedidos, pero no elegir el método de pago por cuenta del dueño.
+El cliente elige el método de pago al pedir. Solo el dueño puede cambiarlo, registrar dinero recibido o registrar una devolución. Un administrador puede atender productos y pedidos; no puede verificar cobros.
 
 ## Revisar el día
 
@@ -18,9 +18,11 @@ En **Resumen** puedes ver pedidos por atender, productos agotados y notificacion
 
 Si aparece un aviso de información sin actualizar, revisa la conexión y pulsa **Actualizar panel**. No tomes un dato antiguo como confirmación de que no hay pedidos nuevos. Con el panel cerrado no se reciben alertas; la tienda debe acordar una rutina de revisión. Un mensaje aceptado por el proveedor no significa entregado, y ninguno de esos estados demuestra un pago.
 
-En **Estado de la tienda**, «Necesita atención» indica un problema que conviene revisar; «Sin comprobar» significa que falta evidencia. Si hubo errores al guardar, busca el pedido antes de pedir al cliente que lo envíe otra vez. Si un mensaje tiene resultado desconocido, no lo reenvíes hasta aclararlo. Los respaldos y la verificación de pagos siguen pendientes. Consulta la [guía de monitoreo](monitoreo-local.md) para pedir apoyo técnico.
+En **Estado de la tienda**, «Necesita atención» indica un problema que conviene revisar; «Sin comprobar» significa que falta evidencia. Si hubo errores al guardar, busca el pedido antes de pedir al cliente que lo envíe otra vez. Si un mensaje tiene resultado desconocido, no lo reenvíes hasta aclararlo. La verificación manual de pagos está preparada; el correo de respaldo requiere configuración externa y una prueba autorizada. Consulta la [guía de monitoreo](monitoreo-local.md) para pedir apoyo técnico.
 
 Los enlaces privados de pedidos no deben publicarse. Atiende las solicitudes de corrección o eliminación según el [procedimiento de privacidad](privacidad-conservacion.md); la política de limpieza aún necesita aprobación y no está activada.
+
+El enlace privado permite consultar y aceptar el método y total de ese pedido, incluso después de vencer la sesión inicial de checkout o desde otro navegador. Quien reciba ese enlace tendrá esa misma capacidad: no lo publiques ni lo reenvíes a terceros. No permite registrar cobros; eso sigue reservado al dueño con sesión y MFA.
 
 ## Mantener productos y promociones
 
@@ -47,29 +49,39 @@ Los pedidos sin pago verificado siguen los precios vigentes. Una promoción venc
 
 Si otra persona modificó el pedido, el sistema pide actualizar antes de guardar. Revisa el nuevo contenido; no repitas cambios sin comprobarlo. Si hay una falla de red después de guardar, actualiza primero para saber si el cambio llegó al servidor.
 
-## Elegir el método de pago
+## Método elegido y cobro verificado
 
-Solo el dueño puede asignar un método en el detalle del pedido:
+El cliente elige **Transferencia bancaria** para recogida o entrega, **Efectivo al recoger** para recogida o **Efectivo contra entrega** para entrega. El método aparece en el detalle y en su página privada. Elegirlo no cobra, no verifica dinero ni conserva descuentos vencidos.
 
-- **Transferencia bancaria**: preparada como opción, sin cobro ni verificación automática.
-- **Efectivo al recoger**: para pedidos que se recogen.
-- **Efectivo contra entrega**: para pedidos a domicilio.
+El dueño puede cambiarlo mientras el pedido siga abierto y sin pago. Un cambio invalida la aceptación anterior: el cliente deberá revisar el método nuevo y aceptar el total vigente en su página privada. Quedan registrados tanto el cambio como la nueva aceptación. Los pedidos antiguos pueden tener el método pendiente; deben coordinarlo y obtener esa aceptación antes del cobro.
 
-Hasta elegirlo, el pedido muestra que la tienda tiene pendiente definir el método. **Guardar método no registra ni verifica dinero recibido**, no envía un enlace de cobro, no cambia el pedido a pagado y no congela precios. El cliente puede ver la opción elegida en su consulta privada y en el resumen de WhatsApp.
+El **borrador privado de instrucciones** de transferencia solo lo ve el dueño. No se publica ni se comparte automáticamente, aun después de confirmar el pedido. Coordina las instrucciones aprobadas con el cliente después de confirmar el pedido. Durante las pruebas utiliza datos ficticios. Nunca escribas contraseñas, códigos de seguridad ni credenciales bancarias.
 
-Para transferencia hay un **borrador privado de instrucciones**. Solo lo ve el dueño; no se comparte con el cliente ni se envía por WhatsApp. Durante las pruebas utiliza únicamente datos ficticios. Nunca escribas contraseñas, códigos de seguridad o credenciales bancarias. Habilitar instrucciones reales requiere una autorización posterior.
+Para registrar un cobro:
 
-No se puede cambiar el método de un pedido finalizado ni de uno con pago en proceso, registrado como pagado o reembolsado. Todavía no existe un botón para registrar «Pago recibido». La verificación de transferencias, recepción de efectivo y Recurrente requiere un flujo financiero independiente aprobado y comprobado.
+1. Confirma el pedido. Cotiza el envío si hace falta y comprueba la aceptación vigente del método y total.
+2. Si es transferencia, comprueba el abono real en el banco. Una captura o afirmación del cliente no basta.
+3. Si es efectivo, cuenta el dinero ya recibido durante la recogida (pedido listo) o entrega (en camino). No registres anticipadamente dinero prometido.
+4. En **Marcar pago como recibido**, escribe el importe exacto en Q y marca la confirmación explícita de recepción. La referencia interna opcional debe ser breve, sin credenciales, cuentas completas ni datos personales.
+5. Guarda y revisa el historial. Se conserva importe/GTQ, método, fecha, dueño responsable, revisión aceptada y estados anterior/nuevo. Los cobros requieren MFA reciente; si se solicita, vuelve a ingresar.
 
-Si un registro antiguo aparece como «Pago registrado, sin verificación», no lo uses como comprobante. Una captura de pantalla, un mensaje del cliente o un pedido confirmado tampoco prueban el cobro.
+Un importe incorrecto, método cambiado, total sin aceptar, pedido cancelado o versión antigua impide verificar. Si se pierde la conexión, utiliza **Reintentar el mismo registro**; conserva la misma clave y los mismos datos. Para corregir un intento rechazado, actualiza el pedido antes de volver a llenarlo. Una nueva clave no permite registrar el mismo pago dos veces.
+
+Los cobros verificados congelan los precios de ese pedido, incluso después de un reembolso. Los registros antiguos que digan **Pago registrado, sin verificación** no constituyen evidencia de cobro y no se convierten automáticamente en verificados.
 
 ## Comunicarse y cancelar
 
 **Contactar al cliente por WhatsApp** abre una conversación con el número validado; no envía un mensaje automáticamente. Revisa el destinatario y el contenido antes de enviarlo. El cliente conserva su vista previa, enlace y opción de copiar el resumen.
 
-Los estados de mensajes y los de pedidos son distintos. Un resumen de pedido recibido no confirma producción ni pago. Para la integración automática y sus pendientes, consulta la [guía de WhatsApp](whatsapp-automation.md).
+Los estados de mensajes y los de pedidos son distintos. Un resumen de pedido recibido no confirma producción ni pago. Después de guardar el pedido, el cliente tiene **Enviar pedido por WhatsApp** como acción principal. El resumen omite nombre, teléfono, dirección y notas; identifica el pedido por su referencia. Debe pulsar Enviar en WhatsApp. Abrirlo, copiar el resumen o cerrar la página no confirma envío, recepción ni pago. El código de automatización Meta permanece deshabilitado para un posible uso futuro.
 
-Cancelar un pedido no devuelve dinero. Las cancelaciones posteriores al estado recibido pueden exigir una verificación de acceso reciente. Si existe un cobro o una discrepancia, consulta el registro financiero y solicita asistencia antes de prometer un reembolso. No registres una devolución como completada sin evidencia.
+Cancelar un pedido no devuelve dinero ni borra el cobro. Las cancelaciones posteriores al estado recibido pueden exigir una verificación de acceso reciente. Si hay cobro verificado, aparece el aviso de devolución pendiente. Acuerda y realiza la devolución completa fuera del sitio y solo después usa **Registrar devolución realizada**: importe exacto y confirmación de que el dinero ya se devolvió. El sitio no inicia transferencias. No hay devolución parcial ni excepción para cobrar pedidos cancelados; cualquier discrepancia necesita revisión fuera de este flujo.
+
+## Correo de respaldo
+
+Cada pedido guardado encola un aviso al dueño dentro de la misma transacción. Si falla el proveedor, el pedido sigue disponible. El resumen muestra avisos fallidos y enlaces para abrir los pedidos afectados; el detalle distingue el correo de otros canales y muestra los errores. La aceptación por el proveedor no garantiza llegada a la bandeja. Revisa el panel aunque no haya llegado correo ni WhatsApp.
+
+El correo permanece deshabilitado hasta configurar remitente verificado, destinatario aprobado, proveedor, credenciales y prueba autorizada. Consulta [configuración y diagnóstico del correo](owner-email.md).
 
 ## Revisión antes de usarlo con clientes
 

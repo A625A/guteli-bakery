@@ -96,6 +96,7 @@ describe('customer checkout recovery', () => {
           customerName: 'Ana private',
           phone: '55551234',
           fulfillment: 'pickup',
+          paymentMethod: 'BANK_TRANSFER' as const,
           requestedDate: '2026-10-12',
           notes: 'Private note',
           items: [{ productId, quantity: 2 }],

@@ -11,3 +11,9 @@
 # netlify.toml build variables are not runtime environment variables.
 # Never run migrations, provisioning or development seeds in a build hook.
 # Use Netlify's automatically maintained OpenNext adapter; no SPA redirects.
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+# owner-order-email.mts declares its one-minute UTC schedule inline.
+# It fails closed until all EMAIL_* readiness gates and production context are set.

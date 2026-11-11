@@ -16,7 +16,10 @@ async function completeRequiredOrderFields(
 ) {
   await page.getByLabel('Nombre completo').fill('Ana López');
   await page.getByLabel('Teléfono').fill('5555 5555');
-  await page.getByLabel(fulfillment).check();
+  await page.getByLabel(fulfillment, { exact: true }).check();
+  await page
+    .getByRole('radio', { name: 'Transferencia bancaria', exact: true })
+    .check();
 
   if (fulfillment === 'Envío') {
     await page.getByLabel('Ubicación o dirección').fill('Zona 10, Guatemala');
@@ -35,8 +38,8 @@ test('creates a durable delivery order and renders only its public receipt', asy
   ).toBeVisible();
   await expect(page.getByText('Subtotal estimado: Q120')).toBeVisible();
   await expect(
-    page.getByRole('button', { name: 'Pagar en línea — Próximamente' }),
-  ).toBeDisabled();
+    page.getByText('El pago se coordina con la tienda.', { exact: true }),
+  ).toBeVisible();
   await expect(
     page.getByText(
       /Tu nombre, teléfono, ubicación de entrega y notas se usan para procesar, contactarte y coordinar el pedido/,
@@ -257,7 +260,10 @@ test('shows pickup guidance and omits a delivery location from the API payload',
   await expect(page.locator('.order-submit-error')).toContainText(
     'No pudimos enviar tu pedido.',
   );
-  expect(submittedBody).toMatchObject({ fulfillment: 'pickup' });
+  expect(submittedBody).toMatchObject({
+    fulfillment: 'pickup',
+    paymentMethod: 'BANK_TRANSFER',
+  });
   expect(submittedBody).not.toHaveProperty('deliveryLocation');
 });
 
@@ -435,7 +441,10 @@ test('requires delivery location and preserves active form progress on error', a
   await openOrderWithSavedCart(page);
   await page.getByLabel('Nombre completo').fill('Ana López');
   await page.getByLabel('Teléfono').fill('5555 5555');
-  await page.getByLabel('Envío').check();
+  await page.getByLabel('Envío', { exact: true }).check();
+  await page
+    .getByRole('radio', { name: 'Transferencia bancaria', exact: true })
+    .check();
   await page.getByLabel('Notas opcionales').fill('Sin servilletas');
   const date = page.getByLabel('Fecha solicitada');
   await date.fill((await date.getAttribute('min')) ?? '');
@@ -447,7 +456,7 @@ test('requires delivery location and preserves active form progress on error', a
   await expect(errorSummary).toBeFocused();
   await expect(page.getByLabel('Nombre completo')).toHaveValue('Ana López');
   await expect(page.getByLabel('Teléfono')).toHaveValue('5555 5555');
-  await expect(page.getByLabel('Envío')).toBeChecked();
+  await expect(page.getByLabel('Envío', { exact: true })).toBeChecked();
   await expect(page.getByLabel('Notas opcionales')).toHaveValue(
     'Sin servilletas',
   );
@@ -504,7 +513,7 @@ test('gives the focused error summary and recovery links visible target geometry
   expect(focusStyle.outlineWidth).toBeGreaterThan(0);
 
   const recoveryLinks = await errorSummary.getByRole('link').all();
-  expect(recoveryLinks).toHaveLength(3);
+  expect(recoveryLinks).toHaveLength(4);
 
   for (const link of recoveryLinks) {
     const box = await link.boundingBox();
@@ -531,10 +540,25 @@ test('marks every custom-validated required order field in the markup', async ({
     '',
   );
   await expect(page.getByLabel('Recogida')).toHaveAttribute('required', '');
-  await expect(page.getByLabel('Envío')).toHaveAttribute('required', '');
+  await expect(page.getByLabel('Envío', { exact: true })).toHaveAttribute(
+    'required',
+    '',
+  );
   await expect(page.getByLabel('Ubicación o dirección')).toHaveCount(0);
+  await expect(
+    page.getByRole('radio', { name: 'Transferencia bancaria', exact: true }),
+  ).toHaveAttribute('required', '');
+  await expect(
+    page.getByRole('radio', { name: 'Efectivo al recoger', exact: true }),
+  ).toHaveAttribute('required', '');
 
-  await page.getByLabel('Envío').check();
+  await page.getByLabel('Envío', { exact: true }).check();
+  await expect(
+    page.getByRole('radio', { name: 'Efectivo contra entrega', exact: true }),
+  ).toHaveAttribute('required', '');
+  await expect(
+    page.getByRole('radio', { name: 'Efectivo al recoger', exact: true }),
+  ).toHaveCount(0);
 
   await expect(page.getByLabel('Ubicación o dirección')).toHaveAttribute(
     'required',
@@ -548,7 +572,7 @@ test('order fields follow a logical keyboard sequence', async ({ page }) => {
   const orderControls = page.locator(
     '.order-form :is(input, textarea, button)',
   );
-  await expect(orderControls).toHaveCount(8);
+  await expect(orderControls).toHaveCount(9);
 
   const name = page.getByLabel('Nombre completo');
   await name.focus();
@@ -575,19 +599,29 @@ test('order fields follow a logical keyboard sequence', async ({ page }) => {
     'delivery',
     'order-requestedDate',
     'order-notes',
-    'order-whatsapp-opt-in',
+    'BANK_TRANSFER',
+    'CASH_PICKUP',
     'Enviar pedido',
   ]);
 
   await page.getByLabel('Notas opcionales').focus();
   await page.keyboard.press('Tab');
-  const consent = page.getByRole('checkbox', {
-    name: /Quiero recibir por WhatsApp/,
+  const transfer = page.getByRole('radio', {
+    name: 'Transferencia bancaria',
+    exact: true,
   });
-  await expect(consent).toBeFocused();
-  await expect(consent).not.toBeChecked();
+  const cash = page.getByRole('radio', {
+    name: 'Efectivo al recoger',
+    exact: true,
+  });
+  await expect(transfer).toBeFocused();
+  await expect(transfer).not.toBeChecked();
   await page.keyboard.press('Space');
-  await expect(consent).toBeChecked();
+  await expect(transfer).toBeChecked();
+  await page.keyboard.press('ArrowRight');
+  await expect(cash).toBeFocused();
+  await expect(cash).toBeChecked();
+  await expect(transfer).not.toBeChecked();
   await page.keyboard.press('Tab');
   await expect(
     page.getByRole('button', { name: 'Enviar pedido', exact: true }),
@@ -605,6 +639,9 @@ test('rejects a requested date earlier than the Guatemala minimum', async ({
   await openOrderWithSavedCart(page);
   await page.getByLabel('Nombre completo').fill('Ana López');
   await page.getByLabel('Teléfono').fill('5555 5555');
+  await page
+    .getByRole('radio', { name: 'Transferencia bancaria', exact: true })
+    .check();
   const date = page.getByLabel('Fecha solicitada');
   const minimumDate = (await date.getAttribute('min')) ?? '';
   const priorDate = await page.evaluate((minimum) => {
@@ -632,6 +669,9 @@ test('refreshes the two-day minimum after Guatemala midnight', async ({
   await expect(date).toHaveAttribute('min', '2026-07-22');
   await page.getByLabel('Nombre completo').fill('Ana López');
   await page.getByLabel('Teléfono').fill('5555 5555');
+  await page
+    .getByRole('radio', { name: 'Transferencia bancaria', exact: true })
+    .check();
   await date.fill('2026-07-22');
 
   await page.clock.setFixedTime(new Date('2026-07-21T06:30:00.000Z'));
@@ -978,6 +1018,7 @@ test('requires explicit acceptance again when a saved unpaid promotional total e
         customerName: 'Cliente promoción',
         phone: '55551329',
         fulfillment: 'pickup',
+        paymentMethod: 'BANK_TRANSFER' as const,
         requestedDate: '2099-12-31',
         items: [{ productId: pretzelOriginalId, quantity: 5 }],
       },
@@ -986,7 +1027,10 @@ test('requires explicit acceptance again when a saved unpaid promotional total e
     const { order } = await submitted.json();
     await page.goto(`/order/confirmation/${order.receiptToken}/`);
     await page
-      .getByRole('button', { name: 'Acepto el total de Q150', exact: true })
+      .getByRole('button', {
+        name: 'Acepto el total de Q150 y el método de pago indicado',
+        exact: true,
+      })
       .click();
     await expect(page.getByText(/Total aceptado: Q150/)).toBeVisible();
     await visitor.goto(page.url());
@@ -995,7 +1039,7 @@ test('requires explicit acceptance again when a saved unpaid promotional total e
     ).toBeVisible();
     await expect(
       visitor.getByRole('button', { name: /Acepto el total/ }),
-    ).toHaveCount(0);
+    ).toBeDisabled();
     await expect(
       page.getByRole('main').getByText('Total: Q500', { exact: true }),
     ).toBeVisible({
@@ -1004,16 +1048,28 @@ test('requires explicit acceptance again when a saved unpaid promotional total e
     await expect(
       visitor.getByRole('main').getByText('Total: Q500', { exact: true }),
     ).toBeVisible({ timeout: 5000 });
+    await expect(
+      visitor.getByRole('button', { name: /Acepto el total/ }),
+    ).toBeEnabled();
+    await expect(
+      visitor.getByRole('button', { name: 'Marcar pago como recibido' }),
+    ).toHaveCount(0);
     await expect(page.getByText(/Total aceptado: Q150/)).toHaveCount(0);
     await page
-      .getByRole('button', { name: 'Acepto el total de Q500', exact: true })
+      .getByRole('button', {
+        name: 'Acepto el total de Q500 y el método de pago indicado',
+        exact: true,
+      })
       .click();
     await expect(page.getByText(/Total aceptado: Q500/)).toBeVisible();
     await page.reload();
     await expect(page.getByText(/Total aceptado: Q500/)).toBeVisible();
     await expect(
-      page.getByRole('button', { name: 'Pagar en línea — Próximamente' }),
-    ).toBeDisabled();
+      page.getByRole('region', { name: 'Revisión del total' }),
+    ).toContainText('Los pagos en línea siguen deshabilitados.');
+    await expect(
+      page.getByRole('button', { name: /Pagar en línea/ }),
+    ).toHaveCount(0);
   } finally {
     await visitorContext.close();
     await pool.query('UPDATE products SET price_minor = $1 WHERE id = $2', [

@@ -1,4 +1,9 @@
 import { whatsappDestination } from './whatsapp-consent';
+import {
+  paymentMethods,
+  methodMatchesFulfillment,
+  type PaymentMethod,
+} from './payment-method';
 import { addCalendarDays } from '@/lib/date';
 import type { CartLine } from '@/domain/cart';
 import type { CreateOrderRequest } from '@/domain/order-contract';
@@ -7,6 +12,7 @@ export type OrderFormValues = {
   name: string;
   phone: string;
   fulfillment: 'pickup' | 'delivery';
+  paymentMethod?: PaymentMethod | '';
   requestedDate: string;
   location: string;
   notes: string;
@@ -42,6 +48,16 @@ export function validateOrder(
   const phone = values.phone.trim();
   const requestedDate = values.requestedDate.trim();
   const location = values.location.trim();
+  if (
+    !values.paymentMethod ||
+    !paymentMethods.includes(values.paymentMethod) ||
+    !methodMatchesFulfillment(
+      values.paymentMethod,
+      values.fulfillment === 'pickup' ? 'PICKUP' : 'DELIVERY',
+    )
+  ) {
+    errors.paymentMethod = 'Selecciona un método de pago para esta modalidad.';
+  }
 
   if (!name) {
     errors.name = 'Ingresa tu nombre.';
@@ -107,6 +123,7 @@ export function buildCreateOrderRequest(
     customerName: values.name,
     phone: values.phone,
     fulfillment: values.fulfillment,
+    paymentMethod: values.paymentMethod as PaymentMethod,
     requestedDate: values.requestedDate,
     ...(values.fulfillment === 'delivery'
       ? { deliveryLocation: values.location }

@@ -15,6 +15,9 @@ async function open(page: Page) {
   );
   await page.goto('/cart/');
   await page.getByLabel('Envío', { exact: true }).check();
+  await page
+    .getByRole('radio', { name: 'Transferencia bancaria', exact: true })
+    .check();
   await page.getByLabel('Ubicación o dirección').fill('Dirección ficticia');
 }
 async function search(page: Page) {

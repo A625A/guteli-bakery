@@ -6,7 +6,7 @@ import type { ObjectStorage } from '@/server/storage';
 import type { PublicProductDto } from './types';
 import { priceProduct } from '@/domain/pricing';
 import { readPromotions } from './promotions';
-import { acquireCatalogMutationLock } from './catalog-mutation-lock';
+import { acquireCatalogReadLock } from './catalog-mutation-lock';
 
 type CatalogDatabase = typeof import('@/server/db/client').db;
 
@@ -80,14 +80,15 @@ function mapRows(rows: PublicProductRow[], storage: ObjectStorage) {
   return [...mapped.values()];
 }
 
-export async function findPublicProducts(
+async function readPublicProducts(
   database?: CatalogDatabase,
   storage: ObjectStorage = createObjectStorage(),
   clock: () => Date = () => new Date(),
+  slug?: string,
 ): Promise<readonly PublicProductDto[]> {
   const connection = await getDatabase(database);
   return connection.transaction(async (transaction) => {
-    await acquireCatalogMutationLock(transaction);
+    await acquireCatalogReadLock(transaction);
     const offers = await readPromotions(transaction);
     const now = clock();
     const rows = await transaction
@@ -101,7 +102,12 @@ export async function findPublicProducts(
           isNull(productImages.removedAt),
         ),
       )
-      .where(publicProductFilters)
+      .where(
+        and(
+          publicProductFilters,
+          slug === undefined ? undefined : eq(products.slug, slug),
+        ),
+      )
       .orderBy(
         asc(categories.sortOrder),
         asc(categories.id),
@@ -131,16 +137,26 @@ export async function findPublicProducts(
   });
 }
 
+export async function findPublicProducts(
+  database?: CatalogDatabase,
+  storage: ObjectStorage = createObjectStorage(),
+  clock: () => Date = () => new Date(),
+): Promise<readonly PublicProductDto[]> {
+  return readPublicProducts(database, storage, clock);
+}
+
 export async function findPublicProductBySlug(
   slug: string,
   database?: CatalogDatabase,
   storage: ObjectStorage = createObjectStorage(),
 ): Promise<PublicProductDto | null> {
-  return (
-    (await findPublicProducts(database, storage)).find(
-      (product) => product.slug === slug,
-    ) ?? null
+  const [product] = await readPublicProducts(
+    database,
+    storage,
+    undefined,
+    slug,
   );
+  return product ?? null;
 }
 
 export type PublicMediaRecord = Readonly<{

@@ -25,6 +25,7 @@ export function canonicalizeCreateOrderRequest(request: CreateOrderRequest) {
     customerName: normalizeOrderText(request.customerName),
     phone: normalizeOrderText(request.phone),
     fulfillment: request.fulfillment,
+    paymentMethod: request.paymentMethod,
     requestedDate: request.requestedDate,
     deliveryLocation: request.deliveryLocation
       ? normalizeOrderText(request.deliveryLocation)

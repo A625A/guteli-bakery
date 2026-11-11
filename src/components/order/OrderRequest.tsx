@@ -3,7 +3,12 @@
 import Link from 'next/link';
 import { DeliveryLocation } from './DeliveryLocation';
 import type { DeliverySelection } from '@/domain/delivery';
-import { WHATSAPP_CONSENT_TEXT } from '@/domain/whatsapp-consent';
+import {
+  paymentMethods,
+  paymentMethodLabel,
+  methodMatchesFulfillment,
+  type PaymentMethod,
+} from '@/domain/payment-method';
 import { useRouter } from 'next/navigation';
 import {
   useCallback,
@@ -30,6 +35,7 @@ const initialValues: OrderFormValues = {
   name: '',
   phone: '',
   fulfillment: 'pickup',
+  paymentMethod: '',
   requestedDate: '',
   location: '',
   notes: '',
@@ -39,6 +45,7 @@ const fieldLabels: Record<keyof OrderFormValues, string> = {
   name: 'Nombre completo',
   phone: 'Teléfono',
   fulfillment: 'Modalidad',
+  paymentMethod: 'Método de pago',
   requestedDate: 'Fecha solicitada',
   location: 'Ubicación o dirección',
   notes: 'Notas opcionales',
@@ -99,7 +106,18 @@ export function OrderRequest({ embedded = false }: { embedded?: boolean }) {
   }
 
   function changeFulfillment(fulfillment: OrderFormValues['fulfillment']) {
-    const nextValues = { ...values, fulfillment };
+    const nextValues = {
+      ...values,
+      fulfillment,
+      paymentMethod:
+        values.paymentMethod &&
+        methodMatchesFulfillment(
+          values.paymentMethod,
+          fulfillment === 'pickup' ? 'PICKUP' : 'DELIVERY',
+        )
+          ? values.paymentMethod
+          : ('' as const),
+    };
     setDeliverySelection(null);
     setDeliveryPending(false);
 
@@ -242,8 +260,7 @@ export function OrderRequest({ embedded = false }: { embedded?: boolean }) {
             <h2 id="empty-order-title">Agrega productos antes de continuar</h2>
             <p>
               Tu solicitud necesita al menos una opción del menú para crear el
-              pedido. Al usar estas notificaciones, los datos necesarios se
-              comparten con WhatsApp (Meta) para entregar los mensajes.
+              pedido.
             </p>
             <Link className="button-link button-link--primary" href="/menu/">
               Ir al menú
@@ -444,29 +461,57 @@ export function OrderRequest({ embedded = false }: { embedded?: boolean }) {
               </div>
             </fieldset>
 
-            <label className="order-privacy" htmlFor="order-whatsapp-opt-in">
-              <input
-                id="order-whatsapp-opt-in"
-                type="checkbox"
-                checked={values.whatsappOptIn === true}
-                disabled={submitting}
-                onChange={(event) =>
-                  setField('whatsappOptIn', event.target.checked)
-                }
-              />
-              {WHATSAPP_CONSENT_TEXT}
-            </label>
-            <p className="order-privacy">
-              Las notificaciones dependen de la disponibilidad del servicio.
-              Conserva tu confirmación en esta página.
-            </p>
+            <fieldset
+              className="order-form__section"
+              disabled={submitting}
+              id="order-paymentMethod"
+            >
+              <legend>Método de pago</legend>
+              {paymentMethods
+                .filter((method) =>
+                  methodMatchesFulfillment(
+                    method,
+                    values.fulfillment === 'pickup' ? 'PICKUP' : 'DELIVERY',
+                  ),
+                )
+                .map((method) => (
+                  <label key={method} className="order-privacy">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value={method}
+                      required
+                      checked={values.paymentMethod === method}
+                      onChange={() =>
+                        setField('paymentMethod', method as PaymentMethod)
+                      }
+                      aria-describedby={
+                        errors.paymentMethod
+                          ? 'payment-help payment-method-error'
+                          : 'payment-help'
+                      }
+                    />
+                    {paymentMethodLabel(method)}
+                  </label>
+                ))}
+              <p id="payment-help">
+                Elegir un método no realiza un cobro. El dueño verificará el
+                pago manualmente. Si eliges transferencia, la tienda coordinará
+                las instrucciones después de confirmar el pedido.
+              </p>
+              {errors.paymentMethod ? (
+                <p id="payment-method-error" className="form-field__error">
+                  {errors.paymentMethod}
+                </p>
+              ) : null}
+            </fieldset>
             <p className="order-privacy">
               Tu nombre, teléfono, ubicación de entrega y notas se usan para
-              procesar, contactarte y coordinar el pedido. Cuando esté
-              configurado, Güteli podrá incluir estos datos en una notificación
-              por WhatsApp a la persona dueña para preparar y entregar tu
-              pedido. Al usar estas notificaciones, los datos necesarios se
-              comparten con WhatsApp (Meta) para entregar los mensajes.
+              procesar, contactarte y coordinar el pedido. Al guardarlo podrás
+              abrir WhatsApp y pulsar Enviar para compartir el resumen. La
+              tienda también recibirá un aviso de respaldo por correo cuando el
+              servicio esté habilitado. Guarda tu enlace privado para consultar
+              el estado.
             </p>
 
             <button

@@ -71,6 +71,8 @@ export type CheckoutSummaryInput = Readonly<{
   orderStatus: string;
   paymentMethod?: import('@/domain/payment-method').PaymentMethod | null;
   paymentStatus: string;
+  paymentVerified?: boolean;
+  refundVerified?: boolean;
   accepted: boolean;
   pricedAt: string;
   subtotalMinor: number;
@@ -105,17 +107,12 @@ export function buildCheckoutSummary(order: CheckoutSummaryInput): string {
     `Pedido: ${clean(order.publicId)}`,
     `Estado del pedido: ${summaryOrderLabels[order.orderStatus] ?? 'Por confirmar'}`,
     `Método de pago: ${paymentMethodLabel(order.paymentMethod)}`,
-    `Pago: ${summaryPaymentLabels[order.paymentStatus] ?? 'Sin verificación disponible.'}`,
+    `Pago: ${order.paymentStatus === 'PAID' && order.paymentVerified ? 'Pago recibido y verificado manualmente por la tienda.' : order.paymentStatus === 'REFUNDED' && order.refundVerified ? 'Reembolso completado y registrado manualmente por la tienda.' : (summaryPaymentLabels[order.paymentStatus] ?? 'Sin verificación disponible.')}`,
     `Precios consultados: ${new Intl.DateTimeFormat('es-GT', { dateStyle: 'short', timeStyle: 'medium', timeZone: 'America/Guatemala' }).format(new Date(order.pricedAt))} (America/Guatemala)`,
     '',
-    `Nombre: ${clean(order.customerName)}`,
-    `Teléfono: ${clean(order.phone)}`,
     `Modalidad: ${order.fulfillment === 'PICKUP' ? 'Recogida' : 'Entrega'}`,
     `Fecha solicitada: ${order.requestedDate}`,
   ];
-  if (order.fulfillment === 'DELIVERY')
-    text.push(`Ubicación de entrega: ${clean(order.deliveryLocation ?? '')}`);
-  if (order.notes) text.push(`Notas: ${clean(order.notes)}`);
   text.push('', 'Productos:');
   for (const item of order.items) {
     text.push(
@@ -146,7 +143,7 @@ export function buildCheckoutSummary(order: CheckoutSummaryInput): string {
       : `Envío: ${formatGTQ(order.shippingMinor)}`,
     order.totalMinor === null
       ? 'Total: por confirmar (falta cotizar el envío)'
-      : `Total: ${formatGTQ(order.totalMinor)}`,
+      : `${order.accepted ? 'Total aceptado por el cliente' : 'Total pendiente de aceptación'}: ${formatGTQ(order.totalMinor)}`,
     `Aceptación del total: ${order.accepted ? 'aceptado por el cliente' : 'sin aceptación vigente'}`,
     '',
     'Este resumen no es comprobante de pago ni confirma disponibilidad.',

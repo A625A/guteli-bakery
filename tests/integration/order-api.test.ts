@@ -62,6 +62,7 @@ function requestBody(
     customerName: overrides.customerName ?? 'María López',
     phone: overrides.phone ?? '+502 5555-5555',
     fulfillment,
+    paymentMethod: 'BANK_TRANSFER',
     requestedDate: overrides.requestedDate ?? '2026-08-31',
     ...(fulfillment === 'delivery'
       ? { deliveryLocation: overrides.deliveryLocation ?? 'Zona 10' }

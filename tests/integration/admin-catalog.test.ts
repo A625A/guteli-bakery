@@ -647,6 +647,7 @@ describe('protected catalog administration', () => {
       customerName: 'Ana López',
       phone: '+502 5555-5555',
       fulfillment: 'pickup',
+      paymentMethod: 'BANK_TRANSFER' as const,
       requestedDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1_000)
         .toISOString()
         .slice(0, 10),

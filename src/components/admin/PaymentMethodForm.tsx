@@ -83,10 +83,11 @@ export function PaymentMethodForm({
   }
   return (
     <section className="admin-auth-card" aria-labelledby="payment-method-title">
-      <h2 id="payment-method-title">Elegir método de pago</h2>
+      <h2 id="payment-method-title">Cambiar método de pago</h2>
       <p>
-        Solo el dueño puede elegirlo. Esta acción no cobra ni marca el pedido
-        como pagado.
+        El cliente eligió el método al pedir. Si lo cambias, deberá aceptar de
+        nuevo el método y el total en su página privada. Esta acción no registra
+        un pago.
       </p>
       <form
         onSubmit={(event) => {

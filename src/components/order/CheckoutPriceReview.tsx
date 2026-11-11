@@ -2,6 +2,7 @@
 import { useCallback, useRef, useState } from 'react';
 import type { CheckoutPricingReview } from '@/domain/checkout-pricing';
 import { formatGTQ } from '@/lib/money';
+import { paymentMethodLabel } from '@/domain/payment-method';
 import { useLiveResource } from '@/lib/use-live-resource';
 import type { PublicReceipt } from '@/server/orders/get-receipt';
 
@@ -34,6 +35,10 @@ export function useCheckoutReview(
     };
     const ownerResponse = await fetch('/api/checkout-review', {
       cache: 'no-store',
+      headers: {
+        'x-order-receipt': receiptToken,
+        'x-order-reference': initial.publicId,
+      },
     });
     if (ownerResponse.status === 404) return { receipt, review: null };
     if (!ownerResponse.ok) throw new Error('Review unavailable');
@@ -50,6 +55,8 @@ export function useCheckoutReview(
         totalMinor: review.totalMinor,
         paymentMethod: review.paymentMethod,
         paymentStatus: review.paymentStatus,
+        paymentVerified: review.paymentVerified,
+        refundVerified: review.refundVerified,
         orderStatus: review.orderStatus,
       },
       review,
@@ -71,7 +78,10 @@ export function useCheckoutReview(
         const response = await fetch('/api/checkout-review', {
           method: 'POST',
           signal: AbortSignal.timeout(10000),
-          headers: { 'content-type': 'application/json' },
+          headers: {
+            'content-type': 'application/json',
+            ...(receiptToken ? { 'x-order-receipt': receiptToken } : {}),
+          },
           body: JSON.stringify({
             publicId: review.publicId,
             revisionId: review.revisionId,
@@ -119,6 +129,11 @@ export function CheckoutPriceReview({
             Los precios pueden cambiar hasta verificar el pago. Aceptar este
             total no realiza ningún cobro.
           </p>
+          <p>
+            Método para aceptar: {paymentMethodLabel(review.paymentMethod)}. Si
+            la tienda lo cambió, revisa y confirma tu conformidad antes de
+            pagar.
+          </p>
           {review.accepted && state.available && !state.pending ? (
             <p role="status">
               Total aceptado: {formatGTQ(review.totalMinor!)}. Los pagos en
@@ -132,6 +147,7 @@ export function CheckoutPriceReview({
               onClick={() => void state.accept()}
             >
               Acepto el total de {formatGTQ(review.totalMinor!)}
+              {' y el método de pago indicado'}
             </button>
           ) : (
             <p>
@@ -139,9 +155,6 @@ export function CheckoutPriceReview({
               fecha, los productos y el costo de envío.
             </p>
           )}
-          <button type="button" disabled>
-            Pagar en línea — Próximamente
-          </button>
         </>
       ) : null}
       {!state.available ? (
